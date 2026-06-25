@@ -1,3 +1,4 @@
 from django.shortcuts import render
 
-# Create your views here.
+def analytics_main_render(request):
+    return render(request, 'analytics/analytics_main.html')
