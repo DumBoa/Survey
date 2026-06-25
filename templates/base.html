@@ -1,32 +1,15 @@
 {% load static %}
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nông Sản Xanh - Hệ thống quản lý</title>
-    <link rel="icon"
-      type="image/png"
-      href="{% static 'images/logo.png' %}">
-    <link rel="stylesheet" href="{% static 'css/header-nav.css' %}">
+    <title>Survey Builder</title>
 </head>
 <body>
-    <div class="app-wrapper">
-        <!-- Header navigation mới -->
-        {% include "components/header-nav.html" %}
-        
-        <!-- Main content area -->
-        <main class="main-content">
-            <div class="content-area" id="contentArea">
-                {% block content %}
-                <div class="demo-section">
-                    <h2>Chào mừng đến với Nông Sản Xanh</h2>
-                    <p>Hệ thống quản lý bán hàng nông sản sạch</p>
-                </div>
-                {% endblock %}
-            </div>
-        </main>
-    </div>
-    
-    <script src="{% static 'js/header-nav.js' %}"></script>
+    {% block content %}
+
+
+    {% endblock %}
 </body>
 </html>
