@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
@@ -1415,10 +1414,35 @@ function getDefaultScale(gridType) {
     // ============================================
 // RENDER FUNCTIONS - Sửa lại
 // ============================================
+function resolveQuestionTypeCode(question) {
+    const qt = question.question_type;
+
+    // Trường hợp 1: backend trả về object lồng, ví dụ { id, code, name }
+    if (qt && typeof qt === 'object') {
+        if (qt.code) return qt.code;
+        // Object nhưng không có "code" (vd chỉ có id) -> tra theo id
+        if (qt.id != null) {
+            const found = SurveyState.questionTypes.find(t => t.id === qt.id);
+            if (found) return found.code;
+        }
+    }
+
+    // Trường hợp 2: backend trả về thẳng ID (số hoặc chuỗi số) của question_type
+    if (qt != null && (typeof qt === 'number' || typeof qt === 'string')) {
+        const found = SurveyState.questionTypes.find(t => t.id === qt || String(t.id) === String(qt));
+        if (found) return found.code;
+    }
+
+    // Trường hợp 3: đôi khi code được trả thẳng ở field riêng (phòng hờ các biến thể khác)
+    if (question.question_type_code) return question.question_type_code;
+
+    return 'paragraph';
+}
+
 function createComponentFromQuestion(question) {
     const el = document.createElement('div');
     el.className = 'doc-section';
-    el.dataset.type = question.question_type?.code || 'paragraph';
+    el.dataset.type = resolveQuestionTypeCode(question);
     el.dataset.id = `comp_${++componentCounter}`;
     el.dataset.required = question.is_required ? 'true' : 'false';
     el.dataset.questionId = question.id;
@@ -1812,6 +1836,12 @@ function createComponentFromQuestion(question) {
             let pages = Array.from(container.querySelectorAll('.a4-page'));
             const rememberSelectedId = selectedEl ? selectedEl.dataset.id : null;
 
+            // Phần tử đang được người dùng chỉnh sửa (đang chọn, hoặc đang có focus/con trỏ
+            // bên trong, ví dụ vừa bấm "+ Hàng"/"+ Cột"). Không được đẩy phần tử này sang
+            // trang khác trong lúc đang chỉnh sửa, để tránh hiện tượng "nhảy trang" khi
+            // bảng/lưới vừa phình to ra.
+            const activeEditEl = selectedEl || document.activeElement?.closest?.('.doc-section') || null;
+
             let guard = 0;
             const MAX_ITER = 500;
 
@@ -1822,7 +1852,21 @@ function createComponentFromQuestion(question) {
                 const contentEl = page.querySelector('.page-content');
 
                 while (contentEl.scrollHeight > contentEl.clientHeight + 1 && contentEl.children.length > 1) {
-                    const last = contentEl.lastElementChild;
+                    let last = contentEl.lastElementChild;
+
+                    // Nếu phần tử tràn trang chính là cái đang được chỉnh sửa, đừng đẩy nó
+                    // đi. Thử tìm phần tử khác (không đang chỉnh sửa) gần cuối trang để đẩy
+                    // thay thế; nếu không có phần tử nào khác để đẩy thì dừng vòng lặp này,
+                    // để trang tạm thời giãn ra cho đến khi người dùng bấm ra ngoài.
+                    if (activeEditEl && (last === activeEditEl || last.contains(activeEditEl))) {
+                        let candidate = last.previousElementSibling;
+                        while (candidate && (candidate === activeEditEl || candidate.contains(activeEditEl))) {
+                            candidate = candidate.previousElementSibling;
+                        }
+                        if (!candidate) break;
+                        last = candidate;
+                    }
+
                     let nextPage = pages[i + 1];
                     if (!nextPage) {
                         nextPage = createPage(pages.length + 1);
@@ -1875,6 +1919,16 @@ function createComponentFromQuestion(question) {
                 if (restored) {
                     selectedEl = restored;
                     restored.classList.add('selected-component');
+                }
+            }
+
+            // Nếu phần tử đang chỉnh sửa vẫn còn trong DOM nhưng đã bị đẩy sang trang khác,
+            // cuộn nó vào khung nhìn để người dùng không bị mất phương hướng.
+            if (activeEditEl && document.contains(activeEditEl)) {
+                const stillVisible = activeEditEl.getBoundingClientRect();
+                const inViewport = stillVisible.top >= 0 && stillVisible.bottom <= window.innerHeight;
+                if (!inViewport) {
+                    activeEditEl.scrollIntoView({ block: 'nearest' });
                 }
             }
         } finally {
