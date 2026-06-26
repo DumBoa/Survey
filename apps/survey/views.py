@@ -578,58 +578,66 @@ def survey_public_response(request, survey_id):
 
 @csrf_exempt
 def survey_submit_response(request):
-    """
-    API endpoint để submit response
-    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-    
+
     try:
         data = json.loads(request.body) if request.body else {}
         
-        survey_id = data.get('survey_id')
+        # Validate
+        serializer = ResponseSubmitSerializer(data=data)
+        if not serializer.is_valid():
+            return JsonResponse({'error': serializer.errors}, status=400)
+        
+        validated = serializer.validated_data
+        survey_id = validated['survey_id']
         survey = get_object_or_404(SurveyModel, id=survey_id)
         
-        response_id = data.get('response_id')
+        # Lấy response_id từ data hoặc session
+        response_id = validated.get('response_id')
+        if not response_id:
+            response_id = request.session.get(f'survey_response_{survey_id}')
+        
         if response_id:
             try:
-                # SỬA: ResponseModel thay vì Response
                 response = ResponseModel.objects.get(id=response_id, survey=survey)
             except ResponseModel.DoesNotExist:
-                return JsonResponse({'error': 'Response không tồn tại'}, status=404)
-        else:
-            # SỬA: ResponseModel thay vì Response
+                response = None
+        
+        if not response:
+            # Tạo mới
             response = ResponseModel(
                 survey=survey,
                 status='draft',
                 answers={},
                 section_progress={}
             )
-            
             if request.user.is_authenticated:
                 response.user = request.user
                 response.respondent_email = request.user.email
-                
             response.respondent_ip = request.META.get('REMOTE_ADDR')
-            response.respondent_device_id = data.get('device_id', '')
+            response.respondent_device_id = validated.get('device_id', '')
             response.user_agent = request.META.get('HTTP_USER_AGENT', '')
         
-        if 'answers' in data:
+        # Cập nhật answers
+        if 'answers' in validated:
             current_answers = response.answers or {}
-            for key, value in data['answers'].items():
+            for key, value in validated['answers'].items():
                 current_answers[str(key)] = value
             response.answers = current_answers
         
-        if 'section_progress' in data:
+        # Cập nhật section_progress
+        if 'section_progress' in validated:
             current_progress = response.section_progress or {}
-            for key, value in data['section_progress'].items():
+            for key, value in validated['section_progress'].items():
                 current_progress[str(key)] = value
             response.section_progress = current_progress
         
-        if 'time_taken' in data:
-            response.time_taken = data['time_taken']
+        if 'time_taken' in validated:
+            response.time_taken = validated['time_taken']
         
-        new_status = data.get('status', 'draft')
+        # Xử lý status
+        new_status = validated.get('status', 'draft')
         if new_status == 'submitted' and response.status != 'submitted':
             response.submitted_at = timezone.now()
             response.status = 'submitted'
@@ -637,6 +645,9 @@ def survey_submit_response(request):
             response.status = 'draft'
         
         response.save()
+        
+        # Lưu vào session
+        request.session[f'survey_response_{survey_id}'] = response.id
         
         return JsonResponse({
             'success': True,
@@ -707,42 +718,38 @@ class SurveyPublicDetailView(APIView):
 
 
 class PublicResponseView(APIView):
-    """
-    API public để quản lý response (có thể dùng token hoặc session)
-    """
     authentication_classes = []
     permission_classes = []
-    
+
     def get(self, request, survey_id):
-        """
-        Lấy response hiện tại (dùng session hoặc response_id)
-        """
         try:
-            survey = SurveyModel.objects.get(id=survey_id)
+            survey = SurveyModel.objects.get(id=survey_id, status='active')
             
+            # Lấy response_id từ session
             response_id = request.session.get(f'survey_response_{survey_id}')
+            response = None
             
             if response_id:
                 try:
-                    # SỬA: ResponseModel thay vì Response
                     response = ResponseModel.objects.get(id=response_id, survey=survey)
-                    if response.status != 'submitted':
+                    # Nếu đã submitted, trả về để hiển thị trạng thái
+                    if response.status == 'submitted':
                         serializer = ResponseSerializer(response)
                         return Response(serializer.data)
                 except ResponseModel.DoesNotExist:
                     pass
             
-            # SỬA: ResponseModel thay vì Response
-            response = ResponseModel.objects.create(
-                survey=survey,
-                status='draft',
-                answers={},
-                section_progress={},
-                respondent_ip=request.META.get('REMOTE_ADDR'),
-                user_agent=request.META.get('HTTP_USER_AGENT', '')
-            )
-            
-            request.session[f'survey_response_{survey_id}'] = response.id
+            # Tạo mới nếu chưa có
+            if not response:
+                response = ResponseModel.objects.create(
+                    survey=survey,
+                    status='draft',
+                    answers={},
+                    section_progress={},
+                    respondent_ip=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+                request.session[f'survey_response_{survey_id}'] = response.id
             
             serializer = ResponseSerializer(response)
             return Response(serializer.data)
