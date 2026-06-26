@@ -190,6 +190,33 @@
 }
 
 /* ============================================
+   GHI CHÚ / HƯỚNG DẪN THÀNH PHẦN
+   ============================================ */
+.component-note {
+    min-height: 1em;
+    outline: none;
+    border-radius: 4px;
+    padding: 1px 2px;
+    transition: background 0.15s;
+}
+
+.component-note:hover,
+.component-note:focus {
+    background: #f8f9fa;
+}
+
+.component-note:empty::before {
+    content: attr(data-placeholder);
+    color: #c0c4cc;
+    pointer-events: none;
+}
+
+/* Khi xuất file / xem trước, ẩn ghi chú trống đi để không thừa khoảng trắng */
+.component-note:empty:not(:focus) {
+    opacity: 0.7;
+}
+
+/* ============================================
    SURVEY INPUTS
    ============================================ */
 .survey-input { 
@@ -638,6 +665,15 @@ body {
     <div class="flex items-center gap-3">
         <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
         <h1 class="font-semibold text-lg">Trình Tạo Khảo Sát</h1>
+        <input
+            id="survey-title-input"
+            type="text"
+            value="Khảo sát mới"
+            placeholder="Nhập tên biểu mẫu..."
+            oninput="onSurveyTitleInput(this)"
+            onblur="onSurveyTitleBlur(this)"
+            class="px-2 py-1 text-sm font-medium border border-transparent rounded-md hover:border-gray-300 focus:border-blue-400 focus:bg-white transition w-64"
+            title="Bấm để đổi tên biểu mẫu">
         <span id="auto-save-indicator" class="auto-save-badge hidden">
             <i data-lucide="check-circle" class="w-3 h-3"></i> Đã lưu
         </span>
@@ -900,6 +936,8 @@ body {
                 document.getElementById('survey-status-display').textContent = data.status;
                 document.getElementById('survey-status-display').className = 
                     `font-medium ${data.status === 'active' ? 'text-green-600' : 'text-gray-600'}`;
+                const titleInputEl = document.getElementById('survey-title-input');
+                if (titleInputEl) titleInputEl.value = data.title || 'Khảo sát mới';
                 
                 this.sections = data.sections || [];
                 return data;
@@ -921,6 +959,8 @@ body {
                 this.surveyId = data.id;
                 this.surveyData = data;
                 document.getElementById('survey-id-display').textContent = data.id;
+                const newTitleInputEl = document.getElementById('survey-title-input');
+                if (newTitleInputEl) newTitleInputEl.value = data.title || title;
                 
                 const url = new URL(window.location);
                 url.searchParams.set('survey_id', data.id);
@@ -969,15 +1009,26 @@ body {
                     settings: surveyData.settings
                 });
 
-                await this.saveSections(surveyData.sections);
+                const droppedQuestions = await this.saveSections(surveyData.sections);
 
                 this.isDirty = false;
                 const badge = document.getElementById('auto-save-indicator');
-                badge.innerHTML = '<i data-lucide="check-circle" class="w-3 h-3"></i> Đã lưu';
-                badge.classList.remove('hidden');
-                lucide.createIcons();
-                setTimeout(() => badge.classList.add('hidden'), 2000);
-                showToast('Đã lưu khảo sát!', 'success');
+
+                if (droppedQuestions.length > 0) {
+                    const typesList = [...new Set(droppedQuestions.map(d => d.type_code))].join(', ');
+                    showToast(
+                        `Đã lưu, nhưng ${droppedQuestions.length} thành phần KHÔNG lưu được vì hệ thống ` +
+                        `chưa hỗ trợ loại: ${typesList}. Vui lòng báo quản trị viên bổ sung loại câu hỏi này.`,
+                        'warning'
+                    );
+                    console.warn('Các câu hỏi không lưu được (thiếu question_type):', droppedQuestions);
+                } else {
+                    badge.innerHTML = '<i data-lucide="check-circle" class="w-3 h-3"></i> Đã lưu';
+                    badge.classList.remove('hidden');
+                    lucide.createIcons();
+                    setTimeout(() => badge.classList.add('hidden'), 2000);
+                    showToast('Đã lưu khảo sát!', 'success');
+                }
             } catch (error) {
                 showToast('Lỗi khi lưu: ' + error.message, 'error');
             } finally {
@@ -986,51 +1037,64 @@ body {
         },
 
         buildSurveyData() {
-            const pages = document.querySelectorAll('.a4-page');
-            const sections = [];
-            
-            pages.forEach((page, pageIndex) => {
-                const contentEl = page.querySelector('.page-content');
-                const components = contentEl.querySelectorAll('.doc-section');
-                
-                if (components.length === 0) return;
-                
-                const code = String.fromCharCode(65 + pageIndex);
-                const sectionData = {
-                    code: code,
-                    title: `Phần ${code}`,
-                    order: pageIndex,
-                    description: '',
-                    questions: []
-                };
-                
-                components.forEach((comp, compIndex) => {
-                    const type = comp.dataset.type;
-                    const questionType = this.getQuestionTypeByCode(type);
-                    const questionData = {
-                        title: this.extractTitle(comp),
-                        description: this.extractDescription(comp),
-                        question_type: questionType ? questionType.id : null,
-                        is_required: comp.dataset.required === 'true',
-                        order: compIndex,
-                        options: this.extractOptions(comp),
-                        config: this.extractConfig(comp),
-                        condition_logic: {}
-                    };
-                    sectionData.questions.push(questionData);
-                });
-                
-                sections.push(sectionData);
-            });
+    const allPages = document.querySelectorAll('.a4-page');
+    const allComponents = [];
+    allPages.forEach(page => {
+        const comps = page.querySelectorAll('.doc-section');
+        comps.forEach(c => allComponents.push(c));
+    });
 
-            return {
-                title: this.surveyData?.title || 'Khảo sát',
-                description: this.surveyData?.description || '',
-                status: this.surveyData?.status || 'draft',
-                settings: this.surveyData?.settings || {},
-                sections: sections
+    const sections = [];
+    let currentSection = null;
+    let sectionCounter = 0;
+
+    allComponents.forEach(comp => {
+        const type = comp.dataset.type;
+        if (type === 'section-break') {
+            // Tạo section mới
+            sectionCounter++;
+            const code = String.fromCharCode(65 + sectionCounter - 1);
+            const titleEl = comp.querySelector('h3');
+            const descEl = comp.querySelector('p:not(.component-note)');
+            const title = titleEl ? titleEl.textContent.trim() : `Phần ${code}`;
+            const description = descEl ? descEl.textContent.trim() : '';
+            currentSection = {
+                code: code,
+                title: title,
+                description: description,
+                order: sectionCounter - 1,
+                questions: []
             };
-        },
+            sections.push(currentSection);
+            return; // không thêm câu hỏi cho section-break
+        }
+        // Nếu chưa có section, tạo mặc định
+        if (!currentSection) {
+            sectionCounter++;
+            const code = String.fromCharCode(65 + sectionCounter - 1);
+            currentSection = {
+                code: code,
+                title: `Phần ${code}`,
+                description: '',
+                order: sectionCounter - 1,
+                questions: []
+            };
+            sections.push(currentSection);
+        }
+        // Thêm câu hỏi vào section hiện tại
+        const questionData = this.extractQuestionData(comp);
+        questionData.order = currentSection.questions.length; // gán thứ tự
+        currentSection.questions.push(questionData);
+    });
+
+    return {
+        title: this.surveyData?.title || 'Khảo sát',
+        description: this.surveyData?.description || '',
+        status: this.surveyData?.status || 'draft',
+        settings: this.surveyData?.settings || {},
+        sections: sections
+    };
+},
 
         extractTitle(comp) {
             const titleEl = comp.querySelector('h1, h2, h3, h4, [contenteditable="true"]');
@@ -1039,11 +1103,24 @@ body {
         },
 
         extractDescription(comp) {
-            const descEl = comp.querySelector('.text-gray-600, .text-gray-700');
+            const descEl = comp.querySelector('.component-note');
             if (descEl) return descEl.textContent.trim();
             return '';
         },
-
+        extractQuestionData(comp) {
+            const type = comp.dataset.type;
+            const questionType = this.getQuestionTypeByCode(type);
+            return {
+                title: this.extractTitle(comp),
+                description: this.extractDescription(comp),
+                question_type: questionType ? questionType.id : null,
+                type_code: type,
+                is_required: comp.dataset.required === 'true',
+                options: this.extractOptions(comp),
+                config: this.extractConfig(comp),
+                condition_logic: {}
+            };
+        },
         extractOptions(comp) {
             const options = [];
             const optionItems = comp.querySelectorAll('.option-item span[contenteditable="true"]');
@@ -1073,9 +1150,14 @@ extractConfig(comp) {
         if (table) {
             // Lấy grid type
             config.grid_type = table.dataset.gridType || 'yesno';
-            
-            // Lấy scale từ header
+
+            // Lấy tên cột đầu tiên (vd "Tiêu chí", "Nhóm dữ liệu"...) — trước đây
+            // bị bỏ qua, khiến nó luôn bị reset về chữ "Tiêu chí" cứng sau khi
+            // reload dù người dùng đã đổi tên cột này.
             const headers = table.querySelectorAll('thead th');
+            config.criteria_label = headers.length > 0 ? (headers[0].textContent.trim() || 'Tiêu chí') : 'Tiêu chí';
+
+            // Lấy scale từ header (bỏ qua cột đầu - cột tiêu chí)
             const scale = [];
             
             // Bắt đầu từ index 1 (bỏ qua cột "Tiêu chí")
@@ -1174,6 +1256,11 @@ extractConfig(comp) {
     existingSections.forEach(s => {
         sectionMap[s.code] = s;
     });
+
+    // Gom các câu hỏi KHÔNG lưu được (vì không tra được question_type tương
+    // ứng) để báo cho người dùng biết — không bao giờ âm thầm làm mất nội
+    // dung họ đã nhập mà không nói gì.
+    const droppedQuestions = [];
     
     for (const sectionData of sectionsData) {
         const code = sectionData.code || 'A';
@@ -1216,6 +1303,15 @@ extractConfig(comp) {
                     config: questionData.config || {},
                     condition_logic: questionData.condition_logic || {}
                 });
+            } else {
+                // KHÔNG bỏ qua trong im lặng: ghi lại để cảnh báo người dùng.
+                // Nguyên nhân phổ biến nhất: backend chưa có QuestionType với
+                // code này (xem migration seed QuestionType).
+                droppedQuestions.push({
+                    section: code,
+                    title: questionData.title || '(không có tiêu đề)',
+                    type_code: questionData.type_code || 'unknown'
+                });
             }
         }
     }
@@ -1227,6 +1323,8 @@ extractConfig(comp) {
             await API.deleteSection(section.id);
         }
     }
+
+    return droppedQuestions;
 }
     };
 // ============================================
@@ -1382,34 +1480,58 @@ function getDefaultScale(gridType) {
     // RENDER FUNCTIONS
     // ============================================
     function renderSurveyFromData(data) {
-        const container = document.getElementById('pages-container');
-        container.innerHTML = '';
-        pageCounter = 1;
+    const container = document.getElementById('pages-container');
+    container.innerHTML = '';
+    pageCounter = 1;
 
-        if (data.sections && data.sections.length > 0) {
-            data.sections.forEach((section, index) => {
-                const page = createPage(index + 1);
-                const contentEl = page.querySelector('.page-content');
-                
-                if (section.questions && section.questions.length > 0) {
-                    section.questions.forEach(question => {
-                        const comp = createComponentFromQuestion(question);
-                        contentEl.appendChild(comp);
-                    });
-                }
-                
-                container.appendChild(page);
-            });
-        } else {
-            const page = createPage(1);
-            page.querySelector('.page-content').innerHTML = getDefaultContent();
+    if (data.sections && data.sections.length > 0) {
+        data.sections.forEach((section, index) => {
+            const page = createPage(index + 1);
+            const contentEl = page.querySelector('.page-content');
+            
+            // Thêm section-break nếu không phải section đầu tiên
+            if (index > 0) {
+                const breakEl = document.createElement('div');
+                breakEl.className = 'doc-section';
+                breakEl.dataset.type = 'section-break';
+                breakEl.dataset.id = 'comp_' + (++componentCounter);
+                breakEl.dataset.required = 'false';
+                breakEl.dataset.questionId = null;
+                breakEl.innerHTML = `
+                    <span class="component-badge">Phân cách</span>
+                    <div class="flex items-start gap-2">
+                        <div class="flex-1">
+                            <hr class="my-3 border-gray-400">
+                            <h3 contenteditable="true" class="font-bold text-base text-gray-800">${escapeHtml(section.title || 'PHẦN MỚI')}</h3>
+                            <p contenteditable="true" class="text-sm text-gray-600">${escapeHtml(section.description || '')}</p>
+                            <p class="component-note text-xs text-gray-400 italic mt-1.5" contenteditable="true" data-placeholder="Thêm ghi chú/hướng dẫn (không bắt buộc)..."></p>
+                        </div>
+                    </div>
+                `;
+                contentEl.appendChild(breakEl);
+            }
+            
+            // Thêm các câu hỏi của section
+            if (section.questions && section.questions.length > 0) {
+                section.questions.forEach(question => {
+                    const comp = createComponentFromQuestion(question);
+                    contentEl.appendChild(comp);
+                });
+            }
+            
             container.appendChild(page);
-        }
-
-        reattachEvents();
-        updatePageNumbers();
-        scheduleRepaginate();
+        });
+    } else {
+        // Fallback nếu không có section
+        const page = createPage(1);
+        page.querySelector('.page-content').innerHTML = getDefaultContent();
+        container.appendChild(page);
     }
+
+    reattachEvents();
+    updatePageNumbers();
+    scheduleRepaginate();
+}
 
     // ============================================
 // RENDER FUNCTIONS - Sửa lại
@@ -1576,18 +1698,19 @@ function createComponentFromQuestion(question) {
             }
             
             const timestamp = Date.now();
-            
+            const criteriaLabel = config.criteria_label || 'Tiêu chí';
+
             // Tạo header HTML
-            let gridHeaderHtml = '<th contenteditable="true">Tiêu chí</th>';
+            let gridHeaderHtml = `<th contenteditable="true">${escapeHtml(criteriaLabel)}</th>`;
             scale.forEach(item => {
                 const label = typeof item === 'string' ? item : (item.label || item);
-                gridHeaderHtml += `<th contenteditable="true">${label}</th>`;
+                gridHeaderHtml += `<th contenteditable="true">${escapeHtml(String(label))}</th>`;
             });
             
             // Tạo body HTML
             let gridBodyHtml = '';
             criteria.forEach((crit, rowIndex) => {
-                let rowHtml = `<tr><td contenteditable="true">${crit}</td>`;
+                let rowHtml = `<tr><td contenteditable="true">${escapeHtml(crit)}</td>`;
                 scale.forEach((item, colIndex) => {
                     rowHtml += `<td><input type="radio" name="g${timestamp}_${rowIndex}_${colIndex}"></td>`;
                 });
@@ -1711,6 +1834,19 @@ function createComponentFromQuestion(question) {
     }
     
     el.innerHTML = html;
+
+    // Ghi chú / hướng dẫn cho thành phần (vd "Chọn 1 đáp án duy nhất",
+    // "Đơn vị tính: VNĐ", "Có thể chọn nhiều mục"...). Dùng chung field
+    // `description` đã có sẵn trong model Question - không cần field mới.
+    // Áp dụng cho mọi loại để linh hoạt, người dùng không cần thì để trống.
+    const noteTarget = el.querySelector('.flex-1') || el;
+    const noteEl = document.createElement('p');
+    noteEl.className = 'component-note text-xs text-gray-400 italic mt-1.5';
+    noteEl.contentEditable = 'true';
+    noteEl.dataset.placeholder = 'Thêm ghi chú/hướng dẫn (không bắt buộc)...';
+    noteEl.textContent = question.description || '';
+    noteTarget.appendChild(noteEl);
+
     return el;
 }
 
@@ -1936,6 +2072,43 @@ function createComponentFromQuestion(question) {
         }
     }
 
+    function updateComponentNoteFromProps(value) {
+        if (!selectedEl) return;
+        let noteEl = selectedEl.querySelector('.component-note');
+        if (!noteEl) {
+            // Phòng trường hợp component cũ chưa có note (vd vừa import Word
+            // trước khi bản cập nhật này, hoặc do cấu trúc đặc biệt).
+            const target = selectedEl.querySelector('.flex-1') || selectedEl;
+            noteEl = document.createElement('p');
+            noteEl.className = 'component-note text-xs text-gray-400 italic mt-1.5';
+            noteEl.contentEditable = 'true';
+            noteEl.dataset.placeholder = 'Thêm ghi chú/hướng dẫn (không bắt buộc)...';
+            target.appendChild(noteEl);
+            noteEl.oninput = function(e) { e.stopPropagation(); markDirty(); };
+        }
+        noteEl.textContent = value;
+        markDirty();
+    }
+
+    // ============================================
+    // TÊN BIỂU MẪU (chỉnh sửa trực tiếp trên header)
+    // ============================================
+    function onSurveyTitleInput(inputEl) {
+        if (!SurveyState.surveyData) SurveyState.surveyData = {};
+        SurveyState.surveyData.title = inputEl.value;
+        markDirty();
+    }
+
+    function onSurveyTitleBlur(inputEl) {
+        const trimmed = inputEl.value.trim();
+        if (!trimmed) {
+            inputEl.value = 'Khảo sát mới';
+            if (!SurveyState.surveyData) SurveyState.surveyData = {};
+            SurveyState.surveyData.title = 'Khảo sát mới';
+            markDirty();
+        }
+    }
+
     // ============================================
     // ZOOM FUNCTIONS
     // ============================================
@@ -2004,6 +2177,8 @@ function createComponentFromQuestion(question) {
         if (titleEl) {
             content = titleEl.textContent.trim();
         }
+
+        const noteEl = el.querySelector('.component-note');
         
         let html = `
             <div class="space-y-3">
@@ -2015,6 +2190,16 @@ function createComponentFromQuestion(question) {
                 <div class="bg-white rounded p-3 shadow-sm">
                     <div class="text-xs text-gray-500">Nội dung</div>
                     <div class="text-sm text-gray-800 break-words max-h-20 overflow-y-auto">${content || '(Trống)'}</div>
+                </div>
+
+                <div class="bg-white rounded p-3 shadow-sm">
+                    <div class="text-xs text-gray-500 mb-1">Ghi chú / hướng dẫn</div>
+                    <textarea
+                        rows="2"
+                        placeholder="VD: Chọn 1 đáp án duy nhất, đơn vị tính VNĐ..."
+                        class="w-full text-xs border border-gray-200 rounded p-1.5 resize-none focus:border-blue-400 outline-none"
+                        onchange="updateComponentNoteFromProps(this.value)"
+                    >${noteEl ? escapeHtml(noteEl.textContent.trim()) : ''}</textarea>
                 </div>
                 
                 <div class="bg-white rounded p-3 shadow-sm space-y-2">
@@ -2762,6 +2947,9 @@ function createComponentFromQuestion(question) {
 
     const CHECKBOX_RE = /[☐☑☒□]/g;
     const CHECKBOX_TEST_RE = /[☐☑☒□]/;
+    // Một "dòng option" kiểu: ☐ Thiếu dữ liệu    ☐ Sai dữ liệu    ☐ Khác
+    // có từ 2 lựa chọn trở lên trên cùng 1 dòng, tách nhau bằng checkbox.
+    const MULTI_OPTION_LINE_RE = CHECKBOX_TEST_RE;
 
     function handleWordImport(event) {
         const file = event.target.files[0];
@@ -2778,6 +2966,12 @@ function createComponentFromQuestion(question) {
 
                     const temp = document.createElement('div');
                     temp.innerHTML = html;
+
+                    // Dọn rác bookmark TOC mà mammoth/Word hay chèn, ví dụ
+                    // <h2><a id="_Toc233285124"></a>b. Mức độ chuẩn hóa</h2>
+                    temp.querySelectorAll('a[id^="_Toc"], a[name]').forEach(a => {
+                        if (!a.textContent.trim()) a.remove();
+                    });
 
                     const blocks = parseWordBlocks(temp);
                     blocks.forEach(block => appendImportedBlock(content, block));
@@ -2797,95 +2991,191 @@ function createComponentFromQuestion(question) {
         event.target.value = '';
     }
 
+    // ------------------------------------------------------------------
+    // GIAI ĐOẠN 1: gom các <p>/<table> thô của mammoth thành từng "mục"
+    // (item) độc lập, đã gắn sẵn heading/label làm tiêu đề thật cho mục
+    // đó (nếu có), và đã gộp các dòng checkbox liên tiếp thành 1 nhóm.
+    // ------------------------------------------------------------------
     function parseWordBlocks(root) {
-        const blocks = [];
         const children = Array.from(root.children);
+        const n = children.length;
 
-        for (let i = 0; i < children.length; i++) {
-            const el = children[i];
+        // Bước 1: phân loại nhanh từng dòng thô để dễ nhìn xuôi/ngược.
+        const rawItems = children.map(el => {
             const tag = el.tagName.toLowerCase();
             const text = el.textContent.trim();
+            return {
+                el, tag, text,
+                isTable: tag === 'table',
+                isEmpty: text === '',
+                isHeading: (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4') || isWholeLineBold(el),
+                isCheckboxLine: !el.querySelector('table') && CHECKBOX_TEST_RE.test(text) && text.replace(CHECKBOX_RE, '').trim().length > 0,
+            };
+        });
 
-            if (tag === 'table') {
-                blocks.push(parseWordTable(el));
+        const blocks = [];
+        let i = 0;
+        // Tiêu đề/label gần nhất chưa được "tiêu thụ" bởi mục nào — sẽ được
+        // gắn vào bảng/nhóm checkbox kế tiếp nếu có, thay vì tạo 1 block
+        // "title" rời rạc không liên quan gì tới nội dung phía dưới nó.
+        let pendingHeading = null;
+        // Câu chú giải ngắn đứng giữa heading và bảng/checkbox của nó (vd
+        // "Đánh giá theo từng tiêu chí (1=Rất kém; 5=Rất tốt)") — đính kèm
+        // làm ghi chú (.component-note) cho block sắp tạo, không bị mất.
+        let pendingHeadingNote = null;
+
+        const flushPendingHeadingAsTitle = () => {
+            if (pendingHeading) {
+                blocks.push({ type: 'title', text: pendingHeading });
+                pendingHeading = null;
+            }
+            if (pendingHeadingNote) {
+                blocks.push({ type: 'paragraph', text: pendingHeadingNote });
+                pendingHeadingNote = null;
+            }
+        };
+
+        while (i < n) {
+            const item = rawItems[i];
+
+            // --- Bảng ---
+            if (item.isTable) {
+                // Bảng "kế thừa" tiêu đề/label đang chờ (nếu có) làm câu hỏi
+                // thật của nó, thay vì hiển thị 1 câu hỏi mặc định vô nghĩa.
+                const heading = pendingHeading;
+                const note = pendingHeadingNote;
+                pendingHeading = null;
+                pendingHeadingNote = null;
+                const tableBlock = parseWordTable(item.el, heading);
+                tableBlock.note = note || '';
+                blocks.push(tableBlock);
+                i++;
                 continue;
             }
 
-            if (!text) continue;
+            if (item.isEmpty) { i++; continue; }
 
-            const isHeadingTag = (tag === 'h1' || tag === 'h2' || tag === 'h3' || tag === 'h4');
-            const isFullyBold = isWholeLineBold(el);
+            // --- Gộp các dòng checkbox liên tiếp thành 1 nhóm multi-choice ---
+            // (file thật thường tách "☐ A   ☐ B   ☐ C" trên 3 dòng riêng vì
+            // Word ngắt theo cột ẩn/tab, nhưng về ý nghĩa đó là 1 câu hỏi).
+            if (item.isCheckboxLine) {
+                const heading = pendingHeading;
+                const note = pendingHeadingNote;
+                pendingHeading = null;
+                pendingHeadingNote = null;
 
-            if (CHECKBOX_TEST_RE.test(text)) {
-                const options = text.split(CHECKBOX_RE).map(s => s.trim()).filter(Boolean);
-                if (options.length >= 2) {
-                    blocks.push({ type: 'multi-choice', question: 'Lựa chọn:', options });
-                    continue;
+                const options = [];
+                let j = i;
+                while (j < n && rawItems[j].isCheckboxLine) {
+                    const lineOptions = rawItems[j].text.split(CHECKBOX_RE).map(s => s.trim()).filter(Boolean);
+                    options.push(...lineOptions);
+                    j++;
                 }
+                blocks.push({
+                    type: 'multi-choice',
+                    question: heading || 'Lựa chọn:',
+                    options: options.length ? options : ['Lựa chọn 1', 'Lựa chọn 2'],
+                    note: note || ''
+                });
+                i = j;
+                continue;
             }
 
+            const text = item.text;
             const numberedMatch = text.match(/^((?:\d+|[a-zđA-ZĐ])[\.\)]\s+.+)$/);
-            if ((isHeadingTag || isFullyBold) && numberedMatch) {
-                let j = i + 1;
-                let blankFollow = false;
-                while (j < children.length) {
-                    const nextText = children[j].textContent.trim();
-                    const nextRaw = children[j].textContent;
-                    if (nextText === '' && nextRaw.length > 0) {
+
+            // --- Heading (tag h1-h4, hoặc cả dòng in đậm, hoặc "PHẦN..."/"A. ...") ---
+            if (item.isHeading || looksLikeHeading(text)) {
+                // Heading dạng câu hỏi mở kèm theo các dòng trống để điền
+                // (ví dụ "1. Theo đơn vị, nhóm dữ liệu nào...?" rồi vài dòng
+                // tab/trống) -> long-text, không phải title rời.
+                if (numberedMatch) {
+                    let j = i + 1;
+                    let blankFollow = false;
+                    while (j < n && rawItems[j].isEmpty && children[j].textContent.length > 0) {
                         blankFollow = true;
                         j++;
-                    } else {
-                        break;
+                    }
+                    if (blankFollow) {
+                        flushPendingHeadingAsTitle();
+                        blocks.push({ type: 'long-text', question: numberedMatch[1] });
+                        i = j;
+                        continue;
                     }
                 }
-                if (blankFollow) {
-                    i = j - 1;
-                    blocks.push({ type: 'long-text', question: numberedMatch[1] });
+
+                // Heading thường: lưu lại làm "đang chờ" để gắn vào bảng/nhóm
+                // checkbox kế tiếp. Nếu mục kế tiếp không phải bảng/checkbox
+                // (tức 2 heading liên tiếp, hoặc heading rồi đến đoạn văn),
+                // ta sẽ "xả" heading hiện tại ra thành 1 block title riêng
+                // trước khi xử lý heading mới / đoạn văn mới.
+                flushPendingHeadingAsTitle();
+                pendingHeading = text;
+                i++;
+                continue;
+            }
+
+            // Từ đây heading đang chờ (nếu có) không áp dụng cho dòng hiện
+            // tại (không phải bảng/checkbox)... TRỪ KHI dòng hiện tại chỉ là
+            // 1 câu chú giải ngắn (vd "Đánh giá theo từng tiêu chí (1=...)")
+            // và ngay sau nó là bảng/nhóm checkbox -- trường hợp này heading
+            // vẫn áp dụng cho bảng đó, câu chú giải được gộp vào làm ghi chú.
+            if (pendingHeading && !item.isHeading) {
+                const isShortCaption = text.length > 0 && text.length <= 120 && !numberedMatch;
+                const nextIsTableOrCheckbox = (i + 1 < n) && (rawItems[i + 1].isTable || rawItems[i + 1].isCheckboxLine);
+                if (isShortCaption && nextIsTableOrCheckbox) {
+                    pendingHeadingNote = pendingHeadingNote ? (pendingHeadingNote + ' ' + text) : text;
+                    i++;
                     continue;
                 }
-                blocks.push({ type: 'title', text });
-                continue;
             }
 
-            if (isHeadingTag || isFullyBold) {
-                blocks.push({ type: 'title', text });
-                continue;
-            }
+            flushPendingHeadingAsTitle();
 
-            if (looksLikeHeading(text)) {
-                blocks.push({ type: 'title', text });
-                continue;
-            }
-
+            // --- Label dạng "Đơn vị: ___" -> short-text ---
             const labelMatch = text.match(/^([^:：]{2,60})[:：]\s*$/);
             if (labelMatch) {
                 blocks.push({ type: 'short-text', label: labelMatch[1].trim() });
+                i++;
                 continue;
             }
 
+            // --- Câu hỏi mở đánh số kèm dòng trống để điền -> long-text ---
             if (numberedMatch) {
                 let j = i + 1;
                 let blankFollow = false;
-                while (j < children.length) {
-                    const nextText = children[j].textContent.trim();
-                    const nextRaw = children[j].textContent;
-                    if (nextText === '' && nextRaw.length > 0) {
-                        blankFollow = true;
-                        j++;
-                    } else {
-                        break;
-                    }
+                while (j < n && rawItems[j].isEmpty && children[j].textContent.length > 0) {
+                    blankFollow = true;
+                    j++;
                 }
                 if (blankFollow) {
-                    i = j - 1;
                     blocks.push({ type: 'long-text', question: numberedMatch[1] });
+                    i = j;
                     continue;
                 }
             }
 
+            // --- Danh sách gạch đầu dòng: "- Nội dung..." ---
+            // Gộp các dòng "- ..." liên tiếp thành 1 đoạn văn dạng danh sách,
+            // giữ nguyên từng ý xuống dòng để không bị dính thành 1 câu dài.
+            if (/^[-•]\s+\S/.test(text)) {
+                const lines = [text.replace(/^[-•]\s+/, '')];
+                let j = i + 1;
+                while (j < n && !rawItems[j].isEmpty && /^[-•]\s+\S/.test(rawItems[j].text)) {
+                    lines.push(rawItems[j].text.replace(/^[-•]\s+/, ''));
+                    j++;
+                }
+                blocks.push({ type: 'paragraph', text: lines.map(l => '• ' + l).join('\n') });
+                i = j;
+                continue;
+            }
+
+            // --- Còn lại: đoạn văn thường ---
             blocks.push({ type: 'paragraph', text });
+            i++;
         }
 
+        flushPendingHeadingAsTitle();
         return blocks;
     }
 
@@ -2898,7 +3188,7 @@ function createComponentFromQuestion(question) {
     }
 
     function looksLikeHeading(text) {
-        if (text.length > 80) return false;
+        if (!text || text.length > 80) return false;
         if (/^(PHẦN|MỤC)\s/i.test(text)) return true;
         if (/^[A-ZĐ]\.\s+\S/.test(text)) return true;
         const isAllCaps = text === text.toUpperCase() && /[A-ZĐ]/.test(text);
@@ -2906,11 +3196,16 @@ function createComponentFromQuestion(question) {
         return false;
     }
 
-    function parseWordTable(tableEl) {
+    // ------------------------------------------------------------------
+    // GIAI ĐOẠN 2: phân loại 1 bảng Word thành rating-grid hoặc data-table.
+    // `heading` (nếu có) là tiêu đề/label đứng ngay phía trên bảng trong
+    // file Word — dùng làm câu hỏi thật, không hardcode chữ mặc định.
+    // ------------------------------------------------------------------
+    function parseWordTable(tableEl, heading) {
         const rows = Array.from(tableEl.querySelectorAll('tr')).map(tr =>
             Array.from(tr.children).map(td => td.textContent.trim())
         );
-        if (rows.length === 0) return { type: 'data-table', rows: [['Cột 1']] };
+        if (rows.length === 0) return { type: 'data-table', question: heading, rows: [['Cột 1']] };
 
         const header = rows[0];
         const bodyRows = rows.slice(1);
@@ -2918,9 +3213,11 @@ function createComponentFromQuestion(question) {
 
         const hasAnyRealCheckbox = bodyRows.some(r => r.some(cell => CHECKBOX_TEST_RE.test(cell)));
         if (!hasAnyRealCheckbox) {
-            return { type: 'data-table', rows };
+            return { type: 'data-table', question: heading, rows };
         }
 
+        // Tỷ lệ ô là checkbox (hoặc trống) trong 1 cột — dùng để xác định
+        // từ cột nào trở đi là vùng checkbox lựa chọn, không phải dữ liệu.
         function colCheckboxRatio(colIdx) {
             let checkbox = 0, total = 0;
             bodyRows.forEach(r => {
@@ -2941,7 +3238,7 @@ function createComponentFromQuestion(question) {
         }
 
         if (checkboxStartCol === -1) {
-            return { type: 'data-table', rows };
+            return { type: 'data-table', question: heading, rows };
         }
 
         let criteriaCol = checkboxStartCol - 1;
@@ -2950,17 +3247,21 @@ function createComponentFromQuestion(question) {
             criteriaCol--;
         }
 
+        // Hỗ trợ cả bảng chỉ có 1 cột lựa chọn (ví dụ chỉ có "Có", không có
+        // "Không" — như bảng "Hình thức lưu trữ" trong khảo sát), không bắt
+        // buộc phải đủ cặp Có/Không mới được nhận diện là yesno.
         const headerTail = header.slice(checkboxStartCol).map(h => h.trim());
-        const isYesNo = headerTail.length >= 1 && headerTail.every(h => /^(Có|Không|Yes|No|Cần)$/i.test(h));
+        const isYesNo = headerTail.length >= 1 &&
+            headerTail.every(h => /^(Có|Không|Yes|No|Cần)$/i.test(h));
         const isScale = headerTail.length >= 3 && headerTail.every(h => /^\d+$/.test(h));
         const gridType = isYesNo ? 'yesno' : (headerTail.length === 10 && isScale ? 'scale10' : (isScale ? 'scale5' : 'yesno'));
 
         return {
             type: 'rating-grid',
-            question: 'Đánh giá theo từng tiêu chí:',
+            question: heading || 'Đánh giá theo từng tiêu chí:',
             gridType,
             criteriaLabel: header[criteriaCol] || 'Tiêu chí',
-            cols: headerTail.length ? headerTail : (gridType === 'yesno' ? ['Có', 'Không'] : ['1','2','3','4','5']),
+            cols: headerTail.length ? headerTail : (gridType === 'yesno' ? ['Có'] : ['1', '2', '3', '4', '5']),
             criteria: bodyRows.map(r => r[criteriaCol]).filter(Boolean)
         };
     }
@@ -2972,6 +3273,12 @@ function createComponentFromQuestion(question) {
         el.dataset.required = 'false';
         el.dataset.questionId = null;
 
+        // Ghi chú: mọi nhánh dưới đây đều chèn thêm 1 thẻ ghi chú
+        // (.component-note) vào cuối. Nếu lúc parse có chú giải ngắn nằm
+        // giữa heading và bảng (vd "1=Rất kém; 5=Rất tốt"), nó được đưa vào
+        // đây sẵn; nếu không có, người dùng có thể bổ sung sau khi import.
+        const noteHtml = `<p class="component-note text-xs text-gray-400 italic mt-1.5" contenteditable="true" data-placeholder="Thêm ghi chú/hướng dẫn (không bắt buộc)...">${block.note ? escapeHtml(block.note) : ''}</p>`;
+
         if (block.type === 'title') {
             el.dataset.type = 'title';
             el.innerHTML = `<span class="component-badge">Nhập từ Word</span>
@@ -2979,15 +3286,20 @@ function createComponentFromQuestion(question) {
                     <span class="drag-handle">⠿</span>
                     <div class="flex-1">
                         <h3 contenteditable="true" class="font-bold text-base text-gray-800">${escapeHtml(block.text)}</h3>
+                        ${noteHtml}
                     </div>
                 </div>`;
         } else if (block.type === 'paragraph') {
             el.dataset.type = 'paragraph';
+            // block.text có thể chứa \n cho danh sách gạch đầu dòng đã gộp -
+            // chuyển thành <br> để giữ đúng từng dòng khi hiển thị.
+            const paragraphHtml = escapeHtml(block.text).replace(/\n/g, '<br>');
             el.innerHTML = `<span class="component-badge">Nhập từ Word</span>
                 <div class="flex items-start gap-2">
                     <span class="drag-handle">⠿</span>
                     <div class="flex-1">
-                        <p contenteditable="true" class="text-sm text-gray-700 leading-relaxed">${escapeHtml(block.text)}</p>
+                        <p contenteditable="true" class="text-sm text-gray-700 leading-relaxed">${paragraphHtml}</p>
+                        ${noteHtml}
                     </div>
                 </div>`;
         } else if (block.type === 'short-text') {
@@ -2998,6 +3310,7 @@ function createComponentFromQuestion(question) {
                     <div class="flex-1">
                         <p contenteditable="true" class="text-sm mb-1 font-medium">${escapeHtml(block.label)}:</p>
                         <input class="survey-input text-sm" placeholder="Câu trả lời ngắn">
+                        ${noteHtml}
                     </div>
                 </div>`;
         } else if (block.type === 'long-text') {
@@ -3010,6 +3323,7 @@ function createComponentFromQuestion(question) {
                         <div contenteditable="true" class="border border-gray-300 rounded-lg h-20 p-3 text-sm text-gray-400 hover:border-blue-400 focus:border-blue-500 transition">
                             Nhập nội dung...
                         </div>
+                        ${noteHtml}
                     </div>
                 </div>`;
         } else if (block.type === 'multi-choice') {
@@ -3029,6 +3343,7 @@ function createComponentFromQuestion(question) {
                             ${optionsHtml}
                             <button onclick="addOption(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm lựa chọn</button>
                         </div>
+                        ${noteHtml}
                     </div>
                 </div>`;
         } else if (block.type === 'rating-grid') {
@@ -3060,6 +3375,7 @@ function createComponentFromQuestion(question) {
                             <thead><tr>${headerHtml}</tr></thead>
                             <tbody>${bodyHtml}</tbody>
                         </table>
+                        ${noteHtml}
                     </div>
                 </div>`;
         } else if (block.type === 'data-table') {
@@ -3074,17 +3390,20 @@ function createComponentFromQuestion(question) {
                 <div class="flex items-start gap-2">
                     <span class="drag-handle">⠿</span>
                     <div class="flex-1">
-                        <p contenteditable="true" class="text-sm mb-2 font-medium">Bảng dữ liệu:</p>
+                        <p contenteditable="true" class="text-sm mb-2 font-medium">${escapeHtml(block.question || 'Bảng dữ liệu:')}</p>
                         <table class="w-full border-collapse border border-gray-300 text-xs">
                             ${rowsHtml}
                         </table>
-                        <button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm hàng</button>
-                        <button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1 ml-2">+ Thêm cột</button>
+                        <div class="mt-1 table-controls">
+                            <button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800">+ Thêm hàng</button>
+                            <button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 ml-2">+ Thêm cột</button>
+                        </div>
+                        ${noteHtml}
                     </div>
                 </div>`;
         } else {
             el.dataset.type = 'paragraph';
-            el.innerHTML = `<div class="flex-1"><p contenteditable="true" class="text-sm">${escapeHtml(block.text || '')}</p></div>`;
+            el.innerHTML = `<div class="flex-1"><p contenteditable="true" class="text-sm">${escapeHtml(block.text || '')}</p>${noteHtml}</div>`;
         }
 
         content.appendChild(el);
@@ -3409,13 +3728,31 @@ function createComponentFromQuestion(question) {
             e.preventDefault();
             saveSurvey();
         }
-        if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEl && !window.getSelection().isCollapsed) {
-            return;
-        }
+
+        // Phần tử đang thật sự nhận input bàn phím lúc này (nếu có).
+        const activeTarget = e.target;
+        const isEditingField = !!(activeTarget && (
+            activeTarget.isContentEditable ||
+            activeTarget.tagName === 'INPUT' ||
+            activeTarget.tagName === 'TEXTAREA' ||
+            activeTarget.closest?.('[contenteditable="true"]')
+        ));
+
         if ((e.key === 'Delete' || e.key === 'Backspace') && selectedEl) {
+            // Nếu người dùng đang gõ/sửa văn bản bên trong component (con trỏ đặt
+            // trong input, textarea, hoặc vùng contenteditable) thì Backspace/Delete
+            // phải có tác dụng bình thường là xóa ký tự — KHÔNG được xóa nguyên cả
+            // component. Chỉ xóa nguyên component khi người dùng bấm phím này lúc
+            // KHÔNG có con trỏ nhập liệu nào đang active (tức họ chỉ đang chọn
+            // component bằng cách click viền ngoài, không gõ chữ).
+            if (isEditingField) {
+                return;
+            }
             e.preventDefault();
             deleteComponent();
+            return;
         }
+
         if (e.ctrlKey && e.key === 'd') {
             e.preventDefault();
             duplicateComponent();
