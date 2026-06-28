@@ -33,6 +33,7 @@ urlpatterns = [
     path('public/<int:survey_id>/', views.survey_public_view, name='survey_public'),
     path('public/<int:survey_id>/embed/', views.survey_public_embed, name='survey_public_embed'),
     path('public/<int:survey_id>/preview/', views.survey_public_preview, name='survey_public_preview'),
+    path('public/<int:survey_id>/survey2/', views.survey2_view, name='survey2'),
     
     # ============================================
     # PUBLIC API - Cho người dùng làm khảo sát

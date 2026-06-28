@@ -105,7 +105,12 @@ class Question(models.Model):
         Section, on_delete=models.CASCADE, related_name='questions',
         verbose_name="Thuộc phần"
     )
-
+    component_type = models.CharField(
+        max_length=50,
+        default='question',
+        verbose_name="Loại thành phần",
+        help_text="question, title, paragraph, section_break, personal_info"
+    )
     title = models.CharField(max_length=500, verbose_name="Tiêu đề câu hỏi")
     description = models.TextField(blank=True, null=True, verbose_name="Mô tả/Hướng dẫn")
 
@@ -152,7 +157,9 @@ class Question(models.Model):
         ordering = ['order']
         verbose_name = "Câu hỏi"
         verbose_name_plural = "Danh sách câu hỏi"
-
+        indexes = [
+            models.Index(fields=['component_type']),  # Thêm index để query nhanh
+        ]
 
 class Blocklist(models.Model):
     TYPE_CHOICES = [

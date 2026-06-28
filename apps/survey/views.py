@@ -597,13 +597,14 @@ def survey_submit_response(request):
         response_id = validated.get('response_id')
         if not response_id:
             response_id = request.session.get(f'survey_response_{survey_id}')
-        
+
+        response = None
         if response_id:
             try:
                 response = ResponseModel.objects.get(id=response_id, survey=survey)
             except ResponseModel.DoesNotExist:
                 response = None
-        
+
         if not response:
             # Tạo mới
             response = ResponseModel(
@@ -697,6 +698,29 @@ def survey_public_preview(request, survey_id):
     return render(request, 'survey/survey_public.html', context)
 
 
+def survey2_view(request, survey_id):
+    """
+    Render survey2.html với dữ liệu thực từ database
+    """
+    survey = get_object_or_404(SurveyModel, id=survey_id, status='active')
+    
+    # Lấy tất cả sections và questions
+    sections = survey.sections.all().prefetch_related('questions__question_type').order_by('order')
+    
+    # Serialize data để truyền vào template
+    from .serializers import SurveyPublicSerializer
+    serializer = SurveyPublicSerializer(survey)
+    
+    context = {
+        'survey': survey,
+        'survey_data': serializer.data,
+        'sections': sections,
+        'survey_id': survey.id,
+        'is_public': True,
+    }
+    return render(request, 'survey/survey2.html', context)
+
+
 # ============================================
 # PUBLIC API CLASS-BASED VIEWS
 # ============================================
@@ -739,6 +763,20 @@ class PublicResponseView(APIView):
                 except ResponseModel.DoesNotExist:
                     pass
             
+            # Nếu không tìm thấy theo session (vd: đóng trình duyệt mở lại),
+            # thử tìm response draft cũ theo địa chỉ IP để khôi phục dữ liệu
+            if not response:
+                ip = request.META.get('REMOTE_ADDR')
+                if ip:
+                    try:
+                        response = ResponseModel.objects.filter(
+                            survey=survey,
+                            respondent_ip=ip,
+                            status='draft'
+                        ).order_by('-started_at').first()
+                    except Exception:
+                        pass
+            
             # Tạo mới nếu chưa có
             if not response:
                 response = ResponseModel.objects.create(
@@ -749,6 +787,9 @@ class PublicResponseView(APIView):
                     respondent_ip=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', '')
                 )
+                request.session[f'survey_response_{survey_id}'] = response.id
+            else:
+                # Cập nhật session với response tìm thấy
                 request.session[f'survey_response_{survey_id}'] = response.id
             
             serializer = ResponseSerializer(response)

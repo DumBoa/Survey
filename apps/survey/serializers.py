@@ -15,17 +15,21 @@ class QuestionTypeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'code', 'icon', 'has_options', 'has_validation']
 
 
+# apps/survey/serializers.py
+
 class QuestionSerializer(serializers.ModelSerializer):
-    question_type_detail = QuestionTypeSerializer(source='question_type', read_only=True)
+    question_type_name = serializers.CharField(source='question_type.name', read_only=True)
+    question_type_code = serializers.CharField(source='question_type.code', read_only=True)
     
     class Meta:
         model = Question
         fields = [
-            'id', 'section', 'title', 'description', 'question_type',
-            'question_type_detail', 'is_required', 'order', 'options',
-            'condition_logic', 'config', 'created_at', 'updated_at'
+            'id', 'title', 'description', 'question_type', 'question_type_name', 
+            'question_type_code', 'is_required', 'order', 'options', 
+            'condition_logic', 'config', 'component_type',
+            'created_at', 'updated_at'
         ]
-
+        read_only_fields = ['created_at', 'updated_at']
 
 class SectionSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True, read_only=True)

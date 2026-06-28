@@ -5,875 +5,1956 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phiếu Khảo Sát</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <style>
-    * { font-family: 'DM Sans', sans-serif; }
-    .fade-in { animation: fadeIn 0.3s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .question-card { transition: border-color 0.2s, box-shadow 0.2s; }
-    .question-card.answered { border-color: #22c55e; }
-    .question-card.error { border-color: #ef4444; }
-    .likert-table th { position: sticky; top: 0; background: #f8fafc; z-index: 2; }
-    .matrix-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .progress-fill { transition: width 0.4s ease; }
-    .star-btn { cursor: pointer; transition: color 0.15s; }
-    .star-btn:hover, .star-btn.active { color: #f59e0b; }
-    .slider-input { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: #e2e8f0; outline: none; }
-    .slider-input::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #2563eb; cursor: pointer; }
-    .nav-item { transition: background 0.2s, color 0.2s; }
-    .nav-item.active { background: #eff6ff; color: #2563eb; font-weight: 600; }
-    .nav-item.completed { color: #16a34a; }
-    .nav-item.completed .step-indicator { background: #16a34a; border-color: #16a34a; color: white; }
-    .mobile-step.completed { background: #dcfce7; color: #16a34a; }
-    .nav-item .step-indicator { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 11px; font-weight: 600; transition: all 0.2s; }
-    .nav-item.active .step-indicator { background: #2563eb; border-color: #2563eb; color: white; }
-    .nav-item.completed .step-indicator { background: #16a34a; border-color: #16a34a; color: white; }
-    .toast {
-      position: fixed; bottom: 24px; right: 24px; padding: 14px 24px;
-      border-radius: 10px; color: white; font-size: 14px; font-weight: 500;
-      z-index: 9999; animation: slideUp 0.3s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-      max-width: 400px;
-    }
-    .toast.success { background: #16a34a; }
-    .toast.error { background: #dc2626; }
-    .toast.warning { background: #f59e0b; }
-    .toast.info { background: #2563eb; }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .toast.hiding { animation: fadeOut 0.3s ease forwards; }
-    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
-    @media (max-width: 768px) { .sidebar { display: none; } .mobile-stepper { display: flex; } }
-    @media (min-width: 769px) { .mobile-stepper { display: none; } }
-  </style>
-</head>
-<body class="min-h-screen bg-slate-50">
-  <!-- Header -->
-  <header class="w-full bg-white border-b border-slate-200 sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 py-4">
-      <div class="flex items-center gap-4 mb-3">
-        <div class="flex-1">
-          <h1 id="survey-title" class="font-bold text-slate-900 text-xl md:text-2xl">Đang tải...</h1>
-          <p id="survey-desc" class="text-slate-500 text-sm mt-0.5"></p>
-        </div>
-        <span class="hidden md:inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
-          <i data-lucide="shield-check" style="width:14px;height:14px"></i> Chính thức
-        </span>
-      </div>
-      <div class="flex items-center gap-4 text-xs text-slate-500 mb-2">
-        <span class="flex items-center gap-1"><i data-lucide="clock" style="width:14px;height:14px"></i> ~5-10 phút</span>
-        <span class="flex items-center gap-1"><i data-lucide="list" style="width:14px;height:14px"></i> <span id="q-count">0</span> câu hỏi</span>
-        <span class="flex items-center gap-1" id="response-status">
-          <i data-lucide="file-text" style="width:14px;height:14px"></i> <span id="status-text">Bản nháp</span>
-        </span>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div id="progress-bar" class="progress-fill h-full bg-blue-600 rounded-full" style="width:0%"></div>
-        </div>
-        <span id="progress-text" class="text-xs font-medium text-slate-600">0%</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Mobile Stepper - Generated dynamically -->
-  <div class="mobile-stepper overflow-x-auto gap-1 px-4 py-2 bg-white border-b border-slate-100" id="mobile-stepper"></div>
-
-  <!-- Main Content -->
-  <div class="max-w-7xl mx-auto flex gap-6 px-4 py-6">
-    <!-- Sidebar - Generated dynamically -->
-    <aside class="sidebar w-64 flex-shrink-0">
-      <nav class="sticky top-28 bg-white rounded-xl border border-slate-200 p-3 space-y-1" id="sidebar-nav"></nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 max-w-3xl">
-      <!-- Sections container -->
-      <div id="sections-container"></div>
-
-      <!-- Navigation -->
-      <div class="flex items-center justify-between py-4" id="nav-controls">
-        <button id="btn-prev" type="button" class="hidden px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 transition flex items-center gap-2">
-          <i data-lucide="chevron-left" style="width:16px;height:16px"></i> Quay lại
-        </button>
-        <div class="flex gap-3 ml-auto">
-          <button id="btn-save" type="button" class="px-5 py-2.5 rounded-lg border border-slate-300 text-sm font-medium text-slate-600 hover:bg-slate-50 transition">
-            💾 Lưu tạm
-          </button>
-          <button id="btn-next" type="button" class="px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition flex items-center gap-2">
-            <span id="btn-next-label">Tiếp theo</span>
-            <i data-lucide="chevron-right" style="width:16px;height:16px"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Success state -->
-      <div id="success-screen" class="hidden bg-white rounded-xl border border-slate-200 p-12 text-center fade-in">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="check-circle" style="width:32px;height:32px;color:#16a34a"></i>
-        </div>
-        <h2 class="font-bold text-xl text-slate-900 mb-2">🎉 Cảm ơn bạn!</h2>
-        <p class="text-slate-500">Khảo sát đã được gửi thành công. Cảm ơn bạn đã dành thời gian!</p>
-      </div>
-    </main>
-  </div>
-
-<script>
-// ============================================
-// SURVEY PUBLIC APP - DYNAMIC VERSION
-// ============================================
-
-const SURVEY_ID = {{ survey_id }};
-let surveyData = null;
-let responseData = null;
-let answers = {};
-let currentSectionIndex = 0;
-let isSubmitting = false;
-let startTime = Date.now();
-let saveTimeout = null;
-
-// ============================================
-// API CLIENT
-// ============================================
-const API = {
-  async request(endpoint, method = 'GET', data = null) {
-    const url = `/survey/api/public${endpoint}`;
-    const options = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken()
-      },
-      credentials: 'same-origin'
-    };
-    if (data) options.body = JSON.stringify(data);
-    const res = await fetch(url, options);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-    return res.json();
-  },
-  getSurvey(id) { return this.request(`/surveys/${id}/`); },
-  getResponse(id) { return this.request(`/surveys/${id}/response/`); },
-  submitResponse(data) { return this.request('/responses/submit/', 'POST', data); }
-};
-
-function getCsrfToken() {
-  const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
-  return cookieValue ? cookieValue.split('=')[1] : '';
-}
-
-// ============================================
-// HELPERS
-// ============================================
-function escapeHtml(str) {
-  if (!str) return '';
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-function showToast(msg, type = 'info') {
-  const existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add('hiding');
-    setTimeout(() => toast.remove(), 300);
-  }, 4000);
-}
-
-// ============================================
-// RENDER FUNCTIONS - Dynamic from backend
-// ============================================
-function renderSurvey(data) {
-  surveyData = data;
-  
-  // Update header
-  document.getElementById('survey-title').textContent = data.title || 'Khảo sát';
-  document.getElementById('survey-desc').textContent = data.description || '';
-  
-  // Count total questions
-  let totalQ = 0;
-  data.sections.forEach(s => {
-    s.questions.forEach(q => {
-      const type = q.question_type_code || '';
-      if (!['title', 'paragraph', 'section-break'].includes(type)) {
-        totalQ++;
-      }
-    });
-  });
-  document.getElementById('q-count').textContent = totalQ;
-  
-  // Render sidebar nav
-  renderSidebar(data.sections);
-  
-  // Render mobile stepper
-  renderMobileStepper(data.sections);
-  
-  // Render sections
-  renderSections(data.sections);
-  
-  // Show first section
-  showSection(0);
-  
-  // Update progress
-  updateProgress();
-}
-
-function renderSidebar(sections) {
-  const nav = document.getElementById('sidebar-nav');
-  nav.innerHTML = '';
-  sections.forEach((s, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'nav-item w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-2';
-    btn.dataset.section = i;
-    btn.innerHTML = `
-      <span class="step-indicator">${i + 1}</span>
-      <span class="flex-1">${s.code || s.title || `Phần ${i+1}`}</span>
-    `;
-    btn.onclick = () => showSection(i);
-    nav.appendChild(btn);
-  });
-}
-
-function renderMobileStepper(sections) {
-  const container = document.getElementById('mobile-stepper');
-  container.innerHTML = '';
-  sections.forEach((s, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'mobile-step flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 whitespace-nowrap';
-    btn.dataset.section = i;
-    btn.textContent = s.code || s.title || `Phần ${i+1}`;
-    btn.onclick = () => showSection(i);
-    container.appendChild(btn);
-  });
-}
-
-function renderSections(sections) {
-  const container = document.getElementById('sections-container');
-  container.innerHTML = '';
-  
-  sections.forEach((section, sIdx) => {
-    const sectionDiv = document.createElement('section');
-    sectionDiv.className = 'survey-section hidden fade-in';
-    sectionDiv.dataset.sectionIndex = sIdx;
-    
-    // Section header
-    let html = `
-      <div class="bg-white rounded-xl border border-slate-200 p-6 mb-6">
-        <h2 class="font-bold text-lg text-slate-900 mb-1">${escapeHtml(section.title)}</h2>
-        <p class="text-sm text-slate-500 mb-6">${escapeHtml(section.description || '')}</p>
-    `;
-    
-    // Render questions
-    section.questions.forEach((q, qIdx) => {
-      html += renderQuestion(q, qIdx);
-    });
-    
-    html += `</div>`;
-    sectionDiv.innerHTML = html;
-    container.appendChild(sectionDiv);
-  });
-}
-
-function renderQuestion(q, index) {
-  const type = q.question_type_code || 'paragraph';
-  const required = q.is_required ? '<span class="text-red-500">*</span>' : '';
-  const desc = q.description ? `<p class="text-sm text-slate-600 mb-3">${escapeHtml(q.description)}</p>` : '';
-  const qid = q.id;
-  const answer = answers[qid] || '';
-  
-  let inputHtml = '';
-  
-  switch(type) {
-    case 'title':
-      return `<div class="question-card border border-slate-200 rounded-lg p-5 mb-5" data-qid="${qid}" data-question-type="title">
-        <div class="text-center"><h3 class="font-bold text-lg">${escapeHtml(q.title)}</h3>${desc}</div>
-      </div>`;
-    
-    case 'paragraph':
-      return `<div class="question-card border border-slate-200 rounded-lg p-5 mb-5" data-qid="${qid}" data-question-type="paragraph">
-        <p class="text-sm text-slate-700">${escapeHtml(q.title)}</p>
-      </div>`;
-    
-    case 'short-text':
-      inputHtml = `<input type="text" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
-                    placeholder="${escapeHtml(q.config?.placeholder || 'Nhập câu trả lời...')}" 
-                    value="${escapeHtml(answer)}" data-qid="${qid}">`;
-      break;
-    
-    case 'long-text':
-      inputHtml = `<textarea rows="4" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y" 
-                    placeholder="${escapeHtml(q.config?.placeholder || 'Nhập nội dung...')}" data-qid="${qid}">${escapeHtml(answer)}</textarea>`;
-      break;
-    
-    case 'single-choice': {
-      const opts = q.options || [];
-      inputHtml = `<div class="space-y-2">`;
-      opts.forEach(opt => {
-        const checked = answer === opt ? 'checked' : '';
-        inputHtml += `
-          <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
-            <input type="radio" name="q${qid}" value="${escapeHtml(opt)}" ${checked} data-qid="${qid}">
-            <span class="text-sm">${escapeHtml(opt)}</span>
-          </label>`;
-      });
-      inputHtml += `</div>`;
-      break;
-    }
-    
-    case 'multi-choice': {
-      const opts = q.options || [];
-      const selected = Array.isArray(answer) ? answer : [];
-      inputHtml = `<div class="space-y-2">`;
-      opts.forEach(opt => {
-        const checked = selected.includes(opt) ? 'checked' : '';
-        inputHtml += `
-          <label class="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
-            <input type="checkbox" value="${escapeHtml(opt)}" ${checked} data-qid="${qid}">
-            <span class="text-sm">${escapeHtml(opt)}</span>
-          </label>`;
-      });
-      inputHtml += `</div>`;
-      break;
-    }
-    
-    case 'rating-grid': {
-      const cfg = q.config || {};
-      const criteria = cfg.criteria || ['Tiêu chí 1'];
-      const scale = cfg.scale || [{value:1,label:'Có'},{value:2,label:'Không'}];
-      const gridAns = answers[qid] || {};
-      
-      inputHtml = `
-        <div class="matrix-scroll">
-          <table class="w-full text-sm border-collapse min-w-[400px]">
-            <thead><tr class="bg-slate-50">
-              <th class="text-left p-3 font-medium text-slate-700">${escapeHtml(cfg.criteriaLabel || 'Tiêu chí')}</th>
-              ${scale.map(s => `<th class="p-3 text-center font-medium text-slate-600">${escapeHtml(s.label)}</th>`).join('')}
-            </tr></thead>
-            <tbody>`;
-      criteria.forEach((c, ri) => {
-        inputHtml += `<tr class="border-t border-slate-100">
-          <td class="p-3 text-slate-700">${escapeHtml(c)}</td>`;
-        scale.forEach(s => {
-          const checked = gridAns[ri] === s.value ? 'checked' : '';
-          inputHtml += `<td class="p-3 text-center">
-            <input type="radio" name="grid_${qid}_${ri}" value="${s.value}" ${checked} data-qid="${qid}" data-row="${ri}">
-          </td>`;
-        });
-        inputHtml += `</tr>`;
-      });
-      inputHtml += `</tbody></table></div>`;
-      break;
-    }
-    
-    case 'section-break':
-      return `<div class="question-card border border-slate-200 rounded-lg p-5 mb-5" data-qid="${qid}" data-question-type="section-break">
-        <hr class="my-2"><h3 class="font-bold text-center">${escapeHtml(q.title)}</h3>${desc}
-      </div>`;
-    
-    case 'data-table': {
-      const cfg = q.config || {};
-      const columns = cfg.columns && cfg.columns.length > 0 ? cfg.columns : ['Cột 1', 'Cột 2', 'Cột 3'];
-      const numRows = cfg.rows || 1;
-      const tableAns = answer && typeof answer === 'object' && !Array.isArray(answer) ? answer : {};
-
-      let dtHeaderHtml = '';
-      columns.forEach((col, ci) => {
-        dtHeaderHtml += `<th class="p-3 text-center font-medium text-slate-600 bg-slate-50 border border-slate-200">${escapeHtml(col)}</th>`;
-      });
-
-      let dtBodyHtml = '';
-      for (let ri = 0; ri < numRows; ri++) {
-        dtBodyHtml += `<tr>`;
-        columns.forEach((col, ci) => {
-          const cellKey = `${ri}_${ci}`;
-          const cellVal = tableAns[cellKey] || '';
-          dtBodyHtml += `<td class="p-1.5 border border-slate-200">
-            <input type="text" class="w-full border-0 bg-transparent text-sm text-center outline-none focus:ring-0" value="${escapeHtml(cellVal)}" data-qid="${qid}" data-row="${ri}" data-col="${ci}" placeholder="...">
-          </td>`;
-        });
-        dtBodyHtml += `</tr>`;
-      }
-
-      inputHtml = `
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm border-collapse min-w-[400px]">
-            <thead><tr>${dtHeaderHtml}</tr></thead>
-            <tbody>${dtBodyHtml}</tbody>
-          </table>
-        </div>`;
-      break;
-    }
-    
-    default:
-      inputHtml = `<p class="text-sm text-slate-500">Loại câu hỏi: ${type}</p>`;
-  }
-  
-  return `
-    <div class="question-card border border-slate-200 rounded-lg p-5 mb-5" data-qid="${qid}" data-question-type="${type}" data-required="${q.is_required}">
-      <label class="block text-sm font-medium text-slate-800 mb-1">${index+1}. ${escapeHtml(q.title)} ${required}</label>
-      ${desc}
-      ${inputHtml}
-      <p class="error-msg text-xs text-red-500 mt-1.5 hidden">⚠ Vui lòng trả lời câu hỏi này.</p>
-    </div>
-  `;
-}
-
-// ============================================
-// NAVIGATION
-// ============================================
-function showSection(idx) {
-  const sections = document.querySelectorAll('.survey-section');
-  const navItems = document.querySelectorAll('.nav-item');
-  const mobileSteps = document.querySelectorAll('.mobile-step');
-  
-  sections.forEach((s, i) => s.classList.toggle('hidden', i !== idx));
-  navItems.forEach((n, i) => {
-    n.classList.toggle('active', i === idx);
-  });
-  mobileSteps.forEach((m, i) => {
-    m.classList.toggle('bg-blue-100', i === idx);
-    m.classList.toggle('text-blue-700', i === idx);
-    m.classList.toggle('bg-slate-100', i !== idx);
-    m.classList.toggle('text-slate-600', i !== idx);
-  });
-  
-  document.getElementById('btn-prev').classList.toggle('hidden', idx === 0);
-  
-  const total = sections.length;
-  const label = document.getElementById('btn-next-label');
-  if (idx === total - 1) {
-    label.textContent = '📤 Gửi khảo sát';
-  } else {
-    label.textContent = 'Tiếp theo →';
-  }
-  
-  currentSectionIndex = idx;
-  updateProgress();
-}
-
-function nextSection() {
-  const sections = document.querySelectorAll('.survey-section');
-  if (currentSectionIndex < sections.length - 1) {
-    showSection(currentSectionIndex + 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else {
-    submitSurvey();
-  }
-}
-
-function prevSection() {
-  if (currentSectionIndex > 0) {
-    showSection(currentSectionIndex - 1);
-  }
-}
-
-// ============================================
-// ANSWER HANDLING
-// ============================================
-function collectAnswers() {
-  const newAnswers = {};
-  
-  document.querySelectorAll('.question-card[data-qid]').forEach(card => {
-    const qid = parseInt(card.dataset.qid);
-    if (!qid) return;
-    
-    // Data-table cells (inputs with data-row and data-col)
-    const dtInputs = card.querySelectorAll('input[data-row][data-col]');
-    if (dtInputs.length > 0) {
-      const dtAns = {};
-      dtInputs.forEach(inp => {
-        const v = inp.value.trim();
-        if (v) {
-          dtAns[`${inp.dataset.row}_${inp.dataset.col}`] = v;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ survey.title|default:"Phiếu Khảo Sát" }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-      });
-      if (Object.keys(dtAns).length) newAnswers[qid] = dtAns;
-      return;
-    }
 
-    // Text inputs
-    const textInput = card.querySelector('input[type="text"], input[type="email"], input[type="tel"]');
-    if (textInput) {
-      const val = textInput.value.trim();
-      if (val) newAnswers[qid] = val;
-      return;
-    }
-    
-    // Textarea
-    const textarea = card.querySelector('textarea');
-    if (textarea) {
-      const val = textarea.value.trim();
-      if (val) newAnswers[qid] = val;
-      return;
-    }
-    
-    // Radio buttons (single choice)
-    const radioChecked = card.querySelector('input[type="radio"]:checked');
-    if (radioChecked && !radioChecked.name.startsWith('grid_')) {
-      newAnswers[qid] = radioChecked.value;
-      return;
-    }
-    
-    // Radio buttons (rating grid)
-    const gridRadios = card.querySelectorAll('input[type="radio"]:checked');
-    if (gridRadios.length > 0 && gridRadios[0].name.startsWith('grid_')) {
-      const gridAns = {};
-      gridRadios.forEach(r => {
-        const row = parseInt(r.dataset.row);
-        if (!isNaN(row)) gridAns[row] = r.value;
-      });
-      // Chỉ tính là đã trả lời khi tất cả các hàng trong lưới đều được chọn
-      const totalRows = card.querySelectorAll('tbody tr').length;
-      if (Object.keys(gridAns).length === totalRows) {
-        newAnswers[qid] = gridAns;
-      }
-      return;
-    }
-    
-    // Checkboxes (multi choice)
-    const checkboxes = card.querySelectorAll('input[type="checkbox"]:checked');
-    if (checkboxes.length > 0) {
-      newAnswers[qid] = Array.from(checkboxes).map(cb => cb.value);
-      return;
-    }
-    
-    // Slider
-    const slider = card.querySelector('.slider-input');
-    if (slider) {
-      newAnswers[qid] = parseInt(slider.value);
-      return;
-    }
-    
-    // Stars
-    const stars = card.querySelector('.rating-stars');
-    if (stars) {
-      const val = parseInt(stars.dataset.value || 0);
-      if (val > 0) newAnswers[qid] = val;
-      return;
-    }
-  });
-  
-  return newAnswers;
-}
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
 
-function onAnswerChange() {
-  answers = collectAnswers();
-  updateProgress();
-  updateStatus();
-  scheduleSave();
-}
+        /* ============================================
+           HEADER - MÀU TRẮNG
+           ============================================ */
+        .header {
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 16px 40px;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-function scheduleSave() {
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => saveDraft(), 3000);
-}
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
 
-// ============================================
-// PROGRESS
-// ============================================
-function isAnswerFilled(a) {
-  if (a === undefined || a === null) return false;
-  if (typeof a === 'string') return a.trim() !== '';
-  if (Array.isArray(a)) return a.length > 0;
-  if (typeof a === 'object') return Object.keys(a).length > 0;
-  return a !== '';
-}
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
 
-function isGridComplete(card) {
-  if (!card) return false;
-  const totalRows = card.querySelectorAll('tbody tr').length;
-  if (totalRows === 0) return false;
-  const checkedRows = card.querySelectorAll('input[type="radio"]:checked').length;
-  return checkedRows === totalRows;
-}
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: #0054a4;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
 
-function updateProgress() {
-  const cards = document.querySelectorAll('.question-card[data-qid]');
-  let total = 0, answered = 0;
-  
-  cards.forEach(card => {
-    const qid = parseInt(card.dataset.qid);
-    if (!qid) return;
-    // Bỏ qua các trường không phải câu hỏi (đoạn văn, tiêu đề, section-break)
-    const questionType = card.dataset.questionType;
-    if (['title', 'paragraph', 'section-break'].includes(questionType)) return;
-    const ans = answers[qid];
-    if (questionType === 'rating-grid') {
-      // Lưới đánh giá: chỉ tính hoàn thành khi chọn hết tất cả hàng
-      if (isGridComplete(card)) answered++;
-    } else if (isAnswerFilled(ans)) {
-      answered++;
-    }
-    total++;
-  });
-  
-  const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
-  document.getElementById('progress-bar').style.width = pct + '%';
-  document.getElementById('progress-text').textContent = pct + '% (' + answered + '/' + total + ')';
-  
-  // Helper to check if a section is fully answered
-  function isSectionComplete(section) {
-    if (!section) return false;
-    const qs = section.questions.filter(q => {
-      const type = q.question_type_code || '';
-      return !['title', 'paragraph', 'section-break'].includes(type);
-    });
-    if (qs.length === 0) return false;
-    return qs.every(q => isAnswerFilled(answers[q.id]));
-  }
-  
-  // Update sidebar nav items
-  document.querySelectorAll('.nav-item').forEach((btn, i) => {
-    const section = surveyData?.sections?.[i];
-    if (isSectionComplete(section)) {
-      btn.classList.add('completed');
-    } else {
-      btn.classList.remove('completed');
-    }
-  });
-  
-  // Update mobile stepper
-  document.querySelectorAll('.mobile-step').forEach((btn, i) => {
-    const section = surveyData?.sections?.[i];
-    if (isSectionComplete(section)) {
-      btn.classList.add('completed');
-    } else {
-      btn.classList.remove('completed');
-    }
-  });
-}
+        .header-text h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+        }
 
-// ============================================
-// STATUS
-// ============================================
-function updateStatus(state) {
-  const text = document.getElementById('status-text');
-  if (state === 'saved') {
-    text.textContent = '✅ Đã lưu';
-    text.style.color = '#16a34a';
-  } else if (state === 'error') {
-    text.textContent = '❌ Lỗi lưu';
-    text.style.color = '#dc2626';
-  } else {
-    text.textContent = '📝 Bản nháp';
-    text.style.color = '#64748b';
-  }
-}
+        .header-text p {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
 
-// ============================================
-// SAVE DRAFT
-// ============================================
-async function saveDraft() {
-  if (isSubmitting) return;
-  try {
-    const res = await API.submitResponse({
-      survey_id: SURVEY_ID,
-      response_id: responseData?.id,
-      answers: answers,
-      status: 'draft',
-      time_taken: Math.round((Date.now() - startTime) / 1000)
-    });
-    if (res.success) {
-      responseData = res;
-      updateStatus('saved');
-      document.getElementById('btn-save').textContent = '✅ Đã lưu';
-      setTimeout(() => { document.getElementById('btn-save').textContent = '💾 Lưu tạm'; }, 2000);
-    }
-  } catch (e) {
-    updateStatus('error');
-    showToast('Lỗi lưu: ' + e.message, 'error');
-  }
-}
+        /* ============================================
+           PROGRESS BAR
+           ============================================ */
+        .progress-container {
+            background: #ffffff;
+            padding: 12px 40px;
+            border-bottom: 1px solid #e5e7eb;
+            position: sticky;
+            top: 72px;
+            z-index: 99;
+        }
 
-// ============================================
-// SUBMIT
-// ============================================
-function checkRequired() {
-  const missing = [];
-  document.querySelectorAll('.question-card[data-required="true"]').forEach(card => {
-    // Bỏ qua các trường không phải câu hỏi
-    const questionType = card.dataset.questionType;
-    if (['title', 'paragraph', 'section-break'].includes(questionType)) return;
-    const qid = parseInt(card.dataset.qid);
-    const ans = answers[qid];
-    // Lưới đánh giá: kiểm tra tất cả hàng đã được chọn
-    if (questionType === 'rating-grid') {
-      if (isGridComplete(card)) return;
-    }
-    if (ans === undefined || ans === null || ans === '' || (Array.isArray(ans) && !ans.length) || (typeof ans === 'object' && !Object.keys(ans).length)) {
-      const title = card.querySelector('.text-sm.font-medium')?.textContent?.replace(/[0-9]+\.\s*/, '').replace(/\*/g, '').trim() || `Câu ${qid}`;
-      missing.push(title);
-      card.classList.add('error');
-    } else {
-      card.classList.remove('error');
-    }
-  });
-  return missing;
-}
+        .progress-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-function submitSurvey() {
-  const missing = checkRequired();
-  if (missing.length > 0) {
-    showToast(`⚠ Vui lòng trả lời: ${missing.join(', ')}`, 'warning');
-    return;
-  }
-  
-  if (!confirm('Bạn có chắc chắn muốn nộp khảo sát này?')) return;
-  
-  isSubmitting = true;
-  document.getElementById('btn-next').disabled = true;
-  document.getElementById('btn-next').textContent = 'Đang gửi...';
-  
-  API.submitResponse({
-    survey_id: SURVEY_ID,
-    response_id: responseData?.id,
-    answers: answers,
-    status: 'submitted',
-    time_taken: Math.round((Date.now() - startTime) / 1000)
-  }).then(res => {
-    if (res.success) {
-      document.querySelectorAll('.question-card input, .question-card textarea, .question-card select').forEach(el => el.disabled = true);
-      document.getElementById('nav-controls').classList.add('hidden');
-      document.querySelectorAll('.survey-section').forEach(s => s.classList.add('hidden'));
-      document.getElementById('success-screen').classList.remove('hidden');
-      document.getElementById('status-text').textContent = '✅ Đã nộp';
-      document.getElementById('status-text').style.color = '#16a34a';
-      showToast('🎉 Khảo sát đã được gửi thành công!', 'success');
-    }
-  }).catch(e => {
-    showToast('Lỗi khi gửi: ' + e.message, 'error');
-  }).finally(() => {
-    isSubmitting = false;
-    document.getElementById('btn-next').disabled = false;
-    document.getElementById('btn-next').textContent = '📤 Gửi khảo sát';
-  });
-}
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
 
-// ============================================
-// EVENT BINDING
-// ============================================
-function bindEvents() {
-  // Navigation
-  document.getElementById('btn-prev').addEventListener('click', prevSection);
-  document.getElementById('btn-next').addEventListener('click', nextSection);
-  document.getElementById('btn-save').addEventListener('click', saveDraft);
-  
-  // Answer tracking - delegate events
-  document.getElementById('sections-container').addEventListener('change', (e) => {
-    const target = e.target;
-    if (target.closest('.question-card')) {
-      // Mark answered
-      const card = target.closest('.question-card');
-      if (card) card.classList.add('answered');
-      onAnswerChange();
-    }
-  });
-  
-  document.getElementById('sections-container').addEventListener('input', (e) => {
-    const target = e.target;
-    if (target.closest('.question-card')) {
-      const card = target.closest('.question-card');
-      if (target.value && target.value.trim()) {
-        card.classList.add('answered');
-      } else {
-        card.classList.remove('answered');
-      }
-      onAnswerChange();
-    }
-  });
-  
-  // Stars
-  document.addEventListener('click', (e) => {
-    const star = e.target.closest('.star-btn');
-    if (star) {
-      const container = star.closest('.rating-stars');
-      const val = parseInt(star.dataset.star);
-      container.dataset.value = val;
-      container.querySelectorAll('.star-btn').forEach((s, i) => {
-        s.classList.toggle('active', i < val);
-        s.classList.toggle('text-amber-400', i < val);
-        s.classList.toggle('text-slate-300', i >= val);
-      });
-      const card = container.closest('.question-card');
-      if (card) card.classList.add('answered');
-      onAnswerChange();
-    }
-  });
-  
-  // Slider
-  document.addEventListener('input', (e) => {
-    const slider = e.target.closest('.slider-input');
-    if (slider) {
-      const display = slider.parentElement.querySelector('.slider-value');
-      if (display) display.textContent = slider.value;
-      const card = slider.closest('.question-card');
-      if (card) card.classList.add('answered');
-      onAnswerChange();
-    }
-  });
-  
-  // Keyboard shortcuts
-  document.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-      e.preventDefault();
-      saveDraft();
-    }
-  });
-}
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+        }
 
-// ============================================
-// INIT
-// ============================================
-async function init() {
-  try {
-    const [survey, response] = await Promise.all([
-      API.getSurvey(SURVEY_ID),
-      API.getResponse(SURVEY_ID)
-    ]);
-    
-    surveyData = survey;
-    responseData = response;
-    answers = response.answers || {};
-    
-    renderSurvey(survey);
-    bindEvents();
-    updateProgress();
-    updateStatus();
-    
-    // Auto-save every 30s
-    setInterval(() => {
-      if (Object.keys(answers).length > 0) saveDraft();
-    }, 300000);
-    
-    // Restore saved answers
-    if (Object.keys(answers).length > 0) {
-      showToast('💾 Đã khôi phục dữ liệu đã lưu', 'info');
-    }
-    
-  } catch (error) {
-    console.error('Init error:', error);
-    document.getElementById('survey-title').textContent = '⚠ Không thể tải khảo sát';
-    document.getElementById('survey-desc').textContent = error.message;
-    showToast('Lỗi: ' + error.message, 'error');
-  }
-}
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #0054a4;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
 
-// Start
-document.addEventListener('DOMContentLoaded', () => {
-  lucide.createIcons();
-  init();
-});
-</script>
+        /* ============================================
+           MAIN CONTENT - SIDEBAR LEFT + CONTENT
+           ============================================ */
+        .main-content {
+            max-width: 2000px;
+            margin: 0 auto;
+            padding: 24px 40px 20px;
+            display: flex;
+            gap: 48px;
+            align-items: flex-start;
+        }
+
+        /* Sidebar - bên trái - HIỂN THỊ CÂU HỎI */
+        .sidebar {
+            position: sticky;
+            top: 130px;
+            width: 280px;
+            flex-shrink: 0;
+            max-height: calc(100vh - 160px);
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-title .badge {
+            background: #e5e7eb;
+            color: #4b5563;
+            font-size: 10px;
+            padding: 1px 8px;
+            border-radius: 10px;
+        }
+
+        .question-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .question-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #4b5563;
+            font-size: 12px;
+            font-weight: 400;
+            border-radius: 6px;
+            transition: all 0.15s;
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .question-nav-item:hover {
+            background: #f3f4f6;
+            color: #1a1a1a;
+        }
+
+        .question-nav-item.is-active {
+            background: #e8f0fe;
+            color: #0054a4;
+            font-weight: 500;
+        }
+
+        .question-nav-item.is-complete {
+            color: #16a34a;
+        }
+
+        .question-nav-item .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid #d1d5db;
+        }
+
+        .question-nav-item.is-complete .status-dot {
+            background: #16a34a;
+            border-color: #16a34a;
+        }
+
+        .question-nav-item.is-active .status-dot {
+            background: #0054a4;
+            border-color: #0054a4;
+        }
+
+        .question-nav-item .q-number {
+            font-weight: 500;
+            color: #6b7280;
+            min-width: 24px;
+            font-size: 11px;
+        }
+
+        .question-nav-item.is-active .q-number {
+            color: #0054a4;
+        }
+
+        .question-nav-item .q-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .question-nav-item .q-status-icon {
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        /* Section header trong sidebar */
+        .section-header-nav {
+            font-size: 11px;
+            font-weight: 600;
+            color: #9ca3af;
+            padding: 8px 12px 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 4px;
+        }
+
+        .section-header-nav:first-of-type {
+            border-top: none;
+            margin-top: 0;
+        }
+
+        /* Content - chiếm phần còn lại */
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .scale-table thead th .scale-label {
+            display: none;
+        }
+
+        /* ============================================
+           SECTION CARD
+           ============================================ */
+        .section-card {
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 24px;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .section-card.is-active {
+            display: block;
+        }
+
+        .section-header {
+            background: #f9fafb;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-number {
+            background: #0054a4;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .section-body {
+            padding: 24px;
+        }
+
+        /* ============================================
+           FORM ELEMENTS
+           ============================================ */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            background: #ffffff;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0054a4;
+            box-shadow: 0 0 0 3px rgba(0,84,164,0.1);
+        }
+
+        /* ============================================
+           QUESTION
+           ============================================ */
+        .question-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .question-title span {
+            color: #0054a4;
+            font-weight: 600;
+        }
+
+        .question-required {
+            color: #dc2626 !important;
+        }
+
+        .question-divider {
+            margin: 28px 0;
+            border: none;
+            border-top: 1px dashed #e5e7eb;
+        }
+        /* ============================================
+        CUSTOM SCROLLBAR - MỎNG VÀ MÀU XANH
+        ============================================ */
+
+        /* Webkit browsers (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #0054a4;
+            border-radius: 10px;
+            transition: background 0.2s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #003d7a;
+        }
+
+        /* Sidebar scrollbar đặc biệt */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #0054a4;
+            border-radius: 10px;
+        }
+
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #0054a4 #f1f5f9;
+        }
+
+        .sidebar {
+            scrollbar-width: thin;
+            scrollbar-color: #0054a4 #f1f5f9;
+        }
+        /* ============================================
+           RADIO & CHECKBOX - TO HƠN, CĂN GIỮA
+           ============================================ */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .custom-checkbox,
+        .custom-radio-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+
+        .custom-checkbox:hover,
+        .custom-radio-label:hover {
+            background: #f9fafb;
+        }
+
+        .custom-checkbox input[type="checkbox"],
+        .custom-radio-label input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .custom-radio-label input[type="radio"] {
+            border-radius: 50%;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked {
+            background: #0054a4;
+            border-color: #0054a4;
+        }
+
+        .custom-checkbox input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .custom-radio-label input[type="radio"]:checked {
+            border-color: #0054a4;
+            background: #0054a4;
+        }
+
+        .custom-radio-label input[type="radio"]:checked::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .custom-checkbox span,
+        .custom-radio-label span {
+            font-size: 0.9rem;
+            color: #374151;
+        }
+
+        /* ============================================
+           DATA TABLE - BỎ STT, KHÓA DỮ LIỆU CÓ SẴN
+           ============================================ */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+
+        .data-table thead th {
+            background: #f9fafb;
+            color: #1a1a1a;
+            padding: 10px 14px;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .data-table tbody td {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .data-table tbody td .data-cell {
+            padding: 6px 10px;
+            border-radius: 4px;
+            background: #f9fafb;
+            color: #4b5563;
+            font-size: 0.85rem;
+            display: block;
+            min-height: 36px;
+            text-align: left;
+        }
+
+        .data-table tbody td .data-cell-empty {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .data-table tbody td input[type="text"],
+        .data-table tbody td input[type="number"] {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            text-align: center;
+            transition: border-color 0.15s;
+            background: #ffffff;
+        }
+
+        .data-table tbody td input:focus {
+            outline: none;
+            border-color: #0054a4;
+            box-shadow: 0 0 0 2px rgba(0,84,164,0.08);
+        }
+
+        .data-table tbody td .input-wrapper {
+            position: relative;
+        }
+
+        .data-table tbody td .input-wrapper .data-label {
+            display: block;
+            padding: 6px 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            color: #4b5563;
+            text-align: left;
+            min-height: 36px;
+            border: 1.5px solid transparent;
+        }
+
+        .data-table tbody td .input-wrapper .data-label.has-data {
+            border-color: #e5e7eb;
+        }
+
+        /* ============================================
+           SCALE TABLE (Rating Grid) - KHÔNG SỐ THỨ TỰ
+           ============================================ */
+        .scale-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+
+        .scale-table thead th {
+            background: #f9fafb;
+            padding: 10px 8px;
+            font-weight: 500;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .scale-table thead th:first-child {
+            text-align: left;
+            padding-left: 14px;
+        }
+
+        .scale-table thead th .scale-label {
+            display: block;
+            font-size: 0.65rem;
+            color: #9ca3af;
+            font-weight: 400;
+            margin-top: 1px;
+        }
+
+        .scale-table tbody td {
+            padding: 10px 8px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .scale-table tbody td:first-child {
+            text-align: left;
+            padding-left: 14px;
+            color: #1a1a1a;
+        }
+
+        .scale-table tbody td .custom-radio-label {
+            justify-content: center;
+            padding: 4px;
+        }
+
+        .scale-table tbody td .custom-radio-label input[type="radio"] {
+            width: 22px;
+            height: 22px;
+        }
+
+        .scale-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        /* ============================================
+           QUESTION NOTE - GHI CHÚ DƯỚI BẢNG
+           ============================================ */
+        .question-note {
+            margin-top: 12px;
+            padding: 8px 14px;
+            background: #f9fafb;
+            border-radius: 6px;
+            border-left: 3px solid #0054a4;
+            font-size: 0.8rem;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        .question-note:empty {
+            display: none;
+        }
+
+        /* ============================================
+           TEXTAREA
+           ============================================ */
+        .textarea-group {
+            margin-bottom: 16px;
+        }
+
+        .textarea-group label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .textarea-group textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+            background: #ffffff;
+        }
+
+        .textarea-group textarea:focus {
+            outline: none;
+            border-color: #0054a4;
+            box-shadow: 0 0 0 3px rgba(0,84,164,0.08);
+        }
+
+        /* ============================================
+           ACTION BUTTONS - CUỐI BÀI
+           ============================================ */
+        .survey-actions {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .survey-actions .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-outline:hover {
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: #0054a4;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #004a8a;
+            box-shadow: 0 2px 8px rgba(0,84,164,0.25);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+            box-shadow: 0 2px 8px rgba(22,163,74,0.25);
+        }
+
+        /* ============================================
+           TOAST
+           ============================================ */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 9999;
+            animation: slideUp .3s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            max-width: 360px;
+        }
+
+        .toast.success { background: #16a34a; }
+        .toast.error { background: #dc2626; }
+        .toast.warning { background: #d97706; }
+        .toast.info { background: #374151; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .toast.hiding {
+            animation: fadeOut .25s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateY(-8px); }
+        }
+
+        /* ============================================
+           SUCCESS SCREEN
+           ============================================ */
+        .success-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 56px 24px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-card .icon-check {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #e8f0fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: #0054a4;
+        }
+
+        .success-card h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .success-card p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* ============================================
+           LOADING
+           ============================================ */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            padding: 90px 0;
+            color: #9ca3af;
+            font-size: 13.5px;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #0054a4;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ============================================
+           FOOTER SPACER
+           ============================================ */
+        .footer-spacer {
+            height: 40px;
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                padding: 16px 20px 100px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 12px 16px;
+            }
+
+            .header-content {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .header-text h1 {
+                font-size: 1rem;
+            }
+
+            .header-text p {
+                font-size: 0.75rem;
+            }
+
+            .progress-container {
+                padding: 8px 16px;
+                top: 64px;
+            }
+
+            .main-content {
+                padding: 12px 12px 80px;
+                gap: 16px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-body {
+                padding: 16px;
+            }
+
+            .survey-actions {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+            }
+
+            .survey-actions .btn-group {
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+                justify-content: center;
+            }
+
+            .data-table,
+            .scale-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER - MÀU TRẮNG -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">S</div>
+                <div class="header-text">
+                    <h1 id="survey-title">{{ survey.title|default:"Phiếu khảo sát" }}</h1>
+                    <p id="survey-description">{{ survey.description|default:"" }}</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-container">
+        <div class="progress-wrapper">
+            <div class="progress-info">
+                <span id="progress-text">Đang tải...</span>
+                <span id="progress-percent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- SIDEBAR - HIỂN THỊ CÂU HỎI -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-title">
+                Câu hỏi
+                <span class="badge" id="question-count">0</span>
+            </div>
+            <nav id="question-nav" class="question-nav">
+                <!-- Dynamic questions will be rendered here -->
+            </nav>
+        </aside>
+
+        <!-- CONTENT - RỘNG BÊN PHẢI -->
+        <main class="content">
+
+            <!-- Loading -->
+            <div id="loading-state" class="loading-state">
+                <div class="spinner"></div>
+                <span>Đang tải khảo sát…</span>
+            </div>
+
+            <!-- Survey Sections -->
+            <div id="survey-content" style="display: none;">
+                <!-- Dynamic -->
+            </div>
+
+            <!-- Action Buttons - Cuối bài -->
+            <div id="survey-actions" class="survey-actions" style="display: none;">
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="prev-btn" disabled>
+                        ← Quay lại
+                    </button>
+                    <button class="btn btn-primary" id="next-btn">
+                        Tiếp tục →
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-outline" onclick="saveDraft()">
+                        💾 Lưu nháp
+                    </button>
+                    <button class="btn btn-success" id="submit-btn">
+                        ✓ Nộp khảo sát
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success Screen -->
+            <div id="success-screen" class="success-card">
+                <div class="icon-check">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <h2>Cảm ơn bạn đã tham gia</h2>
+                <p>Khảo sát đã được gửi thành công. Câu trả lời của bạn đã được ghi nhận.</p>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="footer-spacer"></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const SURVEY_ID = {{ survey_id }};
+            let surveyData = null;
+            let responseData = null;
+            let answers = {};
+            let sectionProgress = {};
+            let currentPage = 0;
+            let totalPages = 0;
+            let startTime = Date.now();
+            let saveTimeout = null;
+            let isSubmitted = false;
+            let allQuestions = [];
+            let currentQuestionIndex = 0;
+
+            // ============================================
+            // API CLIENT
+            // ============================================
+            const API = {
+                async request(endpoint, method = 'GET', data = null) {
+                    const url = `/survey/api/public${endpoint}`;
+                    const options = {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken()
+                        },
+                        credentials: 'same-origin'
+                    };
+                    if (data) options.body = JSON.stringify(data);
+                    const res = await fetch(url, options);
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.error || `HTTP ${res.status}`);
+                    }
+                    return res.json();
+                },
+                getSurvey(id) { return this.request(`/surveys/${id}/`); },
+                getResponse(id) { return this.request(`/surveys/${id}/response/`); },
+                submitResponse(data) { return this.request('/responses/submit/', 'POST', data); }
+            };
+
+            function getCsrfToken() {
+                const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+                return cookieValue ? cookieValue.split('=')[1] : '';
+            }
+
+            // ============================================
+            // HELPERS
+            // ============================================
+            function showToast(msg, type = 'info') {
+                const existing = document.querySelector('.toast');
+                if (existing) existing.remove();
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('hiding');
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str || '';
+                return div.innerHTML;
+            }
+
+            // ============================================
+            // RENDER SURVEY
+            // ============================================
+            function renderSurvey(data) {
+                surveyData = data;
+                const sections = data.sections || [];
+
+                if (sections.length === 0) {
+                    document.getElementById('loading-state').style.display = 'none';
+                    document.getElementById('survey-content').innerHTML = `
+                        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:24px;text-align:center;">
+                            <p style="color:#dc2626;font-weight:600">Không có câu hỏi nào trong khảo sát này.</p>
+                        </div>
+                    `;
+                    document.getElementById('survey-content').style.display = 'block';
+                    return;
+                }
+
+                // Xây dựng danh sách tất cả câu hỏi
+                allQuestions = [];
+                sections.forEach((section, sIdx) => {
+                    const questions = section.questions || [];
+                    questions.forEach((q, qIdx) => {
+                        if (!['title', 'paragraph'].includes(q.question_type_code)) {
+                            allQuestions.push({
+                                id: q.id,
+                                sectionIndex: sIdx,
+                                questionIndex: qIdx,
+                                sectionCode: section.code || String(sIdx + 1),
+                                sectionTitle: section.title,
+                                title: q.title,
+                                questionNumber: allQuestions.length + 1,
+                                isRealQuestion: true
+                            });
+                        }
+                    });
+                });
+
+                document.getElementById('question-count').textContent = allQuestions.length;
+
+                totalPages = sections.length;
+                let html = '';
+
+                sections.forEach((section, idx) => {
+                    const isActive = idx === 0;
+                    html += `
+                        <div class="section-card ${isActive ? 'is-active' : ''}" data-section="${idx}" id="section-${idx}">
+                            <div class="section-header">
+                                <div class="section-number">${section.code || idx + 1}</div>
+                                <div class="section-title">${escapeHtml(section.title)}</div>
+                            </div>
+                            <div class="section-body">
+                                ${renderQuestions(section.questions || [], idx)}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('survey-content').innerHTML = html;
+                document.getElementById('survey-content').style.display = 'block';
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('survey-actions').style.display = 'flex';
+
+                renderQuestionNav(allQuestions);
+                updatePagination();
+                updateProgress();
+
+                if (answers && Object.keys(answers).length > 0) {
+                    loadAnswers(answers);
+                }
+
+                attachEventListeners();
+                // Cập nhật lại nav sau khi load answers
+                setTimeout(() => renderQuestionNav(allQuestions), 100);
+            }
+
+            // ============================================
+            // RENDER QUESTIONS
+            // ============================================
+            function renderQuestions(questions, sectionIdx) {
+                if (!questions || questions.length === 0) {
+                    return '<p style="color:#9ca3af;font-size:14px;">Không có câu hỏi nào trong phần này.</p>';
+                }
+
+                let html = '';
+                let questionCounter = 0;
+
+                questions.forEach((q, qIdx) => {
+                    const isRealQuestion = !['title', 'paragraph'].includes(q.question_type_code);
+                    if (isRealQuestion) {
+                        questionCounter++;
+                    }
+
+                    const questionNumber = isRealQuestion ? questionCounter : '';
+                    const required = q.is_required ? '<span class="question-required">*</span>' : '';
+                    const name = `q_${q.id}`;
+                    const description = q.description || '';
+
+                    html += `<div class="question-item" data-question-id="${q.id}" data-section="${sectionIdx}" data-question-index="${qIdx}">`;
+
+                    switch(q.question_type_code) {
+                        case 'title':
+                            html += `
+                                <h2 style="font-weight:600;font-size:20px;color:#1a1a1a;margin:12px 0 6px">
+                                    ${escapeHtml(q.title)}
+                                </h2>
+                            `;
+                            break;
+
+                        case 'paragraph':
+                            html += `
+                                <p style="color:#4b5563;line-height:1.7;font-size:14px;margin:6px 0 12px">
+                                    ${escapeHtml(q.title)}
+                                </p>
+                            `;
+                            break;
+
+                        case 'short-text':
+                            html += `
+                                <div class="question-title">
+                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" 
+                                           name="${name}" 
+                                           id="${name}"
+                                           placeholder="${escapeHtml(q.config?.placeholder || 'Nhập câu trả lời...')}"
+                                           ${q.is_required ? 'required' : ''}>
+                                </div>
+                            `;
+                            if (description) {
+                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                            }
+                            break;
+
+                        case 'long-text':
+                            html += `
+                                <div class="question-title">
+                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                                </div>
+                                <div class="textarea-group">
+                                    <textarea name="${name}" 
+                                              id="${name}"
+                                              placeholder="${escapeHtml(q.config?.placeholder || 'Nhập nội dung...')}"
+                                              rows="${q.config?.rows || 4}"
+                                              ${q.is_required ? 'required' : ''}></textarea>
+                                </div>
+                            `;
+                            if (description) {
+                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                            }
+                            break;
+
+                        case 'single-choice':
+                            html += `
+                                <div class="question-title">
+                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                                </div>
+                                <div class="checkbox-group">
+                            `;
+                            const choices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                            choices.forEach((choice, ci) => {
+                                html += `
+                                    <label class="custom-radio-label">
+                                        <input type="radio" name="${name}" value="${escapeHtml(choice)}" ${q.is_required && ci === 0 ? 'required' : ''}>
+                                        <span>${escapeHtml(choice)}</span>
+                                    </label>
+                                `;
+                            });
+                            html += `</div>`;
+                            if (description) {
+                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                            }
+                            break;
+
+                        case 'multi-choice':
+                            html += `
+                                <div class="question-title">
+                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                                </div>
+                                <div class="checkbox-group">
+                            `;
+                            const multiChoices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                            multiChoices.forEach((choice) => {
+                                html += `
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="${name}[]" value="${escapeHtml(choice)}">
+                                        <span>${escapeHtml(choice)}</span>
+                                    </label>
+                                `;
+                            });
+                            html += `</div>`;
+                            if (description) {
+                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                            }
+                            break;
+
+                        case 'rating-grid': {
+                            const cfg = q.config || {};
+                            const criteria = cfg.criteria || ['Tiêu chí 1'];
+                            const scale = cfg.scale || [{value: 1, label: 'Có'}, {value: 2, label: 'Không'}];
+                            
+                            html += `
+                                <div class="question-title">
+                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                                </div>
+                                <table class="scale-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:35%">Tiêu chí</th>
+                            `;
+                            scale.forEach(s => {
+                                html += `<th>${escapeHtml(s.label)}<span class="scale-label">${s.value}</span></th>`;
+                            });
+                            html += `
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            criteria.forEach((criterion, ci) => {
+                                html += `<tr><td>${escapeHtml(criterion)}</td>`;
+                                scale.forEach(s => {
+                                    html += `
+                                        <td>
+                                            <label class="custom-radio-label" style="justify-content:center;">
+                                                <input type="radio" 
+                                                       name="${name}_${ci}" 
+                                                       value="${s.value}"
+                                                       ${q.is_required && ci === 0 && s.value === scale[0].value ? 'required' : ''}>
+                                            </label>
+                                        </td>
+                                    `;
+                                });
+                                html += `</tr>`;
+                            });
+                            html += `
+                                    </tbody>
+                                </table>
+                            `;
+                            if (description) {
+                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                            }
+                            break;
+                        }
+
+                        case 'data-table': {
+                            const dtCfg = q.config || {};
+                            const columns = dtCfg.columns || ['Cột 1', 'Cột 2', 'Cột 3'];
+                            let tableData = dtCfg.data || [];
+                            const numRows = dtCfg.rows || 2;
+                            
+                            if (tableData.length === 0) {
+                                tableData = [];
+                                for (let r = 0; r < numRows; r++) {
+                                    const rowData = [];
+                                    for (let c = 0; c < columns.length; c++) {
+                                        rowData.push('');
+                                    }
+                                    tableData.push(rowData);
+                                }
+                            }
+                            
+                            html += `
+                                <div class="question-title">
+                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                                </div>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                            `;
+                            columns.forEach(col => {
+                                html += `<th>${escapeHtml(col)}</th>`;
+                            });
+                            html += `
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            tableData.forEach((rowData, rowIndex) => {
+                                html += `<tr>`;
+                                columns.forEach((col, colIndex) => {
+                                    const inputName = `${name}_${rowIndex}_${colIndex}`;
+                                    const cellValue = rowData[colIndex] || '';
+                                    const hasData = cellValue.trim() !== '';
+                                    
+                                    html += `
+                                        <td>
+                                            <div class="input-wrapper">
+                                                ${hasData ? `
+                                                    <div class="data-label has-data">${escapeHtml(cellValue)}</div>
+                                                    <input type="hidden" name="${inputName}" value="${escapeHtml(cellValue)}">
+                                                ` : `
+                                                    <input type="text" 
+                                                           name="${inputName}" 
+                                                           placeholder="..."
+                                                           ${q.is_required ? 'required' : ''}>
+                                                `}
+                                            </div>
+                                        </td>
+                                    `;
+                                });
+                                html += `</tr>`;
+                            });
+                            html += `
+                                    </tbody>
+                                </table>
+                            `;
+                            if (description) {
+                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                            }
+                            break;
+                        }
+
+                        default:
+                            html += `
+                                <div class="question-title">
+                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" name="${name}" placeholder="Câu hỏi chưa được hỗ trợ">
+                                </div>
+                            `;
+                            if (description) {
+                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                            }
+                    }
+
+                    html += `</div>`;
+                    if (qIdx < questions.length - 1) {
+                        html += `<hr class="question-divider">`;
+                    }
+                });
+
+                return html;
+            }
+
+            // ============================================
+            // RENDER QUESTION NAV - HIỂN THỊ CÂU HỎI TRONG SIDEBAR
+            // ============================================
+            function renderQuestionNav(questions) {
+                const nav = document.getElementById('question-nav');
+                if (!nav) return;
+
+                nav.innerHTML = '';
+                let currentSection = '';
+
+                questions.forEach((q, idx) => {
+                    // Thêm header section nếu section thay đổi
+                    if (q.sectionCode !== currentSection) {
+                        currentSection = q.sectionCode;
+                        const sectionHeader = document.createElement('div');
+                        sectionHeader.className = 'section-header-nav';
+                        sectionHeader.textContent = `Phần ${q.sectionCode}`;
+                        nav.appendChild(sectionHeader);
+                    }
+
+                    const isAnswered = isQuestionAnswered(q.id);
+                    const isActive = idx === currentQuestionIndex;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'question-nav-item';
+                    if (isActive) btn.classList.add('is-active');
+                    if (isAnswered) btn.classList.add('is-complete');
+
+                    const statusIcon = isAnswered ? '✅' : '○';
+                    const statusDot = `<span class="status-dot"></span>`;
+
+                    btn.innerHTML = `
+                        ${statusDot}
+                        <span class="q-number">${q.questionNumber}.</span>
+                        <span class="q-text">${escapeHtml(q.title)}</span>
+                        <span class="q-status-icon">${isAnswered ? '✓' : ''}</span>
+                    `;
+
+                    btn.addEventListener('click', () => {
+                        goToQuestion(idx);
+                    });
+
+                    nav.appendChild(btn);
+                });
+            }
+
+            // ============================================
+            // CHECK IF QUESTION IS ANSWERED
+            // ============================================
+            function isQuestionAnswered(questionId) {
+                const name = `q_${questionId}`;
+                const elements = document.querySelectorAll(`[name^="${name}"]`);
+                let hasAnswer = false;
+                
+                elements.forEach(el => {
+                    if (el.type === 'radio' && el.checked) hasAnswer = true;
+                    else if (el.type === 'checkbox' && el.checked) hasAnswer = true;
+                    else if (el.type === 'text' && el.value.trim() !== '') hasAnswer = true;
+                    else if (el.type === 'textarea' && el.value.trim() !== '') hasAnswer = true;
+                    else if (el.tagName === 'TEXTAREA' && el.value.trim() !== '') hasAnswer = true;
+                });
+                
+                return hasAnswer;
+            }
+
+            // ============================================
+            // GO TO SPECIFIC QUESTION
+            // ============================================
+            function goToQuestion(index) {
+                if (index < 0 || index >= allQuestions.length) return;
+                
+                const q = allQuestions[index];
+                currentQuestionIndex = index;
+                
+                // Tìm section chứa câu hỏi
+                const sectionIdx = q.sectionIndex;
+                
+                // Hiển thị section đúng
+                document.querySelectorAll('.section-card').forEach((card, idx) => {
+                    card.classList.toggle('is-active', idx === sectionIdx);
+                });
+                
+                // Cuộn đến câu hỏi
+                const questionEl = document.querySelector(`.question-item[data-question-id="${q.id}"]`);
+                if (questionEl) {
+                    setTimeout(() => {
+                        questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        questionEl.style.transition = 'background 0.3s';
+                        questionEl.style.background = '#e8f0fe';
+                        setTimeout(() => {
+                            questionEl.style.background = 'transparent';
+                        }, 1500);
+                    }, 200);
+                }
+                
+                // Cập nhật sidebar
+                renderQuestionNav(allQuestions);
+                updatePagination();
+                updateProgress();
+            }
+
+            // ============================================
+            // COMPUTE SECTION STATS
+            // ============================================
+            function computeSectionStats() {
+                const sections = surveyData?.sections || [];
+                const stats = [];
+                
+                sections.forEach((section) => {
+                    const questions = section.questions || [];
+                    const inputQuestions = questions.filter(q => !['title', 'paragraph'].includes(q.question_type_code));
+                    let answered = 0;
+                    
+                    inputQuestions.forEach(q => {
+                        if (isQuestionAnswered(q.id)) answered++;
+                    });
+                    
+                    stats.push({
+                        code: section.code || '',
+                        title: section.title || '',
+                        total: inputQuestions.length,
+                        answered: answered,
+                        pct: inputQuestions.length > 0 ? Math.round((answered / inputQuestions.length) * 100) : 0
+                    });
+                });
+                
+                return stats;
+            }
+
+            // ============================================
+            // LOAD ANSWERS
+            // ============================================
+            function loadAnswers(savedAnswers) {
+                Object.keys(savedAnswers).forEach(key => {
+                    const value = savedAnswers[key];
+                    const elements = document.querySelectorAll(`[name^="${key}"]`);
+                    
+                    if (elements.length === 0) return;
+                    
+                    if (elements[0].type === 'radio') {
+                        elements.forEach(el => {
+                            if (el.value === String(value)) {
+                                el.checked = true;
+                            }
+                        });
+                    } else if (elements[0].type === 'checkbox') {
+                        const values = Array.isArray(value) ? value : [value];
+                        elements.forEach(el => {
+                            if (values.includes(el.value)) {
+                                el.checked = true;
+                            }
+                        });
+                    } else if (elements[0].type === 'text' || elements[0].tagName === 'TEXTAREA') {
+                        if (elements.length === 1) {
+                            elements[0].value = value || '';
+                        } else {
+                            if (Array.isArray(value)) {
+                                elements.forEach(el => {
+                                    const nameParts = el.name.split('_');
+                                    if (nameParts.length >= 3) {
+                                        const rowIdx = parseInt(nameParts[1]);
+                                        const colIdx = parseInt(nameParts[2]);
+                                        if (value[rowIdx] && value[rowIdx][colIdx] !== undefined) {
+                                            el.value = value[rowIdx][colIdx] || '';
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+                
+                // Cập nhật lại nav sau khi load answers
+                setTimeout(() => renderQuestionNav(allQuestions), 100);
+            }
+
+            // ============================================
+            // COLLECT ANSWERS
+            // ============================================
+            function collectAnswers() {
+                const allAnswers = {};
+                const allQuestionsEl = document.querySelectorAll('.question-item');
+                
+                allQuestionsEl.forEach(item => {
+                    const questionId = item.dataset.questionId;
+                    if (!questionId) return;
+                    
+                    const name = `q_${questionId}`;
+                    const elements = item.querySelectorAll(`[name^="${name}"]`);
+                    
+                    if (elements.length === 0) return;
+                    
+                    const firstEl = elements[0];
+                    
+                    if (firstEl.type === 'radio') {
+                        const checked = item.querySelector(`[name^="${name}"]:checked`);
+                        if (checked) {
+                            allAnswers[questionId] = checked.value;
+                        }
+                    } else if (firstEl.type === 'checkbox') {
+                        const checked = item.querySelectorAll(`[name^="${name}[]"]:checked`);
+                        if (checked.length > 0) {
+                            allAnswers[questionId] = Array.from(checked).map(el => el.value);
+                        }
+                    } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA') {
+                        const allInputs = item.querySelectorAll(`[name^="${name}"]`);
+                        if (allInputs.length > 1) {
+                            const matrixData = [];
+                            const rowMap = {};
+                            allInputs.forEach(el => {
+                                const nameParts = el.name.split('_');
+                                if (nameParts.length >= 3) {
+                                    const rowIdx = parseInt(nameParts[1]);
+                                    const colIdx = parseInt(nameParts[2]);
+                                    if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
+                                    rowMap[rowIdx][colIdx] = el.value.trim();
+                                }
+                            });
+                            const rowKeys = Object.keys(rowMap).sort((a, b) => parseInt(a) - parseInt(b));
+                            rowKeys.forEach(rowKey => {
+                                matrixData.push(rowMap[rowKey]);
+                            });
+                            if (matrixData.length > 0) {
+                                allAnswers[questionId] = matrixData;
+                            }
+                        } else {
+                            const val = firstEl.value.trim();
+                            if (val) {
+                                allAnswers[questionId] = val;
+                            }
+                        }
+                    }
+                });
+                
+                return allAnswers;
+            }
+
+            // ============================================
+            // UPDATE PROGRESS
+            // ============================================
+            function updateProgress() {
+                const stats = computeSectionStats();
+                let totalQuestions = 0;
+                let totalAnswered = 0;
+                
+                stats.forEach(s => {
+                    totalQuestions += s.total;
+                    totalAnswered += s.answered;
+                });
+                
+                const pct = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
+                
+                document.getElementById('progress-fill').style.width = `${pct}%`;
+                document.getElementById('progress-percent').textContent = `${pct}%`;
+                document.getElementById('progress-text').textContent = 
+                    `Đã hoàn thành: ${totalAnswered}/${totalQuestions} câu hỏi`;
+                
+                // Cập nhật lại nav để hiển thị trạng thái mới
+                renderQuestionNav(allQuestions);
+            }
+
+            // ============================================
+            // PAGINATION
+            // ============================================
+            function updatePagination() {
+                const sections = surveyData?.sections || [];
+                const totalPages = sections.length;
+                
+                document.getElementById('prev-btn').disabled = currentPage === 0;
+                document.getElementById('next-btn').disabled = currentPage === totalPages - 1;
+            }
+
+            function goToPage(pageIndex) {
+                if (pageIndex < 0 || pageIndex >= (surveyData?.sections?.length || 0)) return;
+                
+                const currentAnswers = collectAnswers();
+                Object.assign(answers, currentAnswers);
+                
+                currentPage = pageIndex;
+                
+                document.querySelectorAll('.section-card').forEach((card, idx) => {
+                    card.classList.toggle('is-active', idx === pageIndex);
+                });
+                
+                updatePagination();
+                updateProgress();
+                
+                document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            window.goToPage = goToPage;
+
+            // ============================================
+            // ATTACH EVENT LISTENERS
+            // ============================================
+            function attachEventListeners() {
+                document.getElementById('prev-btn').addEventListener('click', () => {
+                    if (currentPage > 0) {
+                        goToPage(currentPage - 1);
+                    }
+                });
+                
+                document.getElementById('next-btn').addEventListener('click', () => {
+                    if (currentPage < (surveyData?.sections?.length || 0) - 1) {
+                        goToPage(currentPage + 1);
+                    }
+                });
+                
+                document.getElementById('submit-btn').addEventListener('click', submitSurvey);
+                
+                document.addEventListener('change', (e) => {
+                    if (e.target.closest('.question-item')) {
+                        scheduleSave();
+                        updateProgress();
+                    }
+                });
+                
+                document.addEventListener('input', (e) => {
+                    if (e.target.closest('.question-item')) {
+                        scheduleSave();
+                        updateProgress();
+                    }
+                });
+            }
+
+            // ============================================
+            // SAVE DRAFT
+            // ============================================
+            async function saveDraft() {
+                if (isSubmitted) return;
+                
+                const answersData = collectAnswers();
+                const stats = computeSectionStats();
+                const progress = {};
+                stats.forEach(s => {
+                    progress[s.code] = s.pct;
+                });
+                
+                try {
+                    const res = await API.submitResponse({
+                        survey_id: SURVEY_ID,
+                        response_id: responseData?.id,
+                        answers: answersData,
+                        section_progress: progress,
+                        status: 'draft',
+                        time_taken: Math.round((Date.now() - startTime) / 1000)
+                    });
+                    
+                    if (res.success) {
+                        responseData = res;
+                        showToast('Đã lưu bản nháp', 'success');
+                    }
+                } catch (e) {
+                    showToast('Lỗi khi lưu: ' + e.message, 'error');
+                }
+            }
+
+            function scheduleSave() {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => saveDraft(), 3000);
+            }
+
+            // ============================================
+            // SUBMIT SURVEY
+            // ============================================
+            async function submitSurvey() {
+                const requiredFields = document.querySelectorAll('[required]');
+                let isValid = true;
+                let firstInvalid = null;
+                
+                requiredFields.forEach(el => {
+                    if (el.type === 'radio') {
+                        const name = el.name;
+                        const checked = document.querySelector(`[name="${name}"]:checked`);
+                        if (!checked) {
+                            isValid = false;
+                            if (!firstInvalid) {
+                                firstInvalid = el.closest('.question-item');
+                            }
+                        }
+                    } else if (el.type === 'checkbox') {
+                        // skip
+                    } else if (el.value.trim() === '') {
+                        isValid = false;
+                        if (!firstInvalid) {
+                            firstInvalid = el.closest('.question-item');
+                        }
+                    }
+                });
+                
+                if (!isValid) {
+                    showToast('Vui lòng trả lời tất cả câu hỏi bắt buộc', 'warning');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+                
+                const isConfirmed = confirm('Bạn có chắc chắn muốn nộp khảo sát này?');
+                if (!isConfirmed) return;
+                
+                const answersData = collectAnswers();
+                const stats = computeSectionStats();
+                const progress = {};
+                stats.forEach(s => {
+                    progress[s.code] = s.pct;
+                });
+                
+                try {
+                    const res = await API.submitResponse({
+                        survey_id: SURVEY_ID,
+                        response_id: responseData?.id,
+                        answers: answersData,
+                        section_progress: progress,
+                        status: 'submitted',
+                        time_taken: Math.round((Date.now() - startTime) / 1000)
+                    });
+                    
+                    if (res.success) {
+                        isSubmitted = true;
+                        document.getElementById('survey-content').style.display = 'none';
+                        document.getElementById('survey-actions').style.display = 'none';
+                        document.getElementById('sidebar').style.display = 'none';
+                        document.getElementById('success-screen').style.display = 'block';
+                        showToast('Khảo sát đã được gửi thành công!', 'success');
+                    }
+                } catch (e) {
+                    showToast('Lỗi khi gửi: ' + e.message, 'error');
+                }
+            }
+
+            // ============================================
+            // INIT
+            // ============================================
+            async function init() {
+                try {
+                    const [survey, response] = await Promise.all([
+                        API.getSurvey(SURVEY_ID),
+                        API.getResponse(SURVEY_ID)
+                    ]);
+                    
+                    surveyData = survey;
+                    responseData = response;
+                    answers = response.answers || {};
+                    sectionProgress = response.section_progress || {};
+                    
+                    renderSurvey(survey);
+                    
+                    setInterval(() => {
+                        if (!isSubmitted && Object.keys(collectAnswers()).length > 0) {
+                            saveDraft();
+                        }
+                    }, 30000);
+                    
+                    if (Object.keys(answers).length > 0) {
+                        showToast('Đã khôi phục dữ liệu đã lưu', 'info');
+                    }
+                    
+                } catch (error) {
+                    console.error('Init error:', error);
+                    showToast('Lỗi: ' + error.message, 'error');
+                    
+                    document.getElementById('loading-state').innerHTML = `
+                        <p style="color:#dc2626;font-weight:600">Không thể tải khảo sát</p>
+                        <p style="font-size:13px;color:#dc2626;margin-top:6px">${escapeHtml(error.message)}</p>
+                        <button onclick="location.reload()" style="margin-top:18px;padding:10px 22px;background:#0054a4;color:white;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer">
+                            Thử lại
+                        </button>
+                    `;
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
+
 </body>
 </html>
 {% endblock %}
