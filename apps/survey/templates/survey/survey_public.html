@@ -1042,10 +1042,10 @@
                 </div>
                 <div class="btn-group">
                     <button class="btn btn-outline" onclick="saveDraft()">
-                        💾 Lưu nháp
+                        Lưu nháp
                     </button>
                     <button class="btn btn-success" id="submit-btn">
-                        ✓ Nộp khảo sát
+                        Nộp khảo sát
                     </button>
                 </div>
             </div>
@@ -1166,6 +1166,7 @@
                                 sectionIndex: sIdx,
                                 questionIndex: qIdx,
                                 sectionCode: section.code || String(sIdx + 1),
+                                sectionDisplayCode: String(sIdx + 1),
                                 sectionTitle: section.title,
                                 title: q.title,
                                 questionNumber: allQuestions.length + 1,
@@ -1182,11 +1183,23 @@
 
                 sections.forEach((section, idx) => {
                     const isActive = idx === 0;
+                    
+                    // 1. Lấy đầy đủ tên phần (loại bỏ mã sec_ rác nếu có)
+                    let displayTitle = section.title || `Phần ${idx + 1}`;
+                    if (displayTitle.includes('sec_')) {
+                        displayTitle = `Phần ${idx + 1}`;
+                    }
+
+                    // 2. Tự động trích xuất số/chữ cho vòng tròn (VD: "Phần A:..." -> lấy "A")
+                    let badgeText = String(idx + 1);
+                    const match = displayTitle.match(/(?:Phần|Mục)\s*([A-Z0-9]+)/i);
+                    if (match) badgeText = match[1];
+
                     html += `
                         <div class="section-card ${isActive ? 'is-active' : ''}" data-section="${idx}" id="section-${idx}">
                             <div class="section-header">
-                                <div class="section-number">${section.code || idx + 1}</div>
-                                <div class="section-title">${escapeHtml(section.title)}</div>
+                                <div class="section-number">${escapeHtml(badgeText)}</div>
+                                <div class="section-title">${escapeHtml(displayTitle)}</div>
                             </div>
                             <div class="section-body">
                                 ${renderQuestions(section.questions || [], idx)}
@@ -1481,15 +1494,22 @@
                 if (!nav) return;
 
                 nav.innerHTML = '';
-                let currentSection = '';
+                let currentSectionIndex = -1;
 
                 questions.forEach((q, idx) => {
                     // Thêm header section nếu section thay đổi
-                    if (q.sectionCode !== currentSection) {
-                        currentSection = q.sectionCode;
+                    if (q.sectionIndex !== currentSectionIndex) {
+                        currentSectionIndex = q.sectionIndex;
                         const sectionHeader = document.createElement('div');
                         sectionHeader.className = 'section-header-nav';
-                        sectionHeader.textContent = `Phần ${q.sectionCode}`;
+                        
+                        // Hiển thị đầy đủ tiêu đề (VD: Phần 1: Thông tin cá nhân)
+                        let headerText = q.sectionTitle || `Phần ${q.sectionIndex + 1}`;
+                        if (headerText.includes('sec_')) {
+                            headerText = `Phần ${q.sectionIndex + 1}`;
+                        }
+                        
+                        sectionHeader.textContent = headerText;
                         nav.appendChild(sectionHeader);
                     }
 
@@ -1547,15 +1567,14 @@
                 
                 const q = allQuestions[index];
                 currentQuestionIndex = index;
-                
-                // Tìm section chứa câu hỏi
+                currentPage = q.sectionIndex; 
+        
                 const sectionIdx = q.sectionIndex;
                 
                 // Hiển thị section đúng
                 document.querySelectorAll('.section-card').forEach((card, idx) => {
                     card.classList.toggle('is-active', idx === sectionIdx);
                 });
-                
                 // Cuộn đến câu hỏi
                 const questionEl = document.querySelector(`.question-item[data-question-id="${q.id}"]`);
                 if (questionEl) {

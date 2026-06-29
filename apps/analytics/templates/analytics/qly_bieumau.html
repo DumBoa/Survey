@@ -1,0 +1,646 @@
+<!-- apps/analytics/templates/analytics/qly_bieumau.html -->
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Biểu Mẫu Khảo Sát</title>
+  
+  {% load static %}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background: #f8fafc; }
+    .toast { animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s; }
+    @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #0054a4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .status-badge {
+      padding: 2px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .status-badge.active { background: #dcfce7; color: #16a34a; }
+    .status-badge.draft { background: #fef3c7; color: #d97706; }
+    .status-badge.closed { background: #f3f4f6; color: #6b7280; }
+    .status-badge.archived { background: #dbeafe; color: #2563eb; }
+    
+    .table-row:hover { background: #f8fafc; }
+  </style>
+</head>
+<body>
+
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  
+  <!-- Header -->
+  <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Quản Lý Biểu Mẫu Khảo Sát</h1>
+    <button id="create-btn" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors" onclick="showCreateModal()">
+      <i data-lucide="plus" style="width:16px;height:16px"></i>
+      Tạo biểu mẫu
+    </button>
+  </header>
+
+  <!-- Search & Filters -->
+  <div class="flex flex-col md:flex-row gap-3 mb-4">
+    <div class="relative flex-1">
+      <i data-lucide="search" style="width:16px;height:16px" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+      <input id="search-input" type="text" class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 bg-white" placeholder="Tìm kiếm biểu mẫu..." oninput="filterForms()">
+    </div>
+    <div class="flex gap-2 flex-wrap">
+      <select id="filter-status" class="px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-100" onchange="filterForms()">
+        <option value="">Tất cả trạng thái</option>
+        <option value="active">Đang hoạt động</option>
+        <option value="draft">Bản nháp</option>
+        <option value="closed">Đã đóng</option>
+        <option value="archived">Đã lưu trữ</option>
+      </select>
+      <select id="filter-category" class="px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-100" onchange="filterForms()">
+        <option value="">Tất cả danh mục</option>
+      </select>
+      <button id="view-toggle" class="px-3 py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors" onclick="toggleView()" title="Chuyển đổi hiển thị">
+        <i data-lucide="layout-grid" style="width:16px;height:16px" id="view-icon"></i>
+      </button>
+      <button id="refresh-btn" class="px-3 py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-colors" onclick="loadData()" title="Làm mới">
+        <i data-lucide="refresh-cw" style="width:16px;height:16px"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bulk Actions -->
+  <div id="bulk-bar" class="hidden mb-4 p-3 rounded-lg border border-blue-200 bg-blue-50 flex items-center gap-3 text-sm flex-wrap">
+    <span id="selected-count" class="font-medium text-blue-700">0 đã chọn</span>
+    <button class="px-3 py-1.5 rounded bg-white border border-gray-200 hover:bg-gray-50 text-sm transition-colors" onclick="bulkAction('archive')">Lưu trữ</button>
+    <button class="px-3 py-1.5 rounded bg-white border border-gray-200 hover:bg-gray-50 text-sm transition-colors" onclick="bulkAction('publish')">Phát hành</button>
+    <button class="px-3 py-1.5 rounded bg-white border border-gray-200 hover:bg-gray-50 text-sm transition-colors" onclick="bulkAction('close')">Đóng</button>
+    <button class="px-3 py-1.5 rounded bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors text-sm" onclick="bulkAction('delete')">Xóa</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading-state" class="text-center py-12">
+    <div class="loading-spinner"></div>
+    <p class="mt-3 text-gray-500 text-sm">Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Table View -->
+  <div id="table-view" class="hidden overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b border-gray-200">
+        <tr>
+          <th class="p-3 text-left w-10"><input type="checkbox" id="select-all" onchange="toggleAll(this.checked)"></th>
+          <th class="p-3 text-left font-medium text-gray-600">Tên biểu mẫu</th>
+          <th class="p-3 text-left font-medium text-gray-600 hidden md:table-cell">Danh mục</th>
+          <th class="p-3 text-left font-medium text-gray-600 hidden sm:table-cell">Trạng thái</th>
+          <th class="p-3 text-left font-medium text-gray-600 hidden lg:table-cell">Người tạo</th>
+          <th class="p-3 text-left font-medium text-gray-600 hidden lg:table-cell">Cập nhật</th>
+          <th class="p-3 text-left font-medium text-gray-600 hidden md:table-cell">Phản hồi</th>
+          <th class="p-3 text-left font-medium text-gray-600">Hành động</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Card View -->
+  <div id="card-view" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+  <!-- Empty State -->
+  <div id="empty-state" class="hidden text-center py-16">
+    <i data-lucide="file-text" style="width:48px;height:48px" class="mx-auto text-gray-300 mb-4"></i>
+    <p class="text-gray-500">Chưa có biểu mẫu khảo sát nào.</p>
+    <button onclick="showCreateModal()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors">
+      Tạo biểu mẫu đầu tiên
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div id="pagination" class="hidden flex items-center justify-between mt-4 text-sm text-gray-600">
+    <span id="page-info"></span>
+    <div class="flex gap-1">
+      <button id="prev-btn" class="px-3 py-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors" onclick="changePage(-1)">← Trước</button>
+      <button id="next-btn" class="px-3 py-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors" onclick="changePage(1)">Sau →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+
+<!-- Delete Confirmation Modal -->
+<div id="confirm-overlay" class="hidden fixed inset-0 bg-black/30 z-40 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl p-6 max-w-sm w-full shadow-xl">
+    <p id="confirm-text" class="font-medium mb-4">Bạn có chắc chắn muốn xóa biểu mẫu này?</p>
+    <div class="flex gap-3 justify-end">
+      <button class="px-4 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 transition-colors" onclick="closeConfirm()">Hủy</button>
+      <button id="confirm-delete-btn" class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 transition-colors" onclick="confirmDelete()">Xóa</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="form-modal" class="hidden fixed inset-0 bg-black/30 z-40 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+    <h3 id="modal-title" class="text-xl font-bold mb-4">Tạo biểu mẫu mới</h3>
+    <form id="survey-form" onsubmit="saveSurvey(event)">
+      <input type="hidden" id="edit-id" value="">
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề <span class="text-red-500">*</span></label>
+        <input id="form-title" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+        <textarea id="form-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+          <select id="form-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Chưa phân loại</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
+          <select id="form-status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="draft">Bản nháp</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="closed">Đã đóng</option>
+            <option value="archived">Đã lưu trữ</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ngày bắt đầu</label>
+          <input id="form-start-date" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ngày kết thúc</label>
+          <input id="form-end-date" type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+      </div>
+      
+      <div class="flex justify-end gap-3 mt-4">
+        <button type="button" class="px-4 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 transition-colors" onclick="closeModal()">Hủy</button>
+        <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors">Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ============================================
+// STATE
+// ============================================
+let forms = [];
+let filtered = [];
+let currentView = 'table';
+let currentPage = 1;
+const perPage = 5;
+let selected = new Set();
+let deleteTarget = null;
+
+// ============================================
+// API HELPER
+// ============================================
+function getCsrfToken() {
+  return document.querySelector('[name=csrf-token]')?.content || '';
+}
+
+async function apiCall(url, method = 'GET', data = null) {
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCsrfToken()
+    },
+    credentials: 'same-origin'
+  };
+  if (data) options.body = JSON.stringify(data);
+  
+  const res = await fetch(url, options);
+  return res.json();
+}
+
+// ============================================
+// TOAST
+// ============================================
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const colors = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    warning: 'bg-yellow-500',
+    info: 'bg-blue-500'
+  };
+  const el = document.createElement('div');
+  el.className = `toast px-4 py-3 rounded-lg ${colors[type] || colors.info} text-white text-sm shadow-lg`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ============================================
+// LOAD DATA
+// ============================================
+async function loadData() {
+  document.getElementById('loading-state').classList.remove('hidden');
+  document.getElementById('table-view').classList.add('hidden');
+  document.getElementById('card-view').classList.add('hidden');
+  document.getElementById('empty-state').classList.add('hidden');
+  document.getElementById('pagination').classList.add('hidden');
+  
+  try {
+    // Load categories
+    const catRes = await apiCall('/analytics/api/categories/');
+    if (catRes.success) {
+      const catSelect = document.getElementById('filter-category');
+      const formCat = document.getElementById('form-category');
+      const currentVal = catSelect.value;
+      
+      // Clear options (keep first)
+      catSelect.innerHTML = '<option value="">Tất cả danh mục</option>';
+      formCat.innerHTML = '<option value="">Chưa phân loại</option>';
+      
+      catRes.data.forEach(cat => {
+        catSelect.innerHTML += `<option value="${cat.name}">${cat.name} (${cat.count})</option>`;
+        formCat.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+      });
+      
+      if (currentVal) catSelect.value = currentVal;
+    }
+    
+    // Load surveys
+    const params = new URLSearchParams({
+      search: document.getElementById('search-input').value,
+      status: document.getElementById('filter-status').value,
+      category: document.getElementById('filter-category').value,
+      page: currentPage,
+      per_page: perPage
+    });
+    
+    const res = await apiCall(`/analytics/api/surveys/list/?${params}`);
+    document.getElementById('loading-state').classList.add('hidden');
+    
+    if (res.success) {
+      forms = res.data;
+      filtered = forms;
+      render();
+    } else {
+      showToast(res.error || 'Lỗi tải dữ liệu', 'error');
+    }
+  } catch (err) {
+    document.getElementById('loading-state').classList.add('hidden');
+    showToast('Lỗi kết nối đến máy chủ', 'error');
+    console.error(err);
+  }
+}
+
+// ============================================
+// RENDER
+// ============================================
+function render() {
+  const start = (currentPage - 1) * perPage;
+  const page = filtered.slice(start, start + perPage);
+  const total = filtered.length;
+  
+  document.getElementById('empty-state').classList.toggle('hidden', total > 0);
+  document.getElementById('table-view').classList.toggle('hidden', currentView !== 'table' || total === 0);
+  document.getElementById('card-view').classList.toggle('hidden', currentView !== 'card' || total === 0);
+  document.getElementById('pagination').classList.toggle('hidden', total === 0);
+  
+  updateBulkBar();
+  
+  if (currentView === 'table') renderTable(page);
+  else renderCards(page);
+  
+  document.getElementById('page-info').textContent = total > 0 ? `${start + 1}–${Math.min(start + perPage, total)} / ${total}` : '';
+  document.getElementById('prev-btn').disabled = currentPage <= 1;
+  document.getElementById('next-btn').disabled = start + perPage >= total;
+  
+  lucide.createIcons();
+}
+
+function renderTable(page) {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = page.map(f => `
+    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors table-row">
+      <td class="p-3"><input type="checkbox" ${selected.has(f.id)?'checked':''} onchange="toggleSelect(${f.id},this.checked)"></td>
+      <td class="p-3">
+        <div class="font-medium text-gray-900">${escapeHtml(f.name)}</div>
+        <div class="text-xs text-gray-400 mt-0.5">${f.code} · ${f.questions} câu hỏi</div>
+      </td>
+      <td class="p-3 hidden md:table-cell text-gray-600">${escapeHtml(f.category)}</td>
+      <td class="p-3 hidden sm:table-cell"><span class="status-badge ${f.status_code}">${f.status}</span></td>
+      <td class="p-3 hidden lg:table-cell text-gray-600">${escapeHtml(f.creator)}</td>
+      <td class="p-3 hidden lg:table-cell text-gray-500">${f.updated}</td>
+      <td class="p-3 hidden md:table-cell text-gray-600">${f.responses}</td>
+      <td class="p-3">
+        <div class="flex gap-1">
+          <button class="p-1.5 rounded hover:bg-gray-100 transition-colors" title="Xem" onclick="viewSurvey(${f.id})">
+            <i data-lucide="eye" style="width:14px;height:14px"></i>
+          </button>
+          <button class="p-1.5 rounded hover:bg-gray-100 transition-colors" title="Chỉnh sửa" onclick="editSurvey(${f.id})">
+            <i data-lucide="edit-2" style="width:14px;height:14px"></i>
+          </button>
+          <button class="p-1.5 rounded hover:bg-gray-100 transition-colors" title="Sao chép" onclick="duplicateSurvey(${f.id})">
+            <i data-lucide="copy" style="width:14px;height:14px"></i>
+          </button>
+          <button class="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors" title="Xóa" onclick="requestDelete(${f.id})">
+            <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderCards(page) {
+  const container = document.getElementById('card-view');
+  container.innerHTML = page.map(f => `
+    <div class="p-4 rounded-lg border border-gray-200 bg-white hover:shadow-sm transition-shadow">
+      <div class="flex items-start justify-between mb-2">
+        <span class="status-badge ${f.status_code}">${f.status}</span>
+        <span class="text-xs text-gray-400">${f.code}</span>
+      </div>
+      <h3 class="font-medium text-gray-900 mb-1">${escapeHtml(f.name)}</h3>
+      <p class="text-xs text-gray-500 mb-3">${escapeHtml(f.category)} · ${escapeHtml(f.creator)} · ${f.updated}</p>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-gray-500">${f.questions} câu hỏi · ${f.responses} phản hồi</span>
+        <div class="flex gap-1">
+          <button class="p-1.5 rounded hover:bg-gray-100 transition-colors" onclick="viewSurvey(${f.id})">
+            <i data-lucide="eye" style="width:14px;height:14px"></i>
+          </button>
+          <button class="p-1.5 rounded hover:bg-gray-100 transition-colors" onclick="editSurvey(${f.id})">
+            <i data-lucide="edit-2" style="width:14px;height:14px"></i>
+          </button>
+          <button class="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors" onclick="requestDelete(${f.id})">
+            <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============================================
+// FILTER & PAGINATION
+// ============================================
+function filterForms() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const status = document.getElementById('filter-status').value;
+  const category = document.getElementById('filter-category').value;
+  
+  filtered = forms.filter(f => {
+    if (q && !f.name.toLowerCase().includes(q) && !f.code.toLowerCase().includes(q)) return false;
+    if (status && f.status_code !== status) return false;
+    if (category && f.category !== category) return false;
+    return true;
+  });
+  currentPage = 1;
+  selected.clear();
+  render();
+}
+
+function changePage(dir) {
+  currentPage += dir;
+  render();
+}
+
+function toggleView() {
+  currentView = currentView === 'table' ? 'card' : 'table';
+  document.getElementById('view-icon').setAttribute('data-lucide', currentView === 'table' ? 'layout-grid' : 'list');
+  render();
+}
+
+// ============================================
+// SELECTION
+// ============================================
+function toggleSelect(id, checked) {
+  checked ? selected.add(id) : selected.delete(id);
+  updateBulkBar();
+}
+
+function toggleAll(checked) {
+  const start = (currentPage - 1) * perPage;
+  filtered.slice(start, start + perPage).forEach(f => checked ? selected.add(f.id) : selected.delete(f.id));
+  render();
+}
+
+function updateBulkBar() {
+  document.getElementById('bulk-bar').classList.toggle('hidden', selected.size === 0);
+  document.getElementById('selected-count').textContent = `${selected.size} đã chọn`;
+}
+
+// ============================================
+// BULK ACTION
+// ============================================
+async function bulkAction(action) {
+  if (selected.size === 0) return;
+  
+  const confirmMsg = {
+    'archive': 'Lưu trữ',
+    'publish': 'Phát hành',
+    'close': 'Đóng',
+    'delete': 'Xóa'
+  };
+  
+  if (!confirm(`Bạn có chắc chắn muốn ${confirmMsg[action]} ${selected.size} biểu mẫu?`)) return;
+  
+  try {
+    const res = await apiCall('/analytics/api/surveys/bulk-action/', 'POST', {
+      survey_ids: Array.from(selected),
+      action: action
+    });
+    
+    if (res.success) {
+      showToast(res.message, 'success');
+      selected.clear();
+      loadData();
+    } else {
+      showToast(res.error || 'Lỗi thực hiện hành động', 'error');
+    }
+  } catch (err) {
+    showToast('Lỗi kết nối', 'error');
+  }
+}
+
+// ============================================
+// CRUD OPERATIONS
+// ============================================
+async function viewSurvey(id) {
+  try {
+    const res = await apiCall(`/analytics/api/surveys/${id}/`);
+    if (res.success) {
+      const data = res.data;
+      showToast(`📋 ${data.title} - ${data.status_display} (${data.stats.submitted} phản hồi)`, 'info');
+    }
+  } catch (err) {
+    showToast('Lỗi tải chi tiết', 'error');
+  }
+}
+
+function editSurvey(id) {
+  const survey = forms.find(f => f.id === id);
+  if (!survey) return;
+  
+  document.getElementById('modal-title').textContent = 'Chỉnh sửa biểu mẫu';
+  document.getElementById('edit-id').value = id;
+  document.getElementById('form-title').value = survey.name;
+  document.getElementById('form-status').value = survey.status_code;
+  
+  // Load detail for more fields
+  apiCall(`/analytics/api/surveys/${id}/`).then(res => {
+    if (res.success) {
+      const data = res.data;
+      document.getElementById('form-description').value = data.description || '';
+      if (data.category) {
+        document.getElementById('form-category').value = data.category.id || '';
+      }
+      if (data.start_date) {
+        document.getElementById('form-start-date').value = data.start_date.slice(0, 16);
+      }
+      if (data.end_date) {
+        document.getElementById('form-end-date').value = data.end_date.slice(0, 16);
+      }
+    }
+  });
+  
+  document.getElementById('form-modal').classList.remove('hidden');
+}
+
+function showCreateModal() {
+  document.getElementById('modal-title').textContent = 'Tạo biểu mẫu mới';
+  document.getElementById('edit-id').value = '';
+  document.getElementById('survey-form').reset();
+  document.getElementById('form-status').value = 'draft';
+  document.getElementById('form-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('form-modal').classList.add('hidden');
+}
+
+async function saveSurvey(e) {
+  e.preventDefault();
+  
+  const id = document.getElementById('edit-id').value;
+  const data = {
+    title: document.getElementById('form-title').value,
+    description: document.getElementById('form-description').value,
+    category_id: document.getElementById('form-category').value || null,
+    status: document.getElementById('form-status').value,
+    start_date: document.getElementById('form-start-date').value,
+    end_date: document.getElementById('form-end-date').value,
+  };
+  
+  try {
+    let res;
+    if (id) {
+      res = await apiCall(`/analytics/api/surveys/${id}/update/`, 'PUT', data);
+    } else {
+      res = await apiCall('/analytics/api/surveys/create/', 'POST', data);
+    }
+    
+    if (res.success) {
+      showToast(res.message, 'success');
+      closeModal();
+      loadData();
+    } else {
+      showToast(res.error || 'Lỗi lưu biểu mẫu', 'error');
+    }
+  } catch (err) {
+    showToast('Lỗi kết nối', 'error');
+  }
+}
+
+function requestDelete(id) {
+  deleteTarget = id;
+  const survey = forms.find(f => f.id === id);
+  document.getElementById('confirm-text').textContent = `Bạn có chắc chắn muốn xóa biểu mẫu "${survey?.name || ''}"?`;
+  document.getElementById('confirm-overlay').classList.remove('hidden');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.add('hidden');
+  deleteTarget = null;
+}
+
+async function confirmDelete() {
+  if (!deleteTarget) return;
+  
+  try {
+    const res = await apiCall(`/analytics/api/surveys/${deleteTarget}/delete/`, 'DELETE');
+    if (res.success) {
+      showToast(res.message, 'success');
+      closeConfirm();
+      loadData();
+    } else {
+      showToast(res.error || 'Lỗi xóa biểu mẫu', 'error');
+    }
+  } catch (err) {
+    showToast('Lỗi kết nối', 'error');
+  }
+}
+
+async function duplicateSurvey(id) {
+  try {
+    const res = await apiCall(`/survey/duplicate/${id}/`, 'POST');
+    if (res.success) {
+      showToast('Đã sao chép biểu mẫu thành công!', 'success');
+      loadData();
+    } else {
+      showToast(res.error || 'Lỗi sao chép', 'error');
+    }
+  } catch (err) {
+    showToast('Lỗi kết nối', 'error');
+  }
+}
+
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+  loadData();
+  lucide.createIcons();
+  
+  // Close modal on overlay click
+  document.getElementById('form-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+  document.getElementById('confirm-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeConfirm();
+  });
+});
+</script>
+
+</body>
+</html>
