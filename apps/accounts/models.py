@@ -30,7 +30,7 @@ class User(AbstractUser):
     is_surveyor = models.BooleanField(default=False, verbose_name="Là điều tra viên")
     last_active_at = models.DateTimeField(auto_now=True, verbose_name="Lần hoạt động cuối")
 
-    # ⚠️ QUAN TRỌNG: Thêm 2 dòng dưới đây để sửa lỗi xung đột
+
     groups = models.ManyToManyField(
         'auth.Group',
         related_name='accounts_user_set',

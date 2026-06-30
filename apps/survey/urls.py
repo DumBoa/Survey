@@ -26,7 +26,6 @@ urlpatterns = [
     path('api/categories/', views.CategoryListView.as_view(), name='api_category_list'),
     path('api/question-types/', views.QuestionTypeListView.as_view(), name='api_question_type_list'),
 
-
     # ============================================
     # PUBLIC SURVEY URLs
     # ============================================
@@ -41,5 +40,10 @@ urlpatterns = [
     path('api/public/surveys/<int:survey_id>/', views.SurveyPublicDetailView.as_view(), name='api_public_survey_detail'),
     path('api/public/surveys/<int:survey_id>/response/', views.PublicResponseView.as_view(), name='api_public_response'),
     path('api/public/responses/submit/', views.survey_submit_response, name='api_public_submit'),
-
+    
+    # ============================================
+    # MỚI: API mapping
+    # ============================================
+    path('api/public/surveys/<int:survey_id>/mapping/', views.get_survey_mapping, name='api_survey_mapping'),
+    path('api/public/surveys/<int:survey_id>/target-groups/', views.get_target_groups, name='api_target_groups'),
 ]

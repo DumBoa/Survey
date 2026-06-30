@@ -1,0 +1,660 @@
+<!-- apps/analytics/templates/analytics/assignments.html -->
+{% extends "analytics/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Gán biểu mẫu cho nhóm đối tượng{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h4 class="mb-1 fw-bold text-dark">Gán biểu mẫu cho nhóm đối tượng</h4>
+        <p class="text-muted mb-0" style="font-size:14px;">Cấu hình nhóm đối tượng nào được làm biểu mẫu nào</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignmentModal" id="btnAddAssignment">
+        <i class="bi bi-plus-lg me-1"></i> Thêm gán mới
+    </button>
+</div>
+
+<!-- Bộ lọc -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">Nhóm đối tượng</label>
+                <select class="form-select form-select-sm" id="filterGroup">
+                    <option value="">Tất cả nhóm</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">Biểu mẫu</label>
+                <select class="form-select form-select-sm" id="filterForm">
+                    <option value="">Tất cả biểu mẫu</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control form-control-sm border-start-0" 
+                           id="searchInput" placeholder="Tìm theo tên nhóm hoặc biểu mẫu...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-primary w-100" id="btnSearch">
+                    <i class="bi bi-search me-1"></i> Tìm kiếm
+                </button>
+                <!-- THÊM NÚT RESET VÀO ĐÂY -->
+                <button class="btn btn-sm btn-secondary w-100 mt-2" id="btnReset">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bảng danh sách -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50px;">STT</th>
+                        <th>Nhóm đối tượng</th>
+                        <th>Mã nhóm</th>
+                        <th>Biểu mẫu được gán</th>
+                        <th style="width:120px;">Trạng thái</th>
+                        <th style="width:180px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="assignmentTableBody">
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white border-top-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small" id="tableInfo">Đang tải...</span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" id="pagination">
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa gán -->
+<div class="modal fade" id="assignmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignmentModalTitle">Thêm gán mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="assignmentForm">
+                    <input type="hidden" id="editAssignmentId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chọn nhóm đối tượng <span class="text-danger">*</span></label>
+                        <select class="form-select" id="assignmentGroup" required>
+                            <option value="">-- Chọn nhóm --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chọn biểu mẫu <span class="text-danger">*</span></label>
+                        <select class="form-select" id="assignmentForms" multiple style="height:150px;" required>
+                        </select>
+                        <div class="form-text">Giữ Ctrl/Cmd để chọn nhiều biểu mẫu</div>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="assignmentActive" checked>
+                        <label class="form-check-label" for="assignmentActive">
+                            Đang áp dụng
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnSaveAssignment">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Gỡ biểu mẫu -->
+<div class="modal fade" id="removeFormModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning">Gỡ biểu mẫu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc muốn gỡ biểu mẫu <strong id="removeFormCode"></strong> khỏi nhóm <strong id="removeGroupName"></strong>?</p>
+                <p class="text-muted small mt-1">Nhóm sẽ không còn quyền truy cập biểu mẫu này.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-warning" id="btnConfirmRemoveForm">Gỡ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xóa tất cả -->
+<div class="modal fade" id="deleteAllModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc muốn xóa tất cả biểu mẫu đã gán cho nhóm <strong id="deleteAllName"></strong>?</p>
+                <p class="text-muted small mt-1">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDeleteAll">Xóa tất cả</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    const pageSize = 10;
+    let deleteTargetId = null;
+    let removeTarget = null;
+    let allGroups = [];
+    let allForms = [];
+
+    // ============================================
+    // LẤY CSRF TOKEN
+    // ============================================
+    function getCSRFToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === 'csrftoken=') {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ============================================
+    // LOAD DỮ LIỆU CHO DROPDOWN
+    // ============================================
+    function loadDropdownData() {
+    // Load groups từ target groups
+    fetch('/analytics/api/target-groups/options/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Groups data:', data); // Thêm log
+        if (data.success) {
+            allGroups = data.data;
+            renderGroupOptions(data.data);
+        } else {
+            console.error('Error loading groups:', data.error);
+        }
+    })
+    .catch(error => console.error('Fetch error groups:', error));
+
+    // Load forms từ survey
+    fetch('/analytics/api/survey-forms/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Forms data:', data); // Thêm log
+        if (data.success) {
+            allForms = data.data;
+            renderFormOptions(data.data);
+        } else {
+            console.error('Error loading forms:', data.error);
+        }
+    })
+    .catch(error => console.error('Fetch error forms:', error));
+}
+
+    function renderGroupOptions(groups) {
+        // Filter group
+        const filterGroup = document.getElementById('filterGroup');
+        filterGroup.innerHTML = '<option value="">Tất cả nhóm</option>' +
+            groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+
+        // Modal group
+        const modalGroup = document.getElementById('assignmentGroup');
+        modalGroup.innerHTML = '<option value="">-- Chọn nhóm --</option>' +
+            groups.map(g => `<option value="${g.id}">${g.code} - ${g.name}</option>`).join('');
+    }
+
+    function renderFormOptions(forms) {
+        // Filter form
+        const filterForm = document.getElementById('filterForm');
+        filterForm.innerHTML = '<option value="">Tất cả biểu mẫu</option>' +
+            forms.map(f => `<option value="${f.code}">${f.code} - ${f.name}</option>`).join('');
+
+        // Modal forms (multi-select)
+        const modalForms = document.getElementById('assignmentForms');
+        modalForms.innerHTML = forms.map(f => 
+            `<option value="${f.code}">${f.code} - ${f.name}</option>`
+        ).join('');
+    }
+
+    // ============================================
+    // LOAD ASSIGNMENTS
+    // ============================================
+    function loadAssignments() {
+    const groupId = document.getElementById('filterGroup').value;
+    const formCode = document.getElementById('filterForm').value;
+    const search = document.getElementById('searchInput').value;
+    
+    let url = `/analytics/api/assignments/?page=${currentPage}&per_page=${pageSize}`;
+    if (groupId) url += `&group=${groupId}`;
+    if (formCode) url += `&form=${formCode}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    
+    console.log('Fetching URL:', url); // Thêm log
+    
+    fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => {
+        console.log('Response status:', response.status); // Thêm log
+        return response.json();
+    })
+    .then(data => {
+        console.log('Data received:', data); // Thêm log
+        if (data.success) {
+            renderTable(data);
+        } else {
+            alert('Không thể tải dữ liệu: ' + (data.error || 'Lỗi không xác định'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('assignmentTableBody').innerHTML = `
+            <tr><td colspan="6" class="text-center py-4 text-danger">
+                Lỗi kết nối: ${error.message}
+            </td></tr>`;
+    });
+}
+
+    // ============================================
+    // RENDER BẢNG
+    // ============================================
+    function renderTable(data) {
+        const tbody = document.getElementById('assignmentTableBody');
+        const items = data.data || [];
+        
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Chưa có gán biểu mẫu nào</td></tr>`;
+        } else {
+            tbody.innerHTML = items.map((item, idx) => `
+                <tr>
+                    <td>${(data.page - 1) * data.per_page + idx + 1}</td>
+                    <td><i class="bi ${item.group_icon || 'bi-people'} me-2"></i>${item.group_name}</td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${item.group_code}</span></td>
+                    <td>
+                        ${item.forms && item.forms.length > 0 ? 
+                            item.forms.map(f => `
+                                <span class="badge bg-info bg-opacity-10 text-info me-1">
+                                    ${f}
+                                    <button class="btn-remove-form btn btn-sm btn-link text-danger p-0 ms-1" 
+                                        data-group-id="${item.group_id}" 
+                                        data-group-name="${item.group_name}"
+                                        data-form-code="${f}"
+                                        style="font-size:10px; text-decoration:none;"
+                                        title="Gỡ biểu mẫu này">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </span>
+                            `).join('')
+                            : '<span class="text-muted small">Chưa gán</span>'
+                        }
+                    </td>
+                    <td>
+                        <span class="badge ${item.is_active ? 'bg-success' : 'bg-secondary'}">
+                            ${item.is_active ? 'Đang áp dụng' : 'Tạm dừng'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${item.group_id}" title="Sửa">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-delete-all" data-id="${item.group_id}" data-name="${item.group_name}" title="Xóa tất cả">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Cập nhật thông tin phân trang
+        const start = (data.page - 1) * data.per_page + 1;
+        const end = Math.min(data.page * data.per_page, data.total);
+        document.getElementById('tableInfo').textContent = 
+            data.total > 0 ? `Hiển thị ${start}-${end} trên tổng ${data.total}` : 'Không có dữ liệu';
+        
+        renderPagination(data);
+    }
+
+    // ============================================
+    // RENDER PHÂN TRANG
+    // ============================================
+    function renderPagination(data) {
+        const pagination = document.getElementById('pagination');
+        const totalPages = data.total_pages || 1;
+        const currentPage = data.page || 1;
+        
+        let html = '';
+        
+        html += `<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}">Trang trước</a>
+        </li>`;
+        
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+        
+        if (startPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>`;
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        html += `<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}">Trang sau</a>
+        </li>`;
+        
+        pagination.innerHTML = html;
+        
+        pagination.querySelectorAll('a.page-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = parseInt(this.dataset.page);
+                if (page && page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    loadAssignments();
+                }
+            });
+        });
+    }
+
+    // ============================================
+    // LƯU GÁN (Tạo/Sửa)
+    // ============================================
+    document.getElementById('btnSaveAssignment').addEventListener('click', function() {
+        const id = document.getElementById('editAssignmentId').value;
+        const groupId = document.getElementById('assignmentGroup').value;
+        const formsSelect = document.getElementById('assignmentForms');
+        const isActive = document.getElementById('assignmentActive').checked;
+        
+        // Lấy các form được chọn
+        const forms = Array.from(formsSelect.selectedOptions).map(opt => opt.value);
+        
+        if (!groupId) {
+            alert('Vui lòng chọn nhóm đối tượng');
+            return;
+        }
+        
+        if (forms.length === 0) {
+            alert('Vui lòng chọn ít nhất một biểu mẫu');
+            return;
+        }
+        
+        const data = {
+            group_id: parseInt(groupId),
+            forms: forms,
+            is_active: isActive
+        };
+        
+        const url = id ? 
+            `/analytics/api/assignments/${id}/update/` : 
+            '/analytics/api/assignments/create/';
+        const method = id ? 'PUT' : 'POST';
+        
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('assignmentModal')).hide();
+                loadAssignments();
+                resetModal();
+            } else {
+                alert('Lỗi: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra: ' + error);
+        });
+    });
+
+    // ============================================
+    // RESET MODAL
+    // ============================================
+    function resetModal() {
+        document.getElementById('assignmentForm').reset();
+        document.getElementById('editAssignmentId').value = '';
+        document.getElementById('assignmentActive').checked = true;
+        document.getElementById('assignmentModalTitle').textContent = 'Thêm gán mới';
+        document.getElementById('assignmentGroup').value = '';
+        document.getElementById('assignmentForms').selectedIndex = -1;
+    }
+
+    // ============================================
+    // GỠ BIỂU MẪU
+    // ============================================
+    document.getElementById('assignmentTableBody').addEventListener('click', function(e) {
+        // Nút gỡ biểu mẫu
+        const removeBtn = e.target.closest('.btn-remove-form');
+        if (removeBtn) {
+            const groupId = removeBtn.dataset.groupId;
+            const groupName = removeBtn.dataset.groupName;
+            const formCode = removeBtn.dataset.formCode;
+            
+            removeTarget = { groupId, formCode };
+            document.getElementById('removeFormCode').textContent = formCode;
+            document.getElementById('removeGroupName').textContent = groupName;
+            
+            const modal = new bootstrap.Modal(document.getElementById('removeFormModal'));
+            modal.show();
+            return;
+        }
+
+        // Nút Edit
+        const editBtn = e.target.closest('.btn-edit');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            fetch(`/analytics/api/assignments/${id}/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const item = data.data;
+                    document.getElementById('editAssignmentId').value = item.group_id;
+                    document.getElementById('assignmentGroup').value = item.group_id;
+                    document.getElementById('assignmentActive').checked = item.is_active;
+                    document.getElementById('assignmentModalTitle').textContent = 'Sửa gán biểu mẫu';
+                    
+                    // Chọn các forms đã gán
+                    const formsSelect = document.getElementById('assignmentForms');
+                    Array.from(formsSelect.options).forEach(opt => {
+                        opt.selected = item.forms && item.forms.includes(opt.value);
+                    });
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('assignmentModal'));
+                    modal.show();
+                }
+            })
+            .catch(error => {
+                alert('Không thể tải thông tin gán');
+            });
+            return;
+        }
+
+        // Nút Delete All
+        const delBtn = e.target.closest('.btn-delete-all');
+        if (delBtn) {
+            deleteTargetId = parseInt(delBtn.dataset.id);
+            document.getElementById('deleteAllName').textContent = delBtn.dataset.name;
+            const modal = new bootstrap.Modal(document.getElementById('deleteAllModal'));
+            modal.show();
+        }
+    });
+
+    // ============================================
+    // XÁC NHẬN GỠ BIỂU MẪU
+    // ============================================
+    document.getElementById('btnConfirmRemoveForm').addEventListener('click', function() {
+        if (!removeTarget) return;
+        
+        const { groupId, formCode } = removeTarget;
+        
+        fetch(`/analytics/api/assignments/${groupId}/remove-form/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ form_code: formCode })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('removeFormModal')).hide();
+                loadAssignments();
+                removeTarget = null;
+            } else {
+                alert('Lỗi: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra: ' + error);
+        });
+    });
+
+    // ============================================
+    // XÁC NHẬN XÓA TẤT CẢ
+    // ============================================
+    document.getElementById('btnConfirmDeleteAll').addEventListener('click', function() {
+        if (!deleteTargetId) return;
+        
+        fetch(`/analytics/api/assignments/${deleteTargetId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('deleteAllModal')).hide();
+                loadAssignments();
+                deleteTargetId = null;
+            } else {
+                alert('Lỗi: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra: ' + error);
+        });
+    });
+
+    // ============================================
+    // TÌM KIẾM
+    // ============================================
+    document.getElementById('btnSearch').addEventListener('click', function() {
+        currentPage = 1;
+        loadAssignments();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', function() {
+        document.getElementById('filterGroup').value = '';
+        document.getElementById('filterForm').value = '';
+        document.getElementById('searchInput').value = '';
+        currentPage = 1;
+        loadAssignments();
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('btnSearch').click();
+        }
+    });
+
+    // ============================================
+    // RESET MODAL KHI ĐÓNG
+    // ============================================
+    document.getElementById('assignmentModal').addEventListener('hidden.bs.modal', function() {
+        resetModal();
+    });
+
+    document.getElementById('removeFormModal').addEventListener('hidden.bs.modal', function() {
+        removeTarget = null;
+    });
+
+    document.getElementById('deleteAllModal').addEventListener('hidden.bs.modal', function() {
+        deleteTargetId = null;
+    });
+
+    // ============================================
+    // KHỞI TẠO
+    // ============================================
+    loadDropdownData();
+    loadAssignments();
+});
+</script>
+{% endblock %}

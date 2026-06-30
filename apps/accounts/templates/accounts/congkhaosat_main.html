@@ -546,6 +546,12 @@
             display: flex;
         }
 
+        .no-data-message {
+            padding: 2rem;
+            text-align: center;
+            color: #64748B;
+        }
+
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             .step-line { display: none; }
@@ -581,7 +587,7 @@
             <div class="logo-circle me-3">CCHC</div>
             <div>
                 <div class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Bộ Nội Vụ • Vụ Cải Cách Hành Chính</div>
-                <h1 class="h4 mb-1 fw-bold text-dark">Hệ thống Theo dõi, Đánh giá Cải cách Hành chính (CCHC)</h1>
+                <h1 class="h4 mb-1 fw-bold text-dark" id="surveyTitle">Hệ thống Theo dõi, Đánh giá Cải cách Hành chính (CCHC)</h1>
                 <div class="text-muted" style="font-size: 0.9rem;">Cổng khảo sát trực tuyến dành cho cán bộ, công chức</div>
             </div>
         </div>
@@ -610,7 +616,7 @@
                     <div class="step-number">3</div>
                     <div>
                         <div class="step-title">Biểu mẫu khảo sát</div>
-                        <div class="step-subtitle">BM-03 / BM-04 / BM-05</div>
+                        <div class="step-subtitle">Xác nhận biểu mẫu</div>
                     </div>
                 </div>
             </div>
@@ -631,34 +637,20 @@
                         <div class="alert-info-custom">
                             <i class="bi bi-info-circle fs-5 mt-1"></i>
                             <div>
-                                Vui lòng điền đầy đủ thông tin bên dưới để hệ thống xác định biểu mẫu khảo sát phù hợp (BM-03, BM-04, BM-05). Thông tin của bạn sẽ được đối chiếu với danh sách đối tượng chính thức.
+                                Vui lòng điền đầy đủ thông tin bên dưới để hệ thống xác định biểu mẫu khảo sát phù hợp. Thông tin của bạn sẽ được đối chiếu với danh sách đối tượng chính thức.
                             </div>
                         </div>
 
                         <div style="margin-bottom: 1.5rem;">
                             <label for="agencyInput" class="field-label">Chọn Đơn vị / Cơ quan công tác <span class="required-star">*</span></label>
-                            <p class="text-muted mb-3" style="font-size: 0.85rem;">Tìm kiếm Sở, Ban, Ngành hoặc UBND trực thuộc TP. Hà Nội theo tên đơn vị</p>
+                            <p class="text-muted mb-3" style="font-size: 0.85rem;">Tìm kiếm Sở, Ban, Ngành hoặc UBND theo tên đơn vị</p>
                             
                             <div class="position-relative">
-                                <input type="text" id="agencyInput" class="form-control searchable-input" list="hanoiAgencies" placeholder="Tìm kiếm Sở, Ban, Ngành, UBND Phường/Xã..." autocomplete="off">
+                                <input type="text" id="agencyInput" class="form-control searchable-input" list="hanoiAgencies" placeholder="Tìm kiếm đơn vị công tác..." autocomplete="off">
                                 <i class="bi bi-chevron-down position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%); color: #64748B; pointer-events: none;"></i>
                                 
                                 <datalist id="hanoiAgencies">
-                                    <option value="Sở Nội vụ TP. Hà Nội">
-                                    <option value="Sở Thông tin và Truyền thông TP. Hà Nội">
-                                    <option value="Sở Kế hoạch và Đầu tư TP. Hà Nội">
-                                    <option value="Sở Tài chính TP. Hà Nội">
-                                    <option value="Sở Y tế TP. Hà Nội">
-                                    <option value="Sở Giáo dục và Đào tạo TP. Hà Nội">
-                                    <option value="Sở Giao thông Vận tải TP. Hà Nội">
-                                    <option value="Thanh tra Thành phố Hà Nội">
-                                    <option value="UBND Quận Hoàn Kiếm">
-                                    <option value="UBND Quận Ba Đình">
-                                    <option value="UBND Quận Đống Đa">
-                                    <option value="UBND Quận Hai Bà Trưng">
-                                    <option value="UBND Quận Cầu Giấy">
-                                    <option value="UBND Phường Tràng Tiền (Q. Hoàn Kiếm)">
-                                    <option value="UBND Phường Hàng Bài (Q. Hoàn Kiếm)">
+                                    <!-- Sẽ được load từ API -->
                                 </datalist>
                             </div>
                             <div class="invalid-feedback d-block" id="agencyError" style="display:none;">Vui lòng chọn đơn vị công tác</div>
@@ -668,47 +660,15 @@
                             <div class="field-label">Chọn Nhóm đối tượng / Vai trò <span class="required-star">*</span></div>
                             <p class="text-muted mb-3" style="font-size: 0.85rem;">Chọn nhóm phù hợp với chức danh và nhiệm vụ của bạn</p>
 
-                            <label class="radio-card" id="card-role-1">
-                                <div class="radio-input-wrapper">
-                                    <input class="form-check-input form-check-input-custom" type="radio" name="roleSelection" value="Nhóm 1: Lãnh đạo quản lý" data-form='["BM-03", "BM-04"]'>
-                                </div>
-                                <div class="radio-icon-box"><i class="bi bi-person-badge"></i></div>
-                                <div class="radio-content">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <div class="radio-title">Nhóm 1: Lãnh đạo quản lý</div>
-                                        <div><span class="badge-form">BM-03</span> <span class="badge-form">BM-04</span></div>
+                            <!-- Container cho target groups - sẽ được render từ API -->
+                            <div id="targetGroupsContainer">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
                                     </div>
-                                    <p class="radio-subtitle">Lãnh đạo Sở Nội vụ, Lãnh đạo các Sở/Ban/Ngành, Chủ tịch/Phó Chủ tịch UBND cấp huyện, cấp xã.</p>
+                                    <span class="ms-2 text-muted">Đang tải danh sách nhóm đối tượng...</span>
                                 </div>
-                            </label>
-
-                            <label class="radio-card" id="card-role-2">
-                                <div class="radio-input-wrapper">
-                                    <input class="form-check-input form-check-input-custom" type="radio" name="roleSelection" value="Nhóm 2: Cán bộ chuyên trách CCHC" data-form='["BM-03", "BM-05"]'>
-                                </div>
-                                <div class="radio-icon-box"><i class="bi bi-shield-check"></i></div>
-                                <div class="radio-content">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <div class="radio-title">Nhóm 2: Cán bộ chuyên trách CCHC</div>
-                                        <div><span class="badge-form">BM-03</span> <span class="badge-form">BM-05</span></div>
-                                    </div>
-                                    <p class="radio-subtitle">Cán bộ đầu mối theo dõi, tổng hợp và trực tiếp thực hiện kết quả cải cách hành chính.</p>
-                                </div>
-                            </label>
-
-                            <label class="radio-card" id="card-role-3">
-                                <div class="radio-input-wrapper">
-                                    <input class="form-check-input form-check-input-custom" type="radio" name="roleSelection" value="Nhóm 3: Cán bộ phụ trách CNTT" data-form='["BM-05"]'>
-                                </div>
-                                <div class="radio-icon-box"><i class="bi bi-display"></i></div>
-                                <div class="radio-content">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <div class="radio-title">Nhóm 3: Cán bộ phụ trách CNTT</div>
-                                        <div><span class="badge-form">BM-05</span></div>
-                                    </div>
-                                    <p class="radio-subtitle">Cán bộ quản trị mạng, hạ tầng số, nền tảng số và quản lý hệ thống thông tin đơn vị.</p>
-                                </div>
-                            </label>
+                            </div>
                             <div class="invalid-feedback d-block" id="roleError" style="display:none;">Vui lòng chọn nhóm đối tượng</div>
                         </div>
 
@@ -933,311 +893,230 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // ---------- DOM Elements ----------
-            const stepWizard = document.getElementById('stepWizard');
-            const step1Content = document.getElementById('step1Content');
-            const step2Content = document.getElementById('step2Content');
-            const step3Content = document.getElementById('step3Content');
-            
-            const agencyInput = document.getElementById('agencyInput');
-            const radioCards = document.querySelectorAll('.radio-card');
-            const radioInputs = document.querySelectorAll('input[name="roleSelection"]');
-            
-            // Personal info fields
-            const fullName = document.getElementById('fullName');
-            const position = document.getElementById('position');
-            const department = document.getElementById('department');
-            const phone = document.getElementById('phone');
-            const email = document.getElementById('email');
-            const notes = document.getElementById('notes');
-            
-            const btnToStep2 = document.getElementById('btnToStep2');
-            const btnToStep3 = document.getElementById('btnToStep3');
-            const btnBackToStep1 = document.getElementById('btnBackToStep1');
-            const btnBackToStep2 = document.getElementById('btnBackToStep2');
-            const btnSubmit = document.getElementById('btnSubmit');
-            
-            // Sidebar previews
-            const previewAgency = document.getElementById('previewAgency');
-            const previewRole = document.getElementById('previewRole');
-            const previewForms = document.getElementById('previewForms');
-            const previewName = document.getElementById('previewName');
-            const previewPosition = document.getElementById('previewPosition');
-            const previewDepartment = document.getElementById('previewDepartment');
-            const previewEmail = document.getElementById('previewEmail');
-            const personalInfoPreview = document.getElementById('personalInfoPreview');
-            
-            // Step indicators
-            const stepDots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3')];
-            const stepLabels = [document.getElementById('label1'), document.getElementById('label2'), document.getElementById('label3')];
-            const stepElements = stepWizard.querySelectorAll('.step');
-            const stepLines = [document.getElementById('line1'), document.getElementById('line2')];
-            
-            // Survey badges
-            const badgeBM03 = document.getElementById('badgeBM03');
-            const badgeBM04 = document.getElementById('badgeBM04');
-            const badgeBM05 = document.getElementById('badgeBM05');
-            const assignedSurveysList = document.getElementById('assignedSurveysList');
-            const assignedSurveysDiv = document.getElementById('assignedSurveys');
-            const surveyCards = document.querySelectorAll('.survey-card');
-            
-            // Loading
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            
-            // State
-            let currentStep = 1;
-            let selectedRole = null;
-            let selectedForms = [];
-            const surveyId = {{ survey_id|default:'null' }};
+    document.addEventListener('DOMContentLoaded', function() {
+        // ---------- DOM Elements ----------
+        const stepWizard = document.getElementById('stepWizard');
+        const step1Content = document.getElementById('step1Content');
+        const step2Content = document.getElementById('step2Content');
+        const step3Content = document.getElementById('step3Content');
+        
+        const agencyInput = document.getElementById('agencyInput');
+        const targetGroupsContainer = document.getElementById('targetGroupsContainer');
+        
+        // Personal info fields
+        const fullName = document.getElementById('fullName');
+        const position = document.getElementById('position');
+        const department = document.getElementById('department');
+        const phone = document.getElementById('phone');
+        const email = document.getElementById('email');
+        const notes = document.getElementById('notes');
+        
+        const btnToStep2 = document.getElementById('btnToStep2');
+        const btnToStep3 = document.getElementById('btnToStep3');
+        const btnBackToStep1 = document.getElementById('btnBackToStep1');
+        const btnBackToStep2 = document.getElementById('btnBackToStep2');
+        const btnSubmit = document.getElementById('btnSubmit');
+        
+        // Sidebar previews
+        const previewAgency = document.getElementById('previewAgency');
+        const previewRole = document.getElementById('previewRole');
+        const previewForms = document.getElementById('previewForms');
+        const previewName = document.getElementById('previewName');
+        const previewPosition = document.getElementById('previewPosition');
+        const previewDepartment = document.getElementById('previewDepartment');
+        const previewEmail = document.getElementById('previewEmail');
+        const personalInfoPreview = document.getElementById('personalInfoPreview');
+        
+        // Step indicators
+        const stepDots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3')];
+        const stepLabels = [document.getElementById('label1'), document.getElementById('label2'), document.getElementById('label3')];
+        const stepElements = stepWizard.querySelectorAll('.step');
+        const stepLines = [document.getElementById('line1'), document.getElementById('line2')];
+        
+        // Survey badges
+        const badgeBM03 = document.getElementById('badgeBM03');
+        const badgeBM04 = document.getElementById('badgeBM04');
+        const badgeBM05 = document.getElementById('badgeBM05');
+        const assignedSurveysList = document.getElementById('assignedSurveysList');
+        const assignedSurveysDiv = document.getElementById('assignedSurveys');
+        const surveyCards = document.querySelectorAll('.survey-card');
+        
+        // Loading
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        // State
+        let currentStep = 1;
+        let selectedRole = null;
+        let selectedForms = [];
+        let organizations = [];
+        let targetGroups = [];
+        const surveyId = {{ survey_id|default:'null' }};
 
-            // ---------- Helper Functions ----------
-            function showLoading() {
-                loadingOverlay.classList.add('show');
-            }
+        // ---------- Helper Functions ----------
+        function showLoading() {
+            loadingOverlay.classList.add('show');
+        }
 
-            function hideLoading() {
-                loadingOverlay.classList.remove('show');
-            }
+        function hideLoading() {
+            loadingOverlay.classList.remove('show');
+        }
 
-            function showToast(message, type = 'success') {
-                // Simple alert for now
-                alert(message);
-            }
-
-            function updateSidebarInfo() {
-                // Cập nhật preview đơn vị
-                const agencyVal = agencyInput.value.trim();
-                if (agencyVal) {
-                    previewAgency.innerHTML = `<span class="dynamic-value">${agencyVal}</span>`;
-                    previewAgency.classList.remove('dynamic-placeholder');
-                } else {
-                    previewAgency.innerHTML = 'Chưa chọn';
-                    previewAgency.classList.add('dynamic-placeholder');
-                }
-
-                // Cập nhật preview role
-                const selectedRadio = document.querySelector('input[name="roleSelection"]:checked');
-                if (selectedRadio) {
-                    const roleName = selectedRadio.value;
-                    previewRole.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> <span class="dynamic-value">${roleName}</span>`;
-                    previewRole.classList.remove('dynamic-placeholder');
-                    
-                    // Update forms
-                    const forms = JSON.parse(selectedRadio.dataset.form || '[]');
-                    selectedForms = forms;
-                    const formHtml = forms.map(f => 
-                        `<span class="badge bg-primary-custom me-1"><i class="bi bi-file-earmark-text me-1"></i>${f}</span>`
-                    ).join('');
-                    previewForms.innerHTML = formHtml || 'Chưa có';
-                    previewForms.classList.remove('dynamic-placeholder');
-                    
-                    // Update survey cards
-                    updateSurveyCards();
-                } else {
-                    previewRole.innerHTML = 'Chưa chọn';
-                    previewRole.classList.add('dynamic-placeholder');
-                    previewForms.innerHTML = 'Hệ thống sẽ tự động gán';
-                    previewForms.classList.add('dynamic-placeholder');
-                }
-
-                // Cập nhật thông tin cá nhân
-                const nameVal = fullName.value.trim();
-                const posVal = position.value.trim();
-                const deptVal = department.value.trim();
-                const emailVal = email.value.trim();
-                
-                if (nameVal || posVal || deptVal || emailVal) {
-                    personalInfoPreview.style.display = 'block';
-                    previewName.textContent = nameVal || 'Chưa nhập';
-                    previewName.className = nameVal ? 'dynamic-value' : 'dynamic-placeholder';
-                    previewPosition.textContent = posVal || 'Chưa nhập';
-                    previewPosition.className = posVal ? 'dynamic-value' : 'dynamic-placeholder';
-                    previewDepartment.textContent = deptVal || 'Chưa nhập';
-                    previewDepartment.className = deptVal ? 'dynamic-value' : 'dynamic-placeholder';
-                    previewEmail.textContent = emailVal || 'Chưa nhập';
-                    previewEmail.className = emailVal ? 'dynamic-value' : 'dynamic-placeholder';
-                } else {
-                    personalInfoPreview.style.display = 'none';
-                }
-            }
-
-            function updateSurveyCards() {
-                // Reset all survey cards
-                surveyCards.forEach(card => {
-                    card.classList.remove('active');
-                    const badge = card.querySelector('.badge');
-                    if (badge) {
-                        badge.textContent = 'Chưa gán';
-                        badge.className = 'badge bg-secondary';
+        function getCSRFToken() {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, 10) === 'csrftoken=') {
+                        cookieValue = decodeURIComponent(cookie.substring(10));
+                        break;
                     }
-                });
-
-                // Show assigned surveys
-                if (selectedForms.length > 0) {
-                    assignedSurveysDiv.style.display = 'block';
-                    assignedSurveysList.textContent = selectedForms.join(', ');
-                    
-                    selectedForms.forEach(form => {
-                        const card = document.querySelector(`.survey-card[data-survey="${form}"]`);
-                        if (card) {
-                            card.classList.add('active');
-                            const badge = card.querySelector('.badge');
-                            if (badge) {
-                                badge.textContent = '✓ Được gán';
-                                badge.className = 'badge bg-success';
-                            }
-                        }
-                    });
-                } else {
-                    assignedSurveysDiv.style.display = 'none';
                 }
             }
+            return cookieValue;
+        }
 
-            function validateStep1() {
-                const isAgencyFilled = agencyInput.value.trim().length > 0;
-                const isRoleSelected = document.querySelector('input[name="roleSelection"]:checked') !== null;
-                
-                document.getElementById('agencyError').style.display = isAgencyFilled ? 'none' : 'block';
-                document.getElementById('roleError').style.display = isRoleSelected ? 'none' : 'block';
-                agencyInput.classList.toggle('is-invalid', !isAgencyFilled);
-                
-                btnToStep2.disabled = !(isAgencyFilled && isRoleSelected);
-            }
+        // ---------- Load Organizations ----------
+        function loadOrganizations() {
+            fetch('/accounts/api/organizations/', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    organizations = data.data;
+                    renderOrganizations(data.data);
+                } else {
+                    console.error('Error loading organizations:', data.error);
+                }
+            })
+            .catch(error => console.error('Fetch error:', error));
+        }
 
-            function validateStep2() {
-                const isValid = fullName.value.trim().length > 0 && 
-                               position.value.trim().length > 0 && 
-                               department.value.trim().length > 0 && 
-                               phone.value.trim().length > 0 && 
-                               email.value.trim().length > 0;
-                
-                document.getElementById('fullNameError').style.display = fullName.value.trim() ? 'none' : 'block';
-                document.getElementById('positionError').style.display = position.value.trim() ? 'none' : 'block';
-                document.getElementById('departmentError').style.display = department.value.trim() ? 'none' : 'block';
-                document.getElementById('phoneError').style.display = phone.value.trim() ? 'none' : 'block';
-                document.getElementById('emailError').style.display = email.value.trim() ? 'none' : 'block';
-                
-                fullName.classList.toggle('is-invalid', !fullName.value.trim());
-                position.classList.toggle('is-invalid', !position.value.trim());
-                department.classList.toggle('is-invalid', !department.value.trim());
-                phone.classList.toggle('is-invalid', !phone.value.trim());
-                email.classList.toggle('is-invalid', !email.value.trim());
-                
-                btnToStep3.disabled = !isValid;
-                return isValid;
-            }
-
-            function goToStep(step) {
-                // Hide all step contents
-                document.querySelectorAll('.step-content').forEach(el => {
-                    el.classList.remove('active');
-                });
-                
-                // Show target content
-                if (step === 1) step1Content.classList.add('active');
-                else if (step === 2) step2Content.classList.add('active');
-                else if (step === 3) step3Content.classList.add('active');
-                
-                // Update step wizard
-                stepElements.forEach((el, idx) => {
-                    const num = idx + 1;
-                    el.classList.remove('active', 'completed', 'inactive');
-                    if (num === step) el.classList.add('active');
-                    else if (num < step) el.classList.add('completed');
-                    else el.classList.add('inactive');
-                });
-                
-                // Update step lines
-                stepLines.forEach((line, idx) => {
-                    if (idx + 1 < step) line.classList.add('completed');
-                    else line.classList.remove('completed');
-                });
-                
-                // Update sidebar step indicators
-                stepDots.forEach((dot, idx) => {
-                    const num = idx + 1;
-                    dot.className = 'step-dot';
-                    if (num === step) dot.classList.add('active');
-                    else if (num < step) dot.classList.add('completed');
-                });
-                
-                stepLabels.forEach((label, idx) => {
-                    const num = idx + 1;
-                    label.className = 'step-label';
-                    if (num === step) label.classList.add('active');
-                    else if (num < step) label.classList.add('completed');
-                });
-                
-                // Update description
-                const descriptions = [
-                    'Xác minh Đơn vị công tác và Nhóm đối tượng',
-                    'Nhập thông tin cá nhân của bạn',
-                    'Xác nhận biểu mẫu khảo sát được gán'
+        function renderOrganizations(data) {
+            const datalist = document.getElementById('hanoiAgencies');
+            datalist.innerHTML = '';
+            
+            if (data.length === 0) {
+                // Fallback options nếu chưa có dữ liệu
+                const defaultOptions = [
+                    'Sở Nội vụ TP. Hà Nội',
+                    'Sở Thông tin và Truyền thông TP. Hà Nội',
+                    'Sở Kế hoạch và Đầu tư TP. Hà Nội',
+                    'Sở Tài chính TP. Hà Nội',
+                    'Sở Y tế TP. Hà Nội',
+                    'Sở Giáo dục và Đào tạo TP. Hà Nội',
+                    'Sở Giao thông Vận tải TP. Hà Nội',
+                    'Thanh tra Thành phố Hà Nội',
+                    'UBND Quận Hoàn Kiếm',
+                    'UBND Quận Ba Đình',
+                    'UBND Quận Đống Đa',
+                    'UBND Quận Hai Bà Trưng',
+                    'UBND Quận Cầu Giấy',
                 ];
-                document.querySelector('#stepDescription span').textContent = descriptions[step - 1] || '';
-                document.querySelector('#stepDescription').innerHTML = 
-                    `Bước ${step} / 3: <span class="text-muted fw-normal">${descriptions[step - 1] || ''}</span>`;
-                
-                currentStep = step;
-                updateSidebarInfo();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-
-            // ---------- Submit and Redirect ----------
-            function submitAndRedirect() {
-                const selectedRadio = document.querySelector('input[name="roleSelection"]:checked');
-                if (!selectedRadio) {
-                    alert('Vui lòng chọn nhóm đối tượng');
-                    return;
-                }
-                
-                const data = {
-                    survey_id: surveyId,
-                    agency: agencyInput.value.trim(),
-                    role: selectedRadio.value,
-                    assigned_forms: JSON.parse(selectedRadio.dataset.form || '[]'),
-                    full_name: fullName.value.trim(),
-                    position: position.value.trim(),
-                    department: department.value.trim(),
-                    phone: phone.value.trim(),
-                    email: email.value.trim(),
-                    notes: notes.value.trim(),
-                };
-                
-                showLoading();
-                
-                fetch('/accounts/api/congkhaosat/submit/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(res => res.json())
-                .then(result => {
-                    hideLoading();
-                    if (result.success) {
-                        // Chuyển hướng đến survey_public.html
-                        window.location.href = result.redirect_url || `/survey/public/${surveyId}/`;
-                    } else {
-                        alert(result.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
-                    }
-                })
-                .catch(err => {
-                    hideLoading();
-                    alert('Lỗi kết nối đến máy chủ. Vui lòng thử lại.');
-                    console.error(err);
+                defaultOptions.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    datalist.appendChild(option);
+                });
+            } else {
+                data.forEach(org => {
+                    const option = document.createElement('option');
+                    option.value = org.name;
+                    option.dataset.id = org.id;
+                    option.dataset.code = org.code;
+                    option.dataset.level = org.level;
+                    datalist.appendChild(option);
                 });
             }
+        }
 
-            // ---------- Event Listeners ----------
+        // ---------- Load Target Groups ----------
+        function loadTargetGroups() {
+            fetch('/accounts/api/target-groups/', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    targetGroups = data.data;
+                    renderTargetGroups(data.data);
+                } else {
+                    console.error('Error loading target groups:', data.error);
+                    targetGroupsContainer.innerHTML = `
+                        <div class="no-data-message">
+                            <i class="bi bi-exclamation-triangle fs-4 text-warning"></i>
+                            <p class="mt-2">Không thể tải danh sách nhóm đối tượng. Vui lòng thử lại sau.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                targetGroupsContainer.innerHTML = `
+                    <div class="no-data-message">
+                        <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
+                        <p class="mt-2">Lỗi kết nối đến máy chủ. Vui lòng thử lại.</p>
+                    </div>
+                `;
+            });
+        }
+
+        function renderTargetGroups(groups) {
+            if (!groups || groups.length === 0) {
+                targetGroupsContainer.innerHTML = `
+                    <div class="no-data-message">
+                        <i class="bi bi-inbox fs-4 text-muted"></i>
+                        <p class="mt-2">Chưa có nhóm đối tượng nào. Vui lòng liên hệ quản trị viên.</p>
+                    </div>
+                `;
+                return;
+            }
             
-            // Radio cards - Step 1
-            radioCards.forEach(card => {
+            let html = '';
+            groups.forEach((group, index) => {
+                const formsHtml = group.forms && group.forms.length > 0 
+                    ? group.forms.map(f => `<span class="badge-form">${f}</span>`).join(' ') 
+                    : '<span class="text-muted small">Chưa có biểu mẫu</span>';
+                
+                const iconMap = {
+                    'bi-person-badge': 'bi bi-person-badge',
+                    'bi-shield-check': 'bi bi-shield-check',
+                    'bi-display': 'bi bi-display',
+                    'bi-building': 'bi bi-building',
+                    'bi-people': 'bi bi-people',
+                    'bi-person-workspace': 'bi bi-person-workspace',
+                };
+                const iconClass = iconMap[group.icon] || 'bi bi-people';
+                const groupName = group.name || `Nhóm ${index + 1}`;
+                
+                html += `
+                    <label class="radio-card" id="card-role-${group.id}">
+                        <div class="radio-input-wrapper">
+                            <input class="form-check-input form-check-input-custom" type="radio" 
+                                   name="roleSelection" value="${groupName}" 
+                                   data-group-id="${group.id}"
+                                   data-group-code="${group.code || ''}"
+                                   data-forms='${JSON.stringify(group.forms || [])}'>
+                        </div>
+                        <div class="radio-icon-box"><i class="${iconClass}"></i></div>
+                        <div class="radio-content">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="radio-title">${groupName}</div>
+                                <div>${formsHtml}</div>
+                            </div>
+                            <p class="radio-subtitle">${group.description || 'Không có mô tả'}</p>
+                        </div>
+                    </label>
+                `;
+            });
+            
+            targetGroupsContainer.innerHTML = html;
+            
+            // Gắn event listeners cho radio cards mới
+            document.querySelectorAll('.radio-card').forEach(card => {
                 card.addEventListener('click', function() {
-                    radioCards.forEach(c => c.classList.remove('active'));
+                    document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('active'));
                     this.classList.add('active');
                     const radio = this.querySelector('input[type="radio"]');
                     radio.checked = true;
@@ -1246,83 +1125,334 @@
                     updateSidebarInfo();
                 });
             });
+        }
 
-            // Agency input - Step 1
-            agencyInput.addEventListener('input', function() {
-                validateStep1();
-                updateSidebarInfo();
-            });
+        // ---------- Update Sidebar ----------
+        function updateSidebarInfo() {
+            // Cập nhật preview đơn vị
+            const agencyVal = agencyInput.value.trim();
+            if (agencyVal) {
+                previewAgency.innerHTML = `<span class="dynamic-value">${agencyVal}</span>`;
+                previewAgency.classList.remove('dynamic-placeholder');
+            } else {
+                previewAgency.innerHTML = 'Chưa chọn';
+                previewAgency.classList.add('dynamic-placeholder');
+            }
 
-            // Personal info inputs - Step 2
-            [fullName, position, department, phone, email, notes].forEach(input => {
-                input.addEventListener('input', function() {
-                    validateStep2();
-                    updateSidebarInfo();
-                });
-                input.addEventListener('blur', function() {
-                    if (this.value.trim()) {
-                        this.classList.remove('is-invalid');
-                        this.classList.add('is-valid');
-                    } else {
-                        this.classList.remove('is-valid');
-                        if (this.id !== 'notes') this.classList.add('is-invalid');
-                    }
-                });
-            });
+            // Cập nhật preview role
+            const selectedRadio = document.querySelector('input[name="roleSelection"]:checked');
+            if (selectedRadio) {
+                const roleName = selectedRadio.value;
+                const groupId = selectedRadio.dataset.groupId;
+                const group = targetGroups.find(g => g.id == groupId);
+                
+                previewRole.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> <span class="dynamic-value">${roleName}</span>`;
+                previewRole.classList.remove('dynamic-placeholder');
+                
+                const forms = group ? group.forms : JSON.parse(selectedRadio.dataset.forms || '[]');
+                selectedForms = forms;
+                const formHtml = forms.map(f => 
+                    `<span class="badge bg-primary-custom me-1"><i class="bi bi-file-earmark-text me-1"></i>${f}</span>`
+                ).join('');
+                previewForms.innerHTML = formHtml || 'Chưa có';
+                previewForms.classList.remove('dynamic-placeholder');
+                
+                updateSurveyCards();
+            } else {
+                previewRole.innerHTML = 'Chưa chọn';
+                previewRole.classList.add('dynamic-placeholder');
+                previewForms.innerHTML = 'Hệ thống sẽ tự động gán';
+                previewForms.classList.add('dynamic-placeholder');
+            }
 
-            // Navigation buttons
-            btnToStep2.addEventListener('click', function() {
-                if (!this.disabled) {
-                    goToStep(2);
-                    setTimeout(() => fullName.focus(), 300);
+            // Cập nhật thông tin cá nhân
+            const nameVal = fullName.value.trim();
+            const posVal = position.value.trim();
+            const deptVal = department.value.trim();
+            const emailVal = email.value.trim();
+            
+            if (nameVal || posVal || deptVal || emailVal) {
+                personalInfoPreview.style.display = 'block';
+                previewName.textContent = nameVal || 'Chưa nhập';
+                previewName.className = nameVal ? 'dynamic-value' : 'dynamic-placeholder';
+                previewPosition.textContent = posVal || 'Chưa nhập';
+                previewPosition.className = posVal ? 'dynamic-value' : 'dynamic-placeholder';
+                previewDepartment.textContent = deptVal || 'Chưa nhập';
+                previewDepartment.className = deptVal ? 'dynamic-value' : 'dynamic-placeholder';
+                previewEmail.textContent = emailVal || 'Chưa nhập';
+                previewEmail.className = emailVal ? 'dynamic-value' : 'dynamic-placeholder';
+            } else {
+                personalInfoPreview.style.display = 'none';
+            }
+        }
+
+        // ---------- Update Survey Cards ----------
+        function updateSurveyCards() {
+            surveyCards.forEach(card => {
+                card.classList.remove('active');
+                const badge = card.querySelector('.badge');
+                if (badge) {
+                    badge.textContent = 'Chưa gán';
+                    badge.className = 'badge bg-secondary';
                 }
             });
 
-            btnBackToStep1.addEventListener('click', function() {
-                goToStep(1);
-            });
-
-            btnToStep3.addEventListener('click', function() {
-                if (!this.disabled && validateStep2()) {
-                    goToStep(3);
-                }
-            });
-
-            btnBackToStep2.addEventListener('click', function() {
-                goToStep(2);
-            });
-
-            btnSubmit.addEventListener('click', function() {
-                if (selectedForms.length === 0) {
-                    alert('Vui lòng chọn nhóm đối tượng ở Bước 1.');
-                    goToStep(1);
-                    return;
-                }
-                submitAndRedirect();
-            });
-
-            // Click on step wizard to navigate
-            stepElements.forEach((el, idx) => {
-                const stepNum = idx + 1;
-                el.addEventListener('click', function() {
-                    if (stepNum < currentStep) {
-                        goToStep(stepNum);
-                    } else if (stepNum === currentStep) {
-                        // Do nothing
-                    } else {
-                        if (stepNum === 2 && currentStep === 1 && !btnToStep2.disabled) {
-                            btnToStep2.click();
-                        } else if (stepNum === 3 && currentStep === 2 && !btnToStep3.disabled) {
-                            btnToStep3.click();
+            if (selectedForms.length > 0) {
+                assignedSurveysDiv.style.display = 'block';
+                assignedSurveysList.textContent = selectedForms.join(', ');
+                
+                selectedForms.forEach(form => {
+                    const card = document.querySelector(`.survey-card[data-survey="${form}"]`);
+                    if (card) {
+                        card.classList.add('active');
+                        const badge = card.querySelector('.badge');
+                        if (badge) {
+                            badge.textContent = '✓ Được gán';
+                            badge.className = 'badge bg-success';
                         }
                     }
                 });
-            });
+            } else {
+                assignedSurveysDiv.style.display = 'none';
+            }
+        }
 
-            // Initialize
+        // ---------- Validations ----------
+        function validateStep1() {
+            const isAgencyFilled = agencyInput.value.trim().length > 0;
+            const isRoleSelected = document.querySelector('input[name="roleSelection"]:checked') !== null;
+            
+            document.getElementById('agencyError').style.display = isAgencyFilled ? 'none' : 'block';
+            document.getElementById('roleError').style.display = isRoleSelected ? 'none' : 'block';
+            agencyInput.classList.toggle('is-invalid', !isAgencyFilled);
+            
+            btnToStep2.disabled = !(isAgencyFilled && isRoleSelected);
+        }
+
+        function validateStep2() {
+            const isValid = fullName.value.trim().length > 0 && 
+                           position.value.trim().length > 0 && 
+                           department.value.trim().length > 0 && 
+                           phone.value.trim().length > 0 && 
+                           email.value.trim().length > 0;
+            
+            document.getElementById('fullNameError').style.display = fullName.value.trim() ? 'none' : 'block';
+            document.getElementById('positionError').style.display = position.value.trim() ? 'none' : 'block';
+            document.getElementById('departmentError').style.display = department.value.trim() ? 'none' : 'block';
+            document.getElementById('phoneError').style.display = phone.value.trim() ? 'none' : 'block';
+            document.getElementById('emailError').style.display = email.value.trim() ? 'none' : 'block';
+            
+            fullName.classList.toggle('is-invalid', !fullName.value.trim());
+            position.classList.toggle('is-invalid', !position.value.trim());
+            department.classList.toggle('is-invalid', !department.value.trim());
+            phone.classList.toggle('is-invalid', !phone.value.trim());
+            email.classList.toggle('is-invalid', !email.value.trim());
+            
+            btnToStep3.disabled = !isValid;
+            return isValid;
+        }
+
+        // ---------- Navigation ----------
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            if (step === 1) step1Content.classList.add('active');
+            else if (step === 2) step2Content.classList.add('active');
+            else if (step === 3) step3Content.classList.add('active');
+            
+            stepElements.forEach((el, idx) => {
+                const num = idx + 1;
+                el.classList.remove('active', 'completed', 'inactive');
+                if (num === step) el.classList.add('active');
+                else if (num < step) el.classList.add('completed');
+                else el.classList.add('inactive');
+            });
+            
+            stepLines.forEach((line, idx) => {
+                if (idx + 1 < step) line.classList.add('completed');
+                else line.classList.remove('completed');
+            });
+            
+            stepDots.forEach((dot, idx) => {
+                const num = idx + 1;
+                dot.className = 'step-dot';
+                if (num === step) dot.classList.add('active');
+                else if (num < step) dot.classList.add('completed');
+            });
+            
+            stepLabels.forEach((label, idx) => {
+                const num = idx + 1;
+                label.className = 'step-label';
+                if (num === step) label.classList.add('active');
+                else if (num < step) label.classList.add('completed');
+            });
+            
+            const descriptions = [
+                'Xác minh Đơn vị công tác và Nhóm đối tượng',
+                'Nhập thông tin cá nhân của bạn',
+                'Xác nhận biểu mẫu khảo sát được gán'
+            ];
+            document.querySelector('#stepDescription span').textContent = descriptions[step - 1] || '';
+            document.querySelector('#stepDescription').innerHTML = 
+                `Bước ${step} / 3: <span class="text-muted fw-normal">${descriptions[step - 1] || ''}</span>`;
+            
+            currentStep = step;
+            updateSidebarInfo();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ---------- Submit ----------
+        function submitAndRedirect() {
+            const selectedRadio = document.querySelector('input[name="roleSelection"]:checked');
+            if (!selectedRadio) {
+                alert('Vui lòng chọn nhóm đối tượng');
+                return;
+            }
+            
+            const groupId = selectedRadio.dataset.groupId;
+            const group = targetGroups.find(g => g.id == groupId);
+            const forms = group ? group.forms : JSON.parse(selectedRadio.dataset.forms || '[]');
+            
+            const data = {
+                survey_id: surveyId,
+                agency: agencyInput.value.trim(),
+                role: selectedRadio.value,
+                target_group_code: group ? group.code : '',
+                target_group_name: selectedRadio.value,
+                assigned_forms: forms,
+                full_name: fullName.value.trim(),
+                position: position.value.trim(),
+                department: department.value.trim(),
+                phone: phone.value.trim(),
+                email: email.value.trim(),
+                notes: notes.value.trim(),
+            };
+            
+            showLoading();
+            
+            fetch('/accounts/api/congkhaosat/submit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => {
+                hideLoading();
+                if (result.success) {
+                    window.location.href = result.redirect_url || `/survey/public/${surveyId}/`;
+                } else {
+                    alert(result.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+                }
+            })
+            .catch(err => {
+                hideLoading();
+                alert('Lỗi kết nối đến máy chủ. Vui lòng thử lại.');
+                console.error(err);
+            });
+        }
+
+        // ---------- Event Listeners ----------
+        
+        // Agency input
+        agencyInput.addEventListener('input', function() {
             validateStep1();
             updateSidebarInfo();
         });
+
+        // Personal info inputs
+        [fullName, position, department, phone, email, notes].forEach(input => {
+            input.addEventListener('input', function() {
+                validateStep2();
+                updateSidebarInfo();
+            });
+            input.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (this.id !== 'notes') this.classList.add('is-invalid');
+                }
+            });
+        });
+
+        // Navigation buttons
+        btnToStep2.addEventListener('click', function() {
+            if (!this.disabled) {
+                goToStep(2);
+                setTimeout(() => fullName.focus(), 300);
+            }
+        });
+
+        btnBackToStep1.addEventListener('click', function() {
+            goToStep(1);
+        });
+
+        btnToStep3.addEventListener('click', function() {
+            if (!this.disabled && validateStep2()) {
+                goToStep(3);
+            }
+        });
+
+        btnBackToStep2.addEventListener('click', function() {
+            goToStep(2);
+        });
+
+        btnSubmit.addEventListener('click', function() {
+            if (selectedForms.length === 0) {
+                alert('Vui lòng chọn nhóm đối tượng ở Bước 1.');
+                goToStep(1);
+                return;
+            }
+            submitAndRedirect();
+        });
+
+        // Click on step wizard
+        stepElements.forEach((el, idx) => {
+            const stepNum = idx + 1;
+            el.addEventListener('click', function() {
+                if (stepNum < currentStep) {
+                    goToStep(stepNum);
+                } else if (stepNum === currentStep) {
+                    // Do nothing
+                } else {
+                    if (stepNum === 2 && currentStep === 1 && !btnToStep2.disabled) {
+                        btnToStep2.click();
+                    } else if (stepNum === 3 && currentStep === 2 && !btnToStep3.disabled) {
+                        btnToStep3.click();
+                    }
+                }
+            });
+        });
+
+        // ---------- Initialize ----------
+        loadOrganizations();
+        loadTargetGroups();
+        validateStep1();
+        updateSidebarInfo();
+
+        // Load survey title
+        if (surveyId) {
+            fetch(`/analytics/api/survey-forms/${surveyId}/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const survey = data.data;
+                    document.getElementById('surveyTitle').textContent = 
+                        `Hệ thống Theo dõi, Đánh giá CCHC - ${survey.title}`;
+                }
+            })
+            .catch(error => console.error('Error loading survey:', error));
+        }
+    });
     </script>
 </body>
 </html>

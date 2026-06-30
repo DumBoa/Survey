@@ -1,0 +1,337 @@
+<!-- apps/analytics/templates/analytics/dashboard_base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quản lý khảo sát CCHC{% endblock %}</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* ============================================
+           TOP HEADER - CỐ ĐỊNH
+           ============================================ */
+        .top-header {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            height: 64px;
+        }
+        
+        .top-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .top-header .brand .logo {
+            width: 36px;
+            height: 36px;
+            background: #1d4ed8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        
+        .top-header .brand .brand-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        
+        .top-header .brand .brand-text small {
+            font-weight: 400;
+            color: #64748b;
+            font-size: 12px;
+            display: block;
+        }
+        
+        .top-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .top-header .header-actions .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .top-header .header-actions .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #1d4ed8;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .top-header .header-actions .user-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #0f172a;
+        }
+        
+        .top-header .header-actions .user-role {
+            font-size: 11px;
+            color: #64748b;
+        }
+        
+        .top-header .header-actions .logout-btn {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+        
+        .top-header .header-actions .logout-btn:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        
+        /* ============================================
+           BODY - FLEX ROW
+           ============================================ */
+        .app-body {
+            display: flex;
+            flex: 1;
+            min-height: calc(100vh - 64px);
+        }
+        
+        /* ============================================
+           SIDEBAR
+           ============================================ */
+        .sidebar {
+            width: 240px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            padding: 16px 12px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            height: calc(100vh - 64px);
+            position: sticky;
+            top: 64px;
+        }
+        
+        .sidebar .nav-section {
+            font-size: 10px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 16px 12px 8px;
+        }
+        
+        .sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.15s;
+            margin-bottom: 2px;
+        }
+        
+        .sidebar .nav-item:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        
+        .sidebar .nav-item.active {
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        
+        .sidebar .nav-item .nav-icon {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar .nav-item .nav-badge {
+            margin-left: auto;
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 1px 8px;
+            border-radius: 10px;
+        }
+        
+        .sidebar .nav-item.active .nav-badge {
+            background: #bfdbfe;
+            color: #1d4ed8;
+        }
+        
+        /* ============================================
+           MAIN CONTENT
+           ============================================ */
+        .main-content {
+            flex: 1;
+            padding: 24px 32px 40px;
+            overflow-y: auto;
+            background: #f1f5f9;
+            min-height: calc(100vh - 64px);
+        }
+        
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 60px;
+                padding: 12px 8px;
+            }
+            
+            .sidebar .nav-item span:not(.nav-icon) {
+                display: none;
+            }
+            
+            .sidebar .nav-section {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .top-header .brand .brand-text small {
+                display: none;
+            }
+            
+            .top-header .brand .brand-text {
+                font-size: 14px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    
+    <!-- ============================================
+         TOP HEADER
+         ============================================ -->
+    <header class="top-header">
+        <div class="brand">
+            <div class="logo">C</div>
+            <div class="brand-text">
+                CCHC Admin
+                <small>Hệ thống theo dõi, đánh giá CCHC</small>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ request.user.username|first|upper }}
+                </div>
+                <div>
+                    <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                    <div class="user-role">{{ request.user.organization.name|default:"Administrator" }}</div>
+                </div>
+            </div>
+                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+            </a>
+        </div>
+    </header>
+    
+    <!-- ============================================
+         APP BODY
+         ============================================ -->
+    <div class="app-body">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="nav-section">Điều hướng</div>
+            
+            <a href="{% url 'analytics:survey_list' %}" class="nav-item {% if active_menu == 'surveys' %}active{% endif %}">
+                <span class="nav-icon"><i class="bi bi-clipboard-data"></i></span>
+                <span>Đợt khảo sát</span>
+            </a>
+            
+            <a href="{% url 'analytics:target_groups' %}" class="nav-item {% if active_menu == 'target_groups' %}active{% endif %}">
+                <span class="nav-icon"><i class="bi bi-people"></i></span>
+                <span>Nhóm đối tượng</span>
+            </a>
+            
+            <a href="{% url 'analytics:survey_forms' %}" class="nav-item {% if active_menu == 'survey_forms' %}active{% endif %}">
+                <span class="nav-icon"><i class="bi bi-file-earmark-text"></i></span>
+                <span>Biểu mẫu</span>
+            </a>
+            
+            <a href="{% url 'analytics:assignments' %}" class="nav-item {% if active_menu == 'assignments' %}active{% endif %}">
+                <span class="nav-icon"><i class="bi bi-link-45deg"></i></span>
+                <span>Gán biểu mẫu</span>
+            </a>
+            
+            <div class="nav-section" style="margin-top:20px;">Thống kê</div>
+            
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="bi bi-bar-chart"></i></span>
+                <span>Báo cáo kết quả</span>
+            </a>
+            
+            <a href="#" class="nav-item">
+                <span class="nav-icon"><i class="bi bi-download"></i></span>
+                <span>Xuất dữ liệu</span>
+            </a>
+        </aside>
+        
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            {% block content %}
+            {% endblock %}
+        </main>
+        
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 
 def root_redirect(request):
     if request.user.is_authenticated:
-        return redirect('/survey/survey-edit/')
+        return redirect('analytics:dashboard')
     return redirect('/accounts/login/') 
 
 urlpatterns = [

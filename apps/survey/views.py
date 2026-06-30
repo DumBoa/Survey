@@ -868,3 +868,62 @@ class PublicResponseView(APIView):
             return Response({'error': 'Không tìm thấy khảo sát'}, status=404)
         except Exception as e:
             return Response({'error': str(e)}, status=400)
+# apps/survey/views.py - Thêm vào cuối file
+
+from .models import SurveyAssignment, SurveyParticipant
+
+def get_survey_mapping(request, survey_id):
+    """
+    Lấy danh sách mapping giữa nhóm đối tượng và biểu mẫu
+    """
+    try:
+        survey = get_object_or_404(SurveyModel, id=survey_id)
+        assignments = SurveyAssignment.objects.filter(
+            survey=survey,
+            is_active=True
+        ).order_by('order')
+        
+        data = []
+        for assignment in assignments:
+            data.append({
+                'id': assignment.id,
+                'form_code': assignment.form_code,
+                'form_name': assignment.form_name,
+                'form_description': assignment.form_description,
+                'target_group_code': assignment.target_group_code,
+                'target_group_name': assignment.target_group_name,
+                'target_group_description': assignment.target_group_description,
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+def get_target_groups(request, survey_id):
+    """
+    Lấy danh sách nhóm đối tượng duy nhất từ mapping
+    """
+    try:
+        survey = get_object_or_404(SurveyModel, id=survey_id)
+        assignments = SurveyAssignment.objects.filter(
+            survey=survey,
+            is_active=True
+        ).values('target_group_code', 'target_group_name', 'target_group_description').distinct()
+        
+        data = list(assignments)
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)

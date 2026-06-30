@@ -1,4 +1,4 @@
-from django.db import models
+# apps/survey/models.py
 from django.db import models
 from django.utils import timezone
 
@@ -38,7 +38,20 @@ class Survey(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    code = models.CharField(
+        max_length=20, 
+        unique=True, 
+        blank=True, 
+        null=True,
+        verbose_name="Mã biểu mẫu"
+    )
+    def save(self, *args, **kwargs):
+        # Tự động tạo code nếu chưa có
+        if not self.code:
+            count = Survey.objects.count() + 1
+            self.code = f"BM-{str(count).zfill(3)}"
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return f"{self.title} ({self.get_status_display()})"
 
@@ -48,11 +61,6 @@ class Survey(models.Model):
         indexes = [models.Index(fields=['slug', 'status'])]
 
 
-# ============================================================
-# MỚI: Section — đại diện cho "Phần A / Phần B / Phần C..."
-# Đây là lớp trung gian giữa Survey và Question, khớp với giao
-# diện public (sidebar liệt kê các phần, mỗi phần có % tiến độ riêng).
-# ============================================================
 class Section(models.Model):
     survey = models.ForeignKey(
         Survey, on_delete=models.CASCADE, related_name='sections',
@@ -99,8 +107,6 @@ class QuestionType(models.Model):
 
 
 class Question(models.Model):
-    # ĐÃ ĐỔI: trỏ vào Section thay vì Survey trực tiếp.
-    # Vẫn truy ngược được khảo sát qua question.section.survey, nên không mất thông tin gì.
     section = models.ForeignKey(
         Section, on_delete=models.CASCADE, related_name='questions',
         verbose_name="Thuộc phần"
@@ -119,32 +125,8 @@ class Question(models.Model):
     is_required = models.BooleanField(default=True, verbose_name="Bắt buộc trả lời")
     order = models.PositiveIntegerField(default=0, verbose_name="Thứ tự hiển thị")
 
-    # options: dùng cho single-choice / multi-choice — danh sách lựa chọn đơn giản.
-    # VD: ["Lựa chọn 1", "Lựa chọn 2", "Lựa chọn 3"]
     options = models.JSONField(default=list, blank=True, verbose_name="Danh sách lựa chọn (JSON)")
-
     condition_logic = models.JSONField(default=dict, blank=True, verbose_name="Logic điều kiện")
-
-    # config: cấu hình riêng theo từng loại câu hỏi, đặc biệt quan trọng với rating-grid
-    # và data-table vì chúng có cấu trúc 2 chiều, không phải 1 danh sách phẳng như options.
-    #
-    # rating-grid:
-    #   {
-    #     "criteria": ["Hệ thống đáp ứng nhu cầu...", "Tốc độ xử lý..."],
-    #     "scale": [
-    #       {"value": 1, "label": "Rất không đồng ý"},
-    #       {"value": 2, "label": "Không đồng ý"},
-    #       {"value": 3, "label": "Trung lập"},
-    #       {"value": 4, "label": "Đồng ý"},
-    #       {"value": 5, "label": "Rất đồng ý"}
-    #     ]
-    #   }
-    #
-    # data-table:
-    #   { "columns": ["Cột 1", "Cột 2"], "rows": 3 }
-    #
-    # short-text / long-text:
-    #   { "placeholder": "...", "max_length": 500 }
     config = models.JSONField(default=dict, blank=True, verbose_name="Cấu hình nâng cao")
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -158,8 +140,9 @@ class Question(models.Model):
         verbose_name = "Câu hỏi"
         verbose_name_plural = "Danh sách câu hỏi"
         indexes = [
-            models.Index(fields=['component_type']),  # Thêm index để query nhanh
+            models.Index(fields=['component_type']),
         ]
+
 
 class Blocklist(models.Model):
     TYPE_CHOICES = [
@@ -185,8 +168,8 @@ class Blocklist(models.Model):
 
 class Response(models.Model):
     STATUS_CHOICES = [
-        ('draft', 'Bản nháp'),      # đang làm dở, bấm "Lưu nháp"
-        ('submitted', 'Đã nộp'),    # bấm nộp hoàn chỉnh
+        ('draft', 'Bản nháp'),
+        ('submitted', 'Đã nộp'),
     ]
 
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='responses', verbose_name="Khảo sát")
@@ -197,9 +180,6 @@ class Response(models.Model):
     user_agent = models.TextField(blank=True, null=True, verbose_name="User-Agent (Trình duyệt)")
 
     started_at = models.DateTimeField(auto_now_add=True, verbose_name="Bắt đầu lúc")
-    # ĐÃ SỬA: auto_now=True trước đây khiến submitted_at tự cập nhật ở MỌI lần save(),
-    # kể cả khi chỉ là "Lưu nháp" giữa đường -> sai ý nghĩa "thời điểm nộp".
-    # Đổi sang null=True, set thủ công trong code khi response.status chuyển thành 'submitted'.
     submitted_at = models.DateTimeField(blank=True, null=True, verbose_name="Nộp lúc")
     time_taken = models.PositiveIntegerField(default=0, verbose_name="Thời gian làm bài (giây)")
 
@@ -208,18 +188,7 @@ class Response(models.Model):
         verbose_name="Trạng thái phiếu"
     )
 
-    # answers: key = question.id (dạng string), value = câu trả lời tương ứng theo loại câu hỏi.
-    # VD:
-    # {
-    #   "12": "Nguyễn Văn A",                     -> short-text
-    #   "15": ["Thiếu dữ liệu", "Khó tìm kiếm"],   -> multi-choice
-    #   "20": {"0": 4, "1": 5, "2": 3}             -> rating-grid: key là index của criteria trong config["criteria"]
-    # }
     answers = models.JSONField(default=dict, verbose_name="Dữ liệu trả lời (JSON)")
-
-    # MỚI: lưu % hoàn thành theo từng phần, để hiển thị sidebar tiến độ (như ảnh mẫu)
-    # và để biết người dùng đang dừng ở phần nào khi quay lại làm tiếp bản nháp.
-    # VD: { "A": 100, "B": 100, "C": 60 }
     section_progress = models.JSONField(default=dict, blank=True, verbose_name="Tiến độ từng phần (%)")
 
     is_verified = models.BooleanField(default=False, verbose_name="Đã xác thực")
@@ -228,7 +197,6 @@ class Response(models.Model):
     is_cleaned = models.BooleanField(default=False, verbose_name="Đã làm sạch")
     is_duplicate = models.BooleanField(default=False, verbose_name="Là phiếu trùng")
 
-    # Đã sửa thành 'accounts.User'
     user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Người dùng")
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -244,4 +212,152 @@ class Response(models.Model):
             models.Index(fields=['respondent_ip', 'respondent_device_id']),
             models.Index(fields=['is_cleaned', 'is_duplicate']),
             models.Index(fields=['survey', 'status']),
+        ]
+
+
+# ============================================================
+# MỚI: SurveyAssignment - Ánh xạ Nhóm đối tượng ↔ Biểu mẫu
+# ============================================================
+class SurveyAssignment(models.Model):
+    """
+    Ánh xạ giữa Nhóm đối tượng và Biểu mẫu khảo sát
+    Cho phép admin cấu hình: nhóm nào được làm biểu mẫu nào
+    """
+    survey = models.ForeignKey(
+        Survey,
+        on_delete=models.CASCADE,
+        related_name='assignments',
+        verbose_name="Khảo sát"
+    )
+    form_code = models.CharField(
+        max_length=20,
+        verbose_name="Mã biểu mẫu (BM-03, BM-04, BM-05...)"
+    )
+    form_name = models.CharField(
+        max_length=255,
+        verbose_name="Tên biểu mẫu"
+    )
+    form_description = models.TextField(
+        blank=True, null=True,
+        verbose_name="Mô tả biểu mẫu"
+    )
+    target_group_code = models.CharField(
+        max_length=50,
+        verbose_name="Mã nhóm đối tượng"
+    )
+    target_group_name = models.CharField(
+        max_length=255,
+        verbose_name="Tên nhóm đối tượng"
+    )
+    target_group_description = models.TextField(
+        blank=True, null=True,
+        verbose_name="Mô tả nhóm đối tượng"
+    )
+    section = models.ForeignKey(
+        Section,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assignments',
+        verbose_name="Phần khảo sát tương ứng"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Đang hoạt động")
+    order = models.PositiveIntegerField(default=0, verbose_name="Thứ tự hiển thị")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.form_code} - {self.target_group_code}"
+
+    class Meta:
+        verbose_name = "Phân công khảo sát"
+        verbose_name_plural = "Phân công khảo sát"
+        unique_together = ('survey', 'form_code', 'target_group_code')
+        ordering = ['order']
+
+
+# ============================================================
+# MỚI: SurveyParticipant - Lưu thông tin người tham gia
+# ============================================================
+class SurveyParticipant(models.Model):
+    """
+    Lưu thông tin người tham gia khảo sát (từ cổng khảo sát)
+    """
+    STATUS_CHOICES = [
+        ('draft', 'Bản nháp'),
+        ('submitted', 'Đã nộp'),
+        ('expired', 'Hết hạn'),
+        ('cancelled', 'Đã hủy'),
+    ]
+
+    survey = models.ForeignKey(
+        Survey,
+        on_delete=models.CASCADE,
+        related_name='participants',
+        verbose_name="Khảo sát"
+    )
+
+    # Thông tin từ bước 1 - Xác minh
+    agency = models.CharField(max_length=255, verbose_name="Đơn vị công tác")
+    target_group_code = models.CharField(max_length=50, verbose_name="Mã nhóm đối tượng")
+    target_group_name = models.CharField(max_length=255, verbose_name="Tên nhóm đối tượng")
+
+    # Thông tin từ bước 2 - Cá nhân
+    full_name = models.CharField(max_length=255, verbose_name="Họ và tên")
+    position = models.CharField(max_length=255, verbose_name="Chức vụ")
+    department = models.CharField(max_length=255, verbose_name="Bộ phận công tác")
+    phone = models.CharField(max_length=20, verbose_name="Số điện thoại")
+    email = models.EmailField(verbose_name="Email")
+    notes = models.TextField(blank=True, null=True, verbose_name="Ghi chú")
+
+    # Biểu mẫu được gán
+    assigned_forms = models.JSONField(default=list, verbose_name="Biểu mẫu được gán")
+
+    # Liên kết với Response - SỬA: dùng related_name khác để tránh xung đột
+    response = models.OneToOneField(
+        Response,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='participant_info',  # Đổi tên để tránh xung đột
+        verbose_name="Phiếu trả lời"
+    )
+
+    # Liên kết với User nếu đã đăng nhập
+    user = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='survey_participations',
+        verbose_name="Người dùng"
+    )
+
+    # Thông tin kỹ thuật
+    ip_address = models.GenericIPAddressField(blank=True, null=True, verbose_name="IP")
+    user_agent = models.TextField(blank=True, null=True, verbose_name="User Agent")
+    session_key = models.CharField(max_length=64, blank=True, null=True, verbose_name="Session Key")
+
+    # Trạng thái
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='draft',
+        verbose_name="Trạng thái"
+    )
+    submitted_at = models.DateTimeField(blank=True, null=True, verbose_name="Thời gian nộp")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.full_name} - {self.survey.title}"
+
+    class Meta:
+        verbose_name = "Người tham gia khảo sát"
+        verbose_name_plural = "Người tham gia khảo sát"
+        indexes = [
+            models.Index(fields=['survey', 'email']),
+            models.Index(fields=['survey', 'session_key']),
+            models.Index(fields=['survey', 'target_group_code']),
         ]

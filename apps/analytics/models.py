@@ -63,3 +63,44 @@ class ComparisonReport(models.Model):
     class Meta:
         verbose_name = "Báo cáo so sánh"
         verbose_name_plural = "Báo cáo so sánh"
+        
+class TargetGroup(models.Model):
+    """
+    Nhóm đối tượng tham gia khảo sát
+    """
+    ICON_CHOICES = [
+        ('bi-person-badge', '👤 Lãnh đạo'),
+        ('bi-shield-check', '🛡️ Chuyên trách'),
+        ('bi-display', '💻 CNTT'),
+        ('bi-building', '🏢 Đơn vị'),
+        ('bi-people', '👥 Nhóm'),
+        ('bi-person-workspace', '🧑‍💼 Cán bộ'),
+    ]
+    
+    code = models.CharField(max_length=50, unique=True, verbose_name="Mã nhóm")
+    name = models.CharField(max_length=255, verbose_name="Tên nhóm")
+    description = models.TextField(blank=True, null=True, verbose_name="Mô tả")
+    icon = models.CharField(max_length=50, choices=ICON_CHOICES, default='bi-people', verbose_name="Icon")
+    is_active = models.BooleanField(default=True, verbose_name="Đang hoạt động")
+    
+    # Liên kết với survey (có thể gán cho nhiều survey)
+    surveys = models.ManyToManyField(
+        'survey.Survey', 
+        blank=True, 
+        related_name='target_groups_m2m',
+        verbose_name="Khảo sát áp dụng"
+    )
+    
+    # Liên kết với forms (biểu mẫu)
+    forms = models.JSONField(default=list, blank=True, verbose_name="Danh sách biểu mẫu được gán")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật")
+    
+    class Meta:
+        verbose_name = "Nhóm đối tượng"
+        verbose_name_plural = "Nhóm đối tượng"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"[{self.code}] {self.name}"

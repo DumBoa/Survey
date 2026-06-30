@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Nông Sản Xanh</title>
+    <title>Đăng nhập - CCHC Admin</title>
     <style>
         * {
             margin: 0;
@@ -103,13 +103,25 @@
         .error-message.show {
             display: block;
         }
+        .test-account {
+            margin-top: 20px;
+            text-align: center;
+            color: #718096;
+            font-size: 13px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 6px;
+        }
+        .test-account strong {
+            color: #2d3748;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>🌱 Nông Sản Xanh</h1>
-            <p>Đăng nhập vào hệ thống quản lý</p>
+            <h1>📋 CCHC Admin</h1>
+            <p>Hệ thống quản lý khảo sát CCHC</p>
         </div>
         
         <div id="errorMessage" class="error-message"></div>
@@ -135,8 +147,8 @@
             <button type="submit" class="btn-login">Đăng nhập</button>
         </form>
         
-        <div style="margin-top: 20px; text-align: center; color: #718096; font-size: 13px;">
-            <p>Tài khoản test: <strong>admin</strong> / <strong>admin123</strong></p>
+        <div class="test-account">
+            Tài khoản test: <strong>admin</strong> / <strong>admin123</strong>
         </div>
     </div>
 
@@ -167,7 +179,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = data.redirect_url || '/survey/survey-edit/';
+                    // SỬA: Chuyển đến dashboard
+                    window.location.href = data.redirect_url || '/analytics/';
                 } else {
                     errorDiv.textContent = data.message;
                     errorDiv.classList.add('show');
@@ -180,7 +193,6 @@
         });
         
         function getCSRFToken() {
-            // Lấy CSRF token từ cookie
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');

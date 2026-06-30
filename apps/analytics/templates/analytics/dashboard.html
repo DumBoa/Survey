@@ -1,0 +1,86 @@
+<!-- apps/analytics/templates/analytics/dashboard.html -->
+{% extends "analytics/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Dashboard tổng quan{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Thẻ thống kê -->
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-clipboard-data fs-4 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Tổng đợt khảo sát</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-people fs-4 text-success"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Nhóm đối tượng</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-file-earmark-text fs-4 text-info"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Biểu mẫu</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                        <i class="bi bi-check-circle fs-4 text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Phản hồi</h6>
+                        <h3 class="mb-0">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Phần nội dung khác -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="fw-semibold mb-3">Chào mừng đến với hệ thống quản lý khảo sát CCHC</h5>
+                <p class="text-muted mb-0">Sử dụng menu bên trái để điều hướng đến các chức năng quản lý.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,563 @@
+<!-- apps/analytics/templates/analytics/survey_forms.html -->
+{% extends "analytics/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Quản lý biểu mẫu khảo sát{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h4 class="mb-1 fw-bold text-dark">Quản lý biểu mẫu khảo sát</h4>
+        <p class="text-muted mb-0" style="font-size:14px;">Quản lý các biểu mẫu sẽ được gán cho nhóm đối tượng</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#formModal" id="btnAddForm">
+        <i class="bi bi-plus-lg me-1"></i> Thêm biểu mẫu mới
+    </button>
+</div>
+
+<!-- Bộ lọc -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">Trạng thái</label>
+                <select class="form-select form-select-sm" id="filterStatus">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="draft">Bản nháp</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="closed">Đã đóng</option>
+                    <option value="archived">Đã lưu trữ</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control form-control-sm border-start-0" 
+                           id="searchInput" placeholder="Tìm theo mã hoặc tên biểu mẫu...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-primary w-100" id="btnSearch">
+                    <i class="bi bi-search me-1"></i> Tìm kiếm
+                </button>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-outline-secondary w-100" id="btnReset">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bảng danh sách -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50px;">STT</th>
+                        <th style="width:100px;">Mã</th>
+                        <th>Tên biểu mẫu</th>
+                        <th>Danh mục</th>
+                        <th>Nhóm đã gán</th>
+                        <th style="width:120px;">Trạng thái</th>
+                        <th style="width:140px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="formTableBody">
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white border-top-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small" id="tableInfo">Đang tải...</span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" id="pagination">
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa biểu mẫu -->
+<div class="modal fade" id="formModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="formModalTitle">Thêm biểu mẫu mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formModalForm">
+                    <input type="hidden" id="editFormId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tên biểu mẫu <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="formName" 
+                               placeholder="VD: Khảo sát CCHC toàn diện" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mã biểu mẫu <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="formCode" 
+                                placeholder="VD: BM-001" required>
+                        <div class="form-text">Mã biểu mẫu sẽ được dùng để gán cho nhóm đối tượng. Tự động tạo nếu để trống.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mô tả</label>
+                        <textarea class="form-control" id="formDescription" rows="2" 
+                                  placeholder="Mô tả ngắn gọn về biểu mẫu"></textarea>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Danh mục</label>
+                            <select class="form-select" id="formCategory">
+                                <option value="">Chưa phân loại</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Trạng thái</label>
+                            <select class="form-select" id="formStatus">
+                                <option value="draft">Bản nháp</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="closed">Đã đóng</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày bắt đầu</label>
+                            <input type="datetime-local" class="form-control" id="formStartDate">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Ngày kết thúc</label>
+                            <input type="datetime-local" class="form-control" id="formEndDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="formAllowAfterDeadline">
+                        <label class="form-check-label" for="formAllowAfterDeadline">
+                            Cho phép trả lời sau hạn
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnSaveForm">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc chắn muốn xóa biểu mẫu <strong id="deleteFormName"></strong>?</p>
+                <p class="text-muted small mt-1">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    const pageSize = 10;
+    let deleteTargetId = null;
+    let categories = [];
+
+    // ============================================
+    // LẤY CSRF TOKEN
+    // ============================================
+    function getCSRFToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === 'csrftoken=') {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ============================================
+    // LOAD CATEGORIES
+    // ============================================
+    function loadCategories() {
+        fetch('/analytics/api/survey-forms/categories/', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                categories = data.data;
+                renderCategories(data.data);
+            }
+        })
+        .catch(error => console.error('Error loading categories:', error));
+    }
+
+    function renderCategories(data) {
+        const select = document.getElementById('formCategory');
+        select.innerHTML = '<option value="">Chưa phân loại</option>' +
+            data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+
+    // ============================================
+    // LOAD FORMS
+    // ============================================
+    function loadForms() {
+        const status = document.getElementById('filterStatus').value;
+        const search = document.getElementById('searchInput').value;
+        
+        let url = `/analytics/api/survey-forms/?page=${currentPage}&per_page=${pageSize}`;
+        if (status) url += `&status=${status}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        
+        fetch(url, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderTable(data);
+            } else {
+                showError('Không thể tải dữ liệu: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // ============================================
+    // RENDER BẢNG
+    // ============================================
+    function renderTable(data) {
+        const tbody = document.getElementById('formTableBody');
+        const items = data.data || [];
+        
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Chưa có biểu mẫu nào</td></tr>`;
+        } else {
+            tbody.innerHTML = items.map((f, idx) => `
+                <tr>
+                    <td>${(data.page - 1) * data.per_page + idx + 1}</td>
+                    <td><span class="badge bg-primary">${f.code}</span></td>
+                    <td class="fw-semibold">${f.name}</td>
+                    <td><span class="text-muted small">${f.section || '-'}</span></td>
+                    <td>
+                        ${f.groups && f.groups.length > 0 ? 
+                            f.groups.map(g => `<span class="badge bg-secondary bg-opacity-10 text-secondary me-1">${g}</span>`).join('')
+                            : '<span class="text-muted small">Chưa gán</span>'
+                        }
+                    </td>
+                    <td>
+                        <span class="badge ${f.status === 'active' ? 'bg-success' : f.status === 'draft' ? 'bg-warning' : f.status === 'closed' ? 'bg-danger' : 'bg-secondary'}">
+                            ${f.status_display}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${f.id}" title="Sửa">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${f.id}" data-name="${f.name}" title="Xóa">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Cập nhật thông tin phân trang
+        const start = (data.page - 1) * data.per_page + 1;
+        const end = Math.min(data.page * data.per_page, data.total);
+        document.getElementById('tableInfo').textContent = 
+            data.total > 0 ? `Hiển thị ${start}-${end} trên tổng ${data.total}` : 'Không có dữ liệu';
+        
+        renderPagination(data);
+    }
+
+    // ============================================
+    // RENDER PHÂN TRANG
+    // ============================================
+    function renderPagination(data) {
+        const pagination = document.getElementById('pagination');
+        const totalPages = data.total_pages || 1;
+        const currentPage = data.page || 1;
+        
+        let html = '';
+        
+        html += `<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}">Trang trước</a>
+        </li>`;
+        
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+        
+        if (startPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>`;
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        html += `<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}">Trang sau</a>
+        </li>`;
+        
+        pagination.innerHTML = html;
+        
+        pagination.querySelectorAll('a.page-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = parseInt(this.dataset.page);
+                if (page && page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    loadForms();
+                }
+            });
+        });
+    }
+
+    // ============================================
+    // LƯU BIỂU MẪU (Tạo/Sửa)
+    // ============================================
+    document.getElementById('btnSaveForm').addEventListener('click', function() {
+    const id = document.getElementById('editFormId').value;
+    const code = document.getElementById('formCode').value.trim();  // THÊM DÒNG NÀY
+    const name = document.getElementById('formName').value.trim();
+    const description = document.getElementById('formDescription').value.trim();
+    const categoryId = document.getElementById('formCategory').value;
+    const status = document.getElementById('formStatus').value;
+    const startDate = document.getElementById('formStartDate').value;
+    const endDate = document.getElementById('formEndDate').value;
+    const allowAfterDeadline = document.getElementById('formAllowAfterDeadline').checked;
+
+    if (!name) {
+        alert('Vui lòng nhập tên biểu mẫu');
+        return;
+    }
+
+    const data = {
+        title: name,
+        description: description,
+        status: status,
+        allow_after_deadline: allowAfterDeadline,
+    };
+
+    // THÊM CODE VÀO DATA NẾU CÓ
+    if (code) {
+        data.code = code;
+    }
+
+    if (categoryId) data.category_id = parseInt(categoryId);
+    if (startDate) data.start_date = startDate;
+    if (endDate) data.end_date = endDate;
+
+    const url = id ? 
+        `/analytics/api/survey-forms/${id}/update/` : 
+        '/analytics/api/survey-forms/create/';
+    const method = id ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('formModal')).hide();
+            loadForms();
+            resetModal();
+        } else {
+            alert('Lỗi: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Có lỗi xảy ra: ' + error);
+    });
+});
+
+    // ============================================
+    // RESET MODAL
+    // ============================================
+function resetModal() {
+    document.getElementById('formModalForm').reset();
+    document.getElementById('editFormId').value = '';
+    document.getElementById('formCode').value = '';  // THÊM DÒNG NÀY
+    document.getElementById('formCode').readOnly = false;  // THÊM DÒNG NÀY
+    document.getElementById('formModalTitle').textContent = 'Thêm biểu mẫu mới';
+    document.getElementById('formStatus').value = 'draft';
+    document.getElementById('formAllowAfterDeadline').checked = false;
+}
+
+    // ============================================
+    // SỬA BIỂU MẪU
+    // ============================================
+    document.getElementById('formTableBody').addEventListener('click', function(e) {
+    // Nút Edit
+    const editBtn = e.target.closest('.btn-edit');
+    if (editBtn) {
+        const id = editBtn.dataset.id;
+        fetch(`/analytics/api/survey-forms/${id}/`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const form = data.data;
+                document.getElementById('editFormId').value = form.id;
+                document.getElementById('formCode').value = form.code || '';  // THÊM DÒNG NÀY
+                document.getElementById('formCode').readOnly = true;  // THÊM DÒNG NÀY - KHÔNG CHO SỬA CODE
+                document.getElementById('formName').value = form.title;
+                document.getElementById('formDescription').value = form.description || '';
+                document.getElementById('formCategory').value = form.category_id || '';
+                document.getElementById('formStatus').value = form.status;
+                document.getElementById('formAllowAfterDeadline').checked = form.allow_after_deadline || false;
+                
+                if (form.start_date) {
+                    document.getElementById('formStartDate').value = form.start_date.substring(0, 16);
+                }
+                if (form.end_date) {
+                    document.getElementById('formEndDate').value = form.end_date.substring(0, 16);
+                }
+                
+                document.getElementById('formModalTitle').textContent = 'Sửa biểu mẫu';
+                const modal = new bootstrap.Modal(document.getElementById('formModal'));
+                modal.show();
+            }
+        })
+        .catch(error => {
+            alert('Không thể tải thông tin biểu mẫu');
+        });
+        return;
+    }
+
+    // Nút Delete (giữ nguyên)
+    const delBtn = e.target.closest('.btn-delete');
+    if (delBtn) {
+        deleteTargetId = parseInt(delBtn.dataset.id);
+        document.getElementById('deleteFormName').textContent = delBtn.dataset.name;
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+});
+
+    // ============================================
+    // XÓA BIỂU MẪU
+    // ============================================
+    document.getElementById('btnConfirmDelete').addEventListener('click', function() {
+        if (!deleteTargetId) return;
+        
+        fetch(`/analytics/api/survey-forms/${deleteTargetId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                loadForms();
+            } else {
+                alert('Lỗi: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra: ' + error);
+        });
+    });
+
+    // ============================================
+    // TÌM KIẾM
+    // ============================================
+    document.getElementById('btnSearch').addEventListener('click', function() {
+        currentPage = 1;
+        loadForms();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', function() {
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('searchInput').value = '';
+        currentPage = 1;
+        loadForms();
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('btnSearch').click();
+        }
+    });
+
+    // ============================================
+    // RESET MODAL KHI ĐÓNG
+    // ============================================
+    document.getElementById('formModal').addEventListener('hidden.bs.modal', function() {
+        resetModal();
+    });
+
+    // ============================================
+    // KHỞI TẠO
+    // ============================================
+    loadCategories();
+    loadForms();
+});
+</script>
+{% endblock %}
