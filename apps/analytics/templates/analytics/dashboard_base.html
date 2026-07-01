@@ -290,11 +290,6 @@
         <aside class="sidebar">
             <div class="nav-section">Điều hướng</div>
             
-            <a href="{% url 'analytics:survey_list' %}" class="nav-item {% if active_menu == 'surveys' %}active{% endif %}">
-                <span class="nav-icon"><i class="bi bi-clipboard-data"></i></span>
-                <span>Đợt khảo sát</span>
-            </a>
-            
             <a href="{% url 'analytics:target_groups' %}" class="nav-item {% if active_menu == 'target_groups' %}active{% endif %}">
                 <span class="nav-icon"><i class="bi bi-people"></i></span>
                 <span>Nhóm đối tượng</span>

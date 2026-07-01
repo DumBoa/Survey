@@ -10,7 +10,6 @@
     <title>{{ survey.title|default:"Phiếu Khảo Sát" }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        
         * {
             margin: 0;
             padding: 0;
@@ -24,9 +23,6 @@
             line-height: 1.6;
         }
 
-        /* ============================================
-           HEADER - MÀU TRẮNG
-           ============================================ */
         .header {
             background: #ffffff;
             color: #1a1a1a;
@@ -79,9 +75,6 @@
             color: #6b7280;
         }
 
-        /* ============================================
-           PROGRESS BAR
-           ============================================ */
         .progress-container {
             background: #ffffff;
             padding: 12px 40px;
@@ -120,9 +113,6 @@
             transition: width 0.3s ease;
         }
 
-        /* ============================================
-           MAIN CONTENT - SIDEBAR LEFT + CONTENT
-           ============================================ */
         .main-content {
             max-width: 2000px;
             margin: 0 auto;
@@ -132,7 +122,6 @@
             align-items: flex-start;
         }
 
-        /* Sidebar - bên trái - HIỂN THỊ CÂU HỎI */
         .sidebar {
             position: sticky;
             top: 130px;
@@ -245,7 +234,6 @@
             flex-shrink: 0;
         }
 
-        /* Section header trong sidebar */
         .section-header-nav {
             font-size: 11px;
             font-weight: 600;
@@ -262,19 +250,11 @@
             margin-top: 0;
         }
 
-        /* Content - chiếm phần còn lại */
         .content {
             flex: 1;
             min-width: 0;
         }
 
-        .scale-table thead th .scale-label {
-            display: none;
-        }
-
-        /* ============================================
-           SECTION CARD
-           ============================================ */
         .section-card {
             background: #ffffff;
             border-radius: 12px;
@@ -322,9 +302,6 @@
             padding: 24px;
         }
 
-        /* ============================================
-           FORM ELEMENTS
-           ============================================ */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -361,9 +338,6 @@
             box-shadow: 0 0 0 3px rgba(0,84,164,0.1);
         }
 
-        /* ============================================
-           QUESTION
-           ============================================ */
         .question-title {
             font-size: 0.95rem;
             font-weight: 500;
@@ -387,11 +361,7 @@
             border: none;
             border-top: 1px dashed #e5e7eb;
         }
-        /* ============================================
-        CUSTOM SCROLLBAR - MỎNG VÀ MÀU XANH
-        ============================================ */
 
-        /* Webkit browsers (Chrome, Safari, Edge) */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -412,7 +382,6 @@
             background: #003d7a;
         }
 
-        /* Sidebar scrollbar đặc biệt */
         .sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -427,7 +396,6 @@
             border-radius: 10px;
         }
 
-        /* Firefox */
         * {
             scrollbar-width: thin;
             scrollbar-color: #0054a4 #f1f5f9;
@@ -437,9 +405,7 @@
             scrollbar-width: thin;
             scrollbar-color: #0054a4 #f1f5f9;
         }
-        /* ============================================
-           RADIO & CHECKBOX - TO HƠN, CĂN GIỮA
-           ============================================ */
+
         .checkbox-group {
             display: flex;
             flex-direction: column;
@@ -520,9 +486,6 @@
             color: #374151;
         }
 
-        /* ============================================
-           DATA TABLE - BỎ STT, KHÓA DỮ LIỆU CÓ SẴN
-           ============================================ */
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -598,9 +561,6 @@
             border-color: #e5e7eb;
         }
 
-        /* ============================================
-           SCALE TABLE (Rating Grid) - KHÔNG SỐ THỨ TỰ
-           ============================================ */
         .scale-table {
             width: 100%;
             border-collapse: collapse;
@@ -642,23 +602,39 @@
             color: #1a1a1a;
         }
 
-        .scale-table tbody td .custom-radio-label {
+        .scale-table tbody td .custom-radio-label,
+        .scale-table tbody td .custom-checkbox {
             justify-content: center;
             padding: 4px;
         }
 
-        .scale-table tbody td .custom-radio-label input[type="radio"] {
+        .scale-table tbody td .custom-radio-label input[type="radio"],
+        .scale-table tbody td .custom-checkbox input[type="checkbox"] {
             width: 22px;
             height: 22px;
+        }
+
+        .scale-table tbody td input[type="text"] {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #ffffff;
+        }
+
+        .scale-table tbody td input[type="text"]:focus {
+            outline: none;
+            border-color: #0054a4;
+            box-shadow: 0 0 0 3px rgba(0,84,164,0.1);
         }
 
         .scale-table tbody tr:hover {
             background: #f9fafb;
         }
 
-        /* ============================================
-           QUESTION NOTE - GHI CHÚ DƯỚI BẢNG
-           ============================================ */
         .question-note {
             margin-top: 12px;
             padding: 8px 14px;
@@ -674,9 +650,6 @@
             display: none;
         }
 
-        /* ============================================
-           TEXTAREA
-           ============================================ */
         .textarea-group {
             margin-bottom: 16px;
         }
@@ -708,9 +681,6 @@
             box-shadow: 0 0 0 3px rgba(0,84,164,0.08);
         }
 
-        /* ============================================
-           ACTION BUTTONS - CUỐI BÀI
-           ============================================ */
         .survey-actions {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -794,9 +764,6 @@
             box-shadow: 0 2px 8px rgba(22,163,74,0.25);
         }
 
-        /* ============================================
-           TOAST
-           ============================================ */
         .toast {
             position: fixed;
             bottom: 24px;
@@ -831,9 +798,6 @@
             to { opacity: 0; transform: translateY(-8px); }
         }
 
-        /* ============================================
-           SUCCESS SCREEN
-           ============================================ */
         .success-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -867,9 +831,6 @@
             color: #6b7280;
         }
 
-        /* ============================================
-           LOADING
-           ============================================ */
         .loading-state {
             display: flex;
             flex-direction: column;
@@ -893,90 +854,54 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ============================================
-           FOOTER SPACER
-           ============================================ */
         .footer-spacer {
             height: 40px;
         }
-
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
+        /* Input "Khác" - trong suốt, không viền */
+        .other-input {
+            border: none !important;
+            background: transparent !important;
+            padding: 2px 4px;
+            border-bottom: 1px dashed #d1d5db !important;
+            outline: none;
+            font-size: 0.9rem;
+            width: 140px;
+            transition: border-color 0.2s;
+            font-family: inherit;
+            margin-left: 4px;
+        }
+        .other-input:focus {
+            border-bottom-color: #0054a4 !important;
+        }
+        .other-input::placeholder {
+            color: #bbb;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
         @media (max-width: 1024px) {
-            .sidebar {
-                display: none;
-            }
-
-            .main-content {
-                padding: 16px 20px 100px;
-            }
+            .sidebar { display: none; }
+            .main-content { padding: 16px 20px 100px; }
         }
 
         @media (max-width: 768px) {
-            .header {
-                padding: 12px 16px;
-            }
-
-            .header-content {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .header-text h1 {
-                font-size: 1rem;
-            }
-
-            .header-text p {
-                font-size: 0.75rem;
-            }
-
-            .progress-container {
-                padding: 8px 16px;
-                top: 64px;
-            }
-
-            .main-content {
-                padding: 12px 12px 80px;
-                gap: 16px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-body {
-                padding: 16px;
-            }
-
-            .survey-actions {
-                flex-direction: column;
-                align-items: stretch;
-                padding: 16px;
-            }
-
-            .survey-actions .btn-group {
-                justify-content: center;
-            }
-
-            .btn {
-                padding: 8px 16px;
-                font-size: 0.85rem;
-                justify-content: center;
-            }
-
-            .data-table,
-            .scale-table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
+            .header { padding: 12px 16px; }
+            .header-content { flex-wrap: wrap; gap: 8px; }
+            .header-text h1 { font-size: 1rem; }
+            .header-text p { font-size: 0.75rem; }
+            .progress-container { padding: 8px 16px; top: 64px; }
+            .main-content { padding: 12px 12px 80px; gap: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .section-body { padding: 16px; }
+            .survey-actions { flex-direction: column; align-items: stretch; padding: 16px; }
+            .survey-actions .btn-group { justify-content: center; }
+            .btn { padding: 8px 16px; font-size: 0.85rem; justify-content: center; }
+            .data-table, .scale-table { display: block; overflow-x: auto; white-space: nowrap; }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER - MÀU TRẮNG -->
+    <!-- HEADER -->
     <header class="header">
         <div class="header-content">
             <div class="header-left">
@@ -1005,18 +930,16 @@
     <!-- MAIN CONTENT -->
     <div class="main-content">
 
-        <!-- SIDEBAR - HIỂN THỊ CÂU HỎI -->
+        <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-title">
                 Câu hỏi
                 <span class="badge" id="question-count">0</span>
             </div>
-            <nav id="question-nav" class="question-nav">
-                <!-- Dynamic questions will be rendered here -->
-            </nav>
+            <nav id="question-nav" class="question-nav"></nav>
         </aside>
 
-        <!-- CONTENT - RỘNG BÊN PHẢI -->
+        <!-- CONTENT -->
         <main class="content">
 
             <!-- Loading -->
@@ -1026,27 +949,17 @@
             </div>
 
             <!-- Survey Sections -->
-            <div id="survey-content" style="display: none;">
-                <!-- Dynamic -->
-            </div>
+            <div id="survey-content" style="display: none;"></div>
 
-            <!-- Action Buttons - Cuối bài -->
+            <!-- Action Buttons -->
             <div id="survey-actions" class="survey-actions" style="display: none;">
                 <div class="btn-group">
-                    <button class="btn btn-secondary" id="prev-btn" disabled>
-                        ← Quay lại
-                    </button>
-                    <button class="btn btn-primary" id="next-btn">
-                        Tiếp tục →
-                    </button>
+                    <button class="btn btn-secondary" id="prev-btn" disabled>← Quay lại</button>
+                    <button class="btn btn-primary" id="next-btn">Tiếp tục →</button>
                 </div>
                 <div class="btn-group">
-                    <button class="btn btn-outline" onclick="saveDraft()">
-                        Lưu nháp
-                    </button>
-                    <button class="btn btn-success" id="submit-btn">
-                        Nộp khảo sát
-                    </button>
+                    <button class="btn btn-outline" onclick="saveDraft()">Lưu nháp</button>
+                    <button class="btn btn-success" id="submit-btn">Nộp khảo sát</button>
                 </div>
             </div>
 
@@ -1155,7 +1068,7 @@
                     return;
                 }
 
-                // Xây dựng danh sách tất cả câu hỏi
+                // Build list of all real questions
                 allQuestions = [];
                 sections.forEach((section, sIdx) => {
                     const questions = section.questions || [];
@@ -1183,14 +1096,9 @@
 
                 sections.forEach((section, idx) => {
                     const isActive = idx === 0;
-                    
-                    // 1. Lấy đầy đủ tên phần (loại bỏ mã sec_ rác nếu có)
                     let displayTitle = section.title || `Phần ${idx + 1}`;
-                    if (displayTitle.includes('sec_')) {
-                        displayTitle = `Phần ${idx + 1}`;
-                    }
+                    if (displayTitle.includes('sec_')) displayTitle = `Phần ${idx + 1}`;
 
-                    // 2. Tự động trích xuất số/chữ cho vòng tròn (VD: "Phần A:..." -> lấy "A")
                     let badgeText = String(idx + 1);
                     const match = displayTitle.match(/(?:Phần|Mục)\s*([A-Z0-9]+)/i);
                     if (match) badgeText = match[1];
@@ -1222,7 +1130,6 @@
                 }
 
                 attachEventListeners();
-                // Cập nhật lại nav sau khi load answers
                 setTimeout(() => renderQuestionNav(allQuestions), 100);
             }
 
@@ -1239,9 +1146,7 @@
 
                 questions.forEach((q, qIdx) => {
                     const isRealQuestion = !['title', 'paragraph'].includes(q.question_type_code);
-                    if (isRealQuestion) {
-                        questionCounter++;
-                    }
+                    if (isRealQuestion) questionCounter++;
 
                     const questionNumber = isRealQuestion ? questionCounter : '';
                     const required = q.is_required ? '<span class="question-required">*</span>' : '';
@@ -1252,19 +1157,21 @@
 
                     switch(q.question_type_code) {
                         case 'title':
-                            html += `
-                                <h2 style="font-weight:600;font-size:20px;color:#1a1a1a;margin:12px 0 6px">
-                                    ${escapeHtml(q.title)}
-                                </h2>
-                            `;
-                            break;
+                        const titleHtml = renderTextWithBullets(q.title);
+                        html += `
+                            <div style="margin: 12px 0 8px; font-weight: 600; font-size: 20px; color: #1a1a1a;">
+                                ${titleHtml}
+                            </div>
+                        `;
+                        break;
 
                         case 'paragraph':
                             html += `
-                                <p style="color:#4b5563;line-height:1.7;font-size:14px;margin:6px 0 12px">
-                                    ${escapeHtml(q.title)}
-                                </p>
+                                <div style="margin-bottom: 12px;">
+                                    ${renderTextWithBullets(q.title)}
+                                </div>
                             `;
+                            if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
                             break;
 
                         case 'short-text':
@@ -1280,9 +1187,7 @@
                                            ${q.is_required ? 'required' : ''}>
                                 </div>
                             `;
-                            if (description) {
-                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                            }
+                            if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
                             break;
 
                         case 'long-text':
@@ -1298,60 +1203,55 @@
                                               ${q.is_required ? 'required' : ''}></textarea>
                                 </div>
                             `;
-                            if (description) {
-                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                            }
+                            if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
                             break;
 
                         case 'single-choice':
+                        html += `<div class="question-title"><span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}</div>
+                                <div class="checkbox-group">`;
+                        const choices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                        choices.forEach((choice, ci) => {
+                            const isOther = isOtherOptionLabel(choice);
+                            const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
                             html += `
-                                <div class="question-title">
-                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                                </div>
-                                <div class="checkbox-group">
+                                <label class="custom-radio-label">
+                                    <input type="radio" name="${name}" value="${escapeHtml(choice)}" ${q.is_required && ci === 0 ? 'required' : ''}>
+                                    <span>${escapeHtml(choice)}</span>
+                                    ${otherInputHtml}
+                                </label>
                             `;
-                            const choices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
-                            choices.forEach((choice, ci) => {
-                                html += `
-                                    <label class="custom-radio-label">
-                                        <input type="radio" name="${name}" value="${escapeHtml(choice)}" ${q.is_required && ci === 0 ? 'required' : ''}>
-                                        <span>${escapeHtml(choice)}</span>
-                                    </label>
-                                `;
-                            });
-                            html += `</div>`;
-                            if (description) {
-                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                            }
-                            break;
+                        });
+                        html += `</div>`;
+                        break;
 
                         case 'multi-choice':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
+                            </div>
+                            <div class="checkbox-group">
+                        `;
+                        const multiChoices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                        multiChoices.forEach((choice) => {
+                            const isOther = isOtherOptionLabel(choice);
+                            const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
                             html += `
-                                <div class="question-title">
-                                    <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                                </div>
-                                <div class="checkbox-group">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="${name}[]" value="${escapeHtml(choice)}">
+                                    <span>${escapeHtml(choice)}</span>
+                                    ${otherInputHtml}
+                                </label>
                             `;
-                            const multiChoices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
-                            multiChoices.forEach((choice) => {
-                                html += `
-                                    <label class="custom-checkbox">
-                                        <input type="checkbox" name="${name}[]" value="${escapeHtml(choice)}">
-                                        <span>${escapeHtml(choice)}</span>
-                                    </label>
-                                `;
-                            });
-                            html += `</div>`;
-                            if (description) {
-                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                            }
-                            break;
+                        });
+                        html += `</div>`;
+                        if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
+                        break;
 
                         case 'rating-grid': {
                             const cfg = q.config || {};
                             const criteria = cfg.criteria || ['Tiêu chí 1'];
-                            const scale = cfg.scale || [{value: 1, label: 'Có'}, {value: 2, label: 'Không'}];
-                            
+                            const scale = cfg.scale || [{value: 1, label: 'Có', kind: 'radio'}, {value: 2, label: 'Không', kind: 'radio'}];
+
                             html += `
                                 <div class="question-title">
                                     <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
@@ -1371,17 +1271,41 @@
                             `;
                             criteria.forEach((criterion, ci) => {
                                 html += `<tr><td>${escapeHtml(criterion)}</td>`;
-                                scale.forEach(s => {
-                                    html += `
-                                        <td>
-                                            <label class="custom-radio-label" style="justify-content:center;">
-                                                <input type="radio" 
-                                                       name="${name}_${ci}" 
-                                                       value="${s.value}"
-                                                       ${q.is_required && ci === 0 && s.value === scale[0].value ? 'required' : ''}>
-                                            </label>
-                                        </td>
-                                    `;
+                                scale.forEach((s, si) => {
+                                    const kind = s.kind || 'radio';
+                                    const inputName = `${name}_${ci}`;
+                                    if (kind === 'radio') {
+                                        html += `
+                                            <td>
+                                                <label class="custom-radio-label" style="justify-content:center;">
+                                                    <input type="radio" 
+                                                           name="${inputName}" 
+                                                           value="${s.value}"
+                                                           ${q.is_required && ci === 0 && si === 0 ? 'required' : ''}>
+                                                </label>
+                                            </td>
+                                        `;
+                                    } else if (kind === 'checkbox') {
+                                        html += `
+                                            <td>
+                                                <label class="custom-checkbox" style="justify-content:center;">
+                                                    <input type="checkbox" 
+                                                           name="${inputName}[]" 
+                                                           value="${s.value}">
+                                                </label>
+                                            </td>
+                                        `;
+                                    } else if (kind === 'text') {
+                                        html += `
+                                            <td>
+                                                <input type="text" 
+                                                       name="${inputName}_${si}" 
+                                                       placeholder="Nhập..."
+                                                       style="width:100%;padding:6px 8px;border:1.5px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit;background:#fff;"
+                                                       ${q.is_required && ci === 0 && si === 0 ? 'required' : ''}>
+                                            </td>
+                                        `;
+                                    }
                                 });
                                 html += `</tr>`;
                             });
@@ -1389,9 +1313,7 @@
                                     </tbody>
                                 </table>
                             `;
-                            if (description) {
-                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                            }
+                            if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
                             break;
                         }
 
@@ -1400,18 +1322,16 @@
                             const columns = dtCfg.columns || ['Cột 1', 'Cột 2', 'Cột 3'];
                             let tableData = dtCfg.data || [];
                             const numRows = dtCfg.rows || 2;
-                            
+
                             if (tableData.length === 0) {
                                 tableData = [];
                                 for (let r = 0; r < numRows; r++) {
                                     const rowData = [];
-                                    for (let c = 0; c < columns.length; c++) {
-                                        rowData.push('');
-                                    }
+                                    for (let c = 0; c < columns.length; c++) rowData.push('');
                                     tableData.push(rowData);
                                 }
                             }
-                            
+
                             html += `
                                 <div class="question-title">
                                     <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
@@ -1434,7 +1354,7 @@
                                     const inputName = `${name}_${rowIndex}_${colIndex}`;
                                     const cellValue = rowData[colIndex] || '';
                                     const hasData = cellValue.trim() !== '';
-                                    
+
                                     html += `
                                         <td>
                                             <div class="input-wrapper">
@@ -1457,9 +1377,7 @@
                                     </tbody>
                                 </table>
                             `;
-                            if (description) {
-                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                            }
+                            if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
                             break;
                         }
 
@@ -1472,43 +1390,60 @@
                                     <input type="text" name="${name}" placeholder="Câu hỏi chưa được hỗ trợ">
                                 </div>
                             `;
-                            if (description) {
-                                html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                            }
+                            if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
                     }
 
                     html += `</div>`;
-                    if (qIdx < questions.length - 1) {
-                        html += `<hr class="question-divider">`;
-                    }
+                    if (qIdx < questions.length - 1) html += `<hr class="question-divider">`;
                 });
 
                 return html;
             }
-
+            function onOtherInputFocus(input) {
+                const label = input.closest('.custom-radio-label, .custom-checkbox');
+                if (!label) return;
+                const radio = label.querySelector('input[type="radio"], input[type="checkbox"]');
+                if (radio && !radio.checked) {
+                    radio.checked = true;
+                    // Kích hoạt sự kiện change để lưu
+                    radio.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+            function isOtherOptionLabel(text) {
+                return /^kh[aá]c\b|^other\b/i.test((text || "").trim());
+            }
+            
+            function renderTextWithBullets(text) {
+                if (!text) return '';
+                const lines = text.split('\n').filter(line => line.trim() !== '');
+                if (lines.length === 0) return '';
+                // Kiểm tra tất cả các dòng có bắt đầu bằng bullet không
+                const bulletPattern = /^\s*[•\-*]\s*/;
+                const allBullet = lines.every(line => bulletPattern.test(line));
+                if (allBullet && lines.length > 1) {
+                    const items = lines.map(line => line.replace(bulletPattern, '').trim());
+                    return `<ul style="margin: 8px 0 8px 20px; list-style-type: disc; padding-left: 0;">${items.map(item => `<li style="margin-bottom: 4px;">${escapeHtml(item)}</li>`).join('')}</ul>`;
+                } else {
+                    // Giữ nguyên xuống dòng
+                    return `<span style="white-space: pre-wrap; display: block;">${escapeHtml(text)}</span>`;
+                }
+            }
             // ============================================
-            // RENDER QUESTION NAV - HIỂN THỊ CÂU HỎI TRONG SIDEBAR
+            // RENDER QUESTION NAV
             // ============================================
             function renderQuestionNav(questions) {
                 const nav = document.getElementById('question-nav');
                 if (!nav) return;
-
                 nav.innerHTML = '';
                 let currentSectionIndex = -1;
 
                 questions.forEach((q, idx) => {
-                    // Thêm header section nếu section thay đổi
                     if (q.sectionIndex !== currentSectionIndex) {
                         currentSectionIndex = q.sectionIndex;
                         const sectionHeader = document.createElement('div');
                         sectionHeader.className = 'section-header-nav';
-                        
-                        // Hiển thị đầy đủ tiêu đề (VD: Phần 1: Thông tin cá nhân)
                         let headerText = q.sectionTitle || `Phần ${q.sectionIndex + 1}`;
-                        if (headerText.includes('sec_')) {
-                            headerText = `Phần ${q.sectionIndex + 1}`;
-                        }
-                        
+                        if (headerText.includes('sec_')) headerText = `Phần ${q.sectionIndex + 1}`;
                         sectionHeader.textContent = headerText;
                         nav.appendChild(sectionHeader);
                     }
@@ -1522,20 +1457,14 @@
                     if (isActive) btn.classList.add('is-active');
                     if (isAnswered) btn.classList.add('is-complete');
 
-                    const statusIcon = isAnswered ? '✅' : '○';
-                    const statusDot = `<span class="status-dot"></span>`;
-
                     btn.innerHTML = `
-                        ${statusDot}
+                        <span class="status-dot"></span>
                         <span class="q-number">${q.questionNumber}.</span>
                         <span class="q-text">${escapeHtml(q.title)}</span>
                         <span class="q-status-icon">${isAnswered ? '✓' : ''}</span>
                     `;
 
-                    btn.addEventListener('click', () => {
-                        goToQuestion(idx);
-                    });
-
+                    btn.addEventListener('click', () => goToQuestion(idx));
                     nav.appendChild(btn);
                 });
             }
@@ -1544,19 +1473,28 @@
             // CHECK IF QUESTION IS ANSWERED
             // ============================================
             function isQuestionAnswered(questionId) {
-                const name = `q_${questionId}`;
-                const elements = document.querySelectorAll(`[name^="${name}"]`);
-                let hasAnswer = false;
-                
-                elements.forEach(el => {
-                    if (el.type === 'radio' && el.checked) hasAnswer = true;
-                    else if (el.type === 'checkbox' && el.checked) hasAnswer = true;
-                    else if (el.type === 'text' && el.value.trim() !== '') hasAnswer = true;
-                    else if (el.type === 'textarea' && el.value.trim() !== '') hasAnswer = true;
-                    else if (el.tagName === 'TEXTAREA' && el.value.trim() !== '') hasAnswer = true;
-                });
-                
-                return hasAnswer;
+                const item = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
+                if (!item) return false;
+
+                // Check if it's a grid
+                const gridTable = item.querySelector('.scale-table');
+                if (gridTable) {
+                    const inputs = gridTable.querySelectorAll('input');
+                    for (let inp of inputs) {
+                        if (inp.type === 'radio' && inp.checked) return true;
+                        if (inp.type === 'checkbox' && inp.checked) return true;
+                        if (inp.type === 'text' && inp.value.trim() !== '') return true;
+                    }
+                    return false;
+                }
+
+                const inputs = item.querySelectorAll('input, textarea');
+                for (let inp of inputs) {
+                    if (inp.type === 'radio' && inp.checked) return true;
+                    if (inp.type === 'checkbox' && inp.checked) return true;
+                    if ((inp.type === 'text' || inp.tagName === 'TEXTAREA') && inp.value.trim() !== '') return true;
+                }
+                return false;
             }
 
             // ============================================
@@ -1564,31 +1502,24 @@
             // ============================================
             function goToQuestion(index) {
                 if (index < 0 || index >= allQuestions.length) return;
-                
                 const q = allQuestions[index];
                 currentQuestionIndex = index;
-                currentPage = q.sectionIndex; 
-        
-                const sectionIdx = q.sectionIndex;
-                
-                // Hiển thị section đúng
+                currentPage = q.sectionIndex;
+
                 document.querySelectorAll('.section-card').forEach((card, idx) => {
-                    card.classList.toggle('is-active', idx === sectionIdx);
+                    card.classList.toggle('is-active', idx === q.sectionIndex);
                 });
-                // Cuộn đến câu hỏi
+
                 const questionEl = document.querySelector(`.question-item[data-question-id="${q.id}"]`);
                 if (questionEl) {
                     setTimeout(() => {
                         questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         questionEl.style.transition = 'background 0.3s';
                         questionEl.style.background = '#e8f0fe';
-                        setTimeout(() => {
-                            questionEl.style.background = 'transparent';
-                        }, 1500);
+                        setTimeout(() => { questionEl.style.background = 'transparent'; }, 1500);
                     }, 200);
                 }
-                
-                // Cập nhật sidebar
+
                 renderQuestionNav(allQuestions);
                 updatePagination();
                 updateProgress();
@@ -1600,16 +1531,11 @@
             function computeSectionStats() {
                 const sections = surveyData?.sections || [];
                 const stats = [];
-                
                 sections.forEach((section) => {
                     const questions = section.questions || [];
                     const inputQuestions = questions.filter(q => !['title', 'paragraph'].includes(q.question_type_code));
                     let answered = 0;
-                    
-                    inputQuestions.forEach(q => {
-                        if (isQuestionAnswered(q.id)) answered++;
-                    });
-                    
+                    inputQuestions.forEach(q => { if (isQuestionAnswered(q.id)) answered++; });
                     stats.push({
                         code: section.code || '',
                         title: section.title || '',
@@ -1618,7 +1544,6 @@
                         pct: inputQuestions.length > 0 ? Math.round((answered / inputQuestions.length) * 100) : 0
                     });
                 });
-                
                 return stats;
             }
 
@@ -1626,131 +1551,264 @@
             // LOAD ANSWERS
             // ============================================
             function loadAnswers(savedAnswers) {
-                Object.keys(savedAnswers).forEach(key => {
-                    const value = savedAnswers[key];
-                    const elements = document.querySelectorAll(`[name^="${key}"]`);
-                    
-                    if (elements.length === 0) return;
-                    
-                    if (elements[0].type === 'radio') {
-                        elements.forEach(el => {
-                            if (el.value === String(value)) {
-                                el.checked = true;
-                            }
+    Object.keys(savedAnswers).forEach(key => {
+        const value = savedAnswers[key];
+        const questionId = parseInt(key);
+        const item = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
+        if (!item) return;
+
+        // --- Xử lý grid (rating-grid) ---
+        const gridTable = item.querySelector('.scale-table');
+        if (gridTable && value && value.type === 'grid' && Array.isArray(value.data)) {
+            const rows = gridTable.querySelectorAll('tbody tr');
+            rows.forEach((row, ri) => {
+                if (ri >= value.data.length) return;
+                const rowData = value.data[ri];
+                const cells = row.querySelectorAll('td');
+                cells.forEach((cell, ci) => {
+                    if (ci >= rowData.length) return;
+                    const val = rowData[ci];
+                    // Radio
+                    const radio = cell.querySelector('input[type="radio"]');
+                    if (radio && val !== null && val !== undefined) {
+                        if (radio.value === String(val)) radio.checked = true;
+                        return;
+                    }
+                    // Checkboxes
+                    const checkboxes = cell.querySelectorAll('input[type="checkbox"]');
+                    if (checkboxes.length && Array.isArray(val)) {
+                        checkboxes.forEach(cb => {
+                            if (val.includes(cb.value)) cb.checked = true;
                         });
-                    } else if (elements[0].type === 'checkbox') {
-                        const values = Array.isArray(value) ? value : [value];
-                        elements.forEach(el => {
-                            if (values.includes(el.value)) {
+                        return;
+                    }
+                    // Text input
+                    const textInput = cell.querySelector('input[type="text"]');
+                    if (textInput) {
+                        textInput.value = val || '';
+                    }
+                });
+            });
+            return;
+        }
+
+        // --- Xử lý câu hỏi thường (radio, checkbox, text) ---
+        const name = `q_${questionId}`;
+        const elements = item.querySelectorAll(`[name^="${name}"]`);
+        if (elements.length === 0) return;
+
+        const firstEl = elements[0];
+
+        // Radio
+        if (firstEl.type === 'radio') {
+            // Kiểm tra nếu value không nằm trong danh sách options (có thể là "Khác" nhập tay)
+            const options = getOptionsForQuestion(questionId);
+            if (options && options.length > 0 && !options.includes(value)) {
+                // Tìm option "Khác"
+                const otherOption = options.find(opt => isOtherOptionLabel(opt));
+                if (otherOption) {
+                    const otherRadio = item.querySelector(`input[value="${escapeHtml(otherOption)}"]`);
+                    if (otherRadio) {
+                        otherRadio.checked = true;
+                        const otherInput = otherRadio.closest('.custom-radio-label').querySelector('.other-input');
+                        if (otherInput) otherInput.value = value;
+                        return;
+                    }
+                }
+            }
+            // Nếu không, chọn radio bình thường
+            elements.forEach(el => {
+                if (el.value === String(value)) el.checked = true;
+            });
+        }
+        // Checkbox
+        else if (firstEl.type === 'checkbox') {
+            const values = Array.isArray(value) ? value : [value];
+            elements.forEach(el => {
+                // Nếu checkbox là "Khác" và giá trị không nằm trong options?
+                // Nhưng thực tế value là mảng, ta cần kiểm tra từng phần tử
+                if (values.includes(el.value)) {
+                    el.checked = true;
+                } else {
+                    // Có thể giá trị nhập tay cho "Khác" -> tìm checkbox "Khác" và điền text
+                    if (isOtherOptionLabel(el.value)) {
+                        // Kiểm tra xem có phần tử nào trong values không khớp với option nào không
+                        const options = getOptionsForQuestion(questionId);
+                        const unmatched = values.filter(v => !options.includes(v));
+                        if (unmatched.length > 0) {
+                            const otherInput = el.closest('.custom-checkbox').querySelector('.other-input');
+                            if (otherInput) {
+                                otherInput.value = unmatched[0]; // lấy giá trị đầu tiên không khớp
                                 el.checked = true;
-                            }
-                        });
-                    } else if (elements[0].type === 'text' || elements[0].tagName === 'TEXTAREA') {
-                        if (elements.length === 1) {
-                            elements[0].value = value || '';
-                        } else {
-                            if (Array.isArray(value)) {
-                                elements.forEach(el => {
-                                    const nameParts = el.name.split('_');
-                                    if (nameParts.length >= 3) {
-                                        const rowIdx = parseInt(nameParts[1]);
-                                        const colIdx = parseInt(nameParts[2]);
-                                        if (value[rowIdx] && value[rowIdx][colIdx] !== undefined) {
-                                            el.value = value[rowIdx][colIdx] || '';
-                                        }
-                                    }
-                                });
                             }
                         }
                     }
-                });
-                
-                // Cập nhật lại nav sau khi load answers
-                setTimeout(() => renderQuestionNav(allQuestions), 100);
+                }
+            });
+        }
+        // Text / Textarea / Data table
+        else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA') {
+            if (elements.length === 1) {
+                firstEl.value = value || '';
+            } else {
+                // Data table matrix
+                if (Array.isArray(value)) {
+                    elements.forEach(el => {
+                        const nameParts = el.name.split('_');
+                        if (nameParts.length >= 3) {
+                            const rowIdx = parseInt(nameParts[1]);
+                            const colIdx = parseInt(nameParts[2]);
+                            if (value[rowIdx] && value[rowIdx][colIdx] !== undefined) {
+                                el.value = value[rowIdx][colIdx] || '';
+                            }
+                        }
+                    });
+                }
             }
+        }
+    });
 
+    // Cập nhật lại nav sau khi load
+    setTimeout(() => renderQuestionNav(allQuestions), 100);
+}
+            function getOptionsForQuestion(questionId) {
+                if (!surveyData) return [];
+                for (const section of surveyData.sections) {
+                    for (const q of section.questions) {
+                        if (q.id === questionId) {
+                            return q.options || [];
+                        }
+                    }
+                }
+                return [];
+            }
             // ============================================
             // COLLECT ANSWERS
             // ============================================
             function collectAnswers() {
-                const allAnswers = {};
-                const allQuestionsEl = document.querySelectorAll('.question-item');
-                
-                allQuestionsEl.forEach(item => {
-                    const questionId = item.dataset.questionId;
-                    if (!questionId) return;
-                    
-                    const name = `q_${questionId}`;
-                    const elements = item.querySelectorAll(`[name^="${name}"]`);
-                    
-                    if (elements.length === 0) return;
-                    
-                    const firstEl = elements[0];
-                    
-                    if (firstEl.type === 'radio') {
-                        const checked = item.querySelector(`[name^="${name}"]:checked`);
-                        if (checked) {
-                            allAnswers[questionId] = checked.value;
-                        }
-                    } else if (firstEl.type === 'checkbox') {
-                        const checked = item.querySelectorAll(`[name^="${name}[]"]:checked`);
-                        if (checked.length > 0) {
-                            allAnswers[questionId] = Array.from(checked).map(el => el.value);
-                        }
-                    } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA') {
-                        const allInputs = item.querySelectorAll(`[name^="${name}"]`);
-                        if (allInputs.length > 1) {
-                            const matrixData = [];
-                            const rowMap = {};
-                            allInputs.forEach(el => {
-                                const nameParts = el.name.split('_');
-                                if (nameParts.length >= 3) {
-                                    const rowIdx = parseInt(nameParts[1]);
-                                    const colIdx = parseInt(nameParts[2]);
-                                    if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
-                                    rowMap[rowIdx][colIdx] = el.value.trim();
-                                }
-                            });
-                            const rowKeys = Object.keys(rowMap).sort((a, b) => parseInt(a) - parseInt(b));
-                            rowKeys.forEach(rowKey => {
-                                matrixData.push(rowMap[rowKey]);
-                            });
-                            if (matrixData.length > 0) {
-                                allAnswers[questionId] = matrixData;
-                            }
-                        } else {
-                            const val = firstEl.value.trim();
-                            if (val) {
-                                allAnswers[questionId] = val;
-                            }
+    const allAnswers = {};
+    const allQuestionsEl = document.querySelectorAll('.question-item');
+
+    allQuestionsEl.forEach(item => {
+        const questionId = item.dataset.questionId;
+        if (!questionId) return;
+        const qId = parseInt(questionId);
+
+        // --- Grid ---
+        const gridTable = item.querySelector('.scale-table');
+        if (gridTable) {
+            const gridData = [];
+            const rows = gridTable.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('td');
+                cells.forEach(cell => {
+                    // Radio
+                    const radio = cell.querySelector('input[type="radio"]:checked');
+                    if (radio) {
+                        rowData.push(radio.value);
+                        return;
+                    }
+                    // Checkboxes
+                    const checkedCheckboxes = cell.querySelectorAll('input[type="checkbox"]:checked');
+                    if (checkedCheckboxes.length) {
+                        rowData.push(Array.from(checkedCheckboxes).map(el => el.value));
+                        return;
+                    }
+                    // Text input
+                    const textInput = cell.querySelector('input[type="text"]');
+                    if (textInput) {
+                        rowData.push(textInput.value.trim() || null);
+                        return;
+                    }
+                    rowData.push(null);
+                });
+                gridData.push(rowData);
+            });
+            allAnswers[qId] = { type: 'grid', data: gridData };
+            return;
+        }
+
+        // --- Câu hỏi thường ---
+        const name = `q_${qId}`;
+        const elements = item.querySelectorAll(`[name^="${name}"]`);
+        if (elements.length === 0) return;
+
+        const firstEl = elements[0];
+
+        // Radio
+        if (firstEl.type === 'radio') {
+            const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
+            if (checkedRadio) {
+                let value = checkedRadio.value;
+                // Nếu là "Khác", lấy từ input text
+                if (isOtherOptionLabel(value)) {
+                    const otherInput = checkedRadio.closest('.custom-radio-label').querySelector('.other-input');
+                    if (otherInput && otherInput.value.trim() !== '') {
+                        value = otherInput.value.trim();
+                    }
+                }
+                allAnswers[qId] = value;
+            }
+        }
+        // Checkbox
+        else if (firstEl.type === 'checkbox') {
+            const checkedCheckboxes = item.querySelectorAll(`[name^="${name}[]"]:checked`);
+            if (checkedCheckboxes.length > 0) {
+                const values = Array.from(checkedCheckboxes).map(cb => {
+                    let val = cb.value;
+                    if (isOtherOptionLabel(val)) {
+                        const otherInput = cb.closest('.custom-checkbox').querySelector('.other-input');
+                        if (otherInput && otherInput.value.trim() !== '') {
+                            return otherInput.value.trim();
                         }
                     }
+                    return val;
                 });
-                
-                return allAnswers;
+                allAnswers[qId] = values;
             }
+        }
+        // Text / Textarea / Data table
+        else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA') {
+            if (elements.length === 1) {
+                const val = firstEl.value.trim();
+                if (val) allAnswers[qId] = val;
+            } else {
+                // Data table matrix
+                const matrixData = [];
+                const rowMap = {};
+                elements.forEach(el => {
+                    const nameParts = el.name.split('_');
+                    if (nameParts.length >= 3) {
+                        const rowIdx = parseInt(nameParts[1]);
+                        const colIdx = parseInt(nameParts[2]);
+                        if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
+                        rowMap[rowIdx][colIdx] = el.value.trim();
+                    }
+                });
+                const rowKeys = Object.keys(rowMap).sort((a, b) => parseInt(a) - parseInt(b));
+                rowKeys.forEach(rowKey => matrixData.push(rowMap[rowKey]));
+                if (matrixData.length > 0) allAnswers[qId] = matrixData;
+            }
+        }
+    });
+
+    return allAnswers;
+}
 
             // ============================================
             // UPDATE PROGRESS
             // ============================================
             function updateProgress() {
                 const stats = computeSectionStats();
-                let totalQuestions = 0;
-                let totalAnswered = 0;
-                
-                stats.forEach(s => {
-                    totalQuestions += s.total;
-                    totalAnswered += s.answered;
-                });
-                
+                let totalQuestions = 0, totalAnswered = 0;
+                stats.forEach(s => { totalQuestions += s.total; totalAnswered += s.answered; });
                 const pct = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
-                
+
                 document.getElementById('progress-fill').style.width = `${pct}%`;
                 document.getElementById('progress-percent').textContent = `${pct}%`;
-                document.getElementById('progress-text').textContent = 
+                document.getElementById('progress-text').textContent =
                     `Đã hoàn thành: ${totalAnswered}/${totalQuestions} câu hỏi`;
-                
-                // Cập nhật lại nav để hiển thị trạng thái mới
                 renderQuestionNav(allQuestions);
             }
 
@@ -1758,28 +1816,23 @@
             // PAGINATION
             // ============================================
             function updatePagination() {
-                const sections = surveyData?.sections || [];
-                const totalPages = sections.length;
-                
+                const totalPages = surveyData?.sections?.length || 0;
                 document.getElementById('prev-btn').disabled = currentPage === 0;
                 document.getElementById('next-btn').disabled = currentPage === totalPages - 1;
             }
 
             function goToPage(pageIndex) {
                 if (pageIndex < 0 || pageIndex >= (surveyData?.sections?.length || 0)) return;
-                
                 const currentAnswers = collectAnswers();
                 Object.assign(answers, currentAnswers);
-                
                 currentPage = pageIndex;
-                
+
                 document.querySelectorAll('.section-card').forEach((card, idx) => {
                     card.classList.toggle('is-active', idx === pageIndex);
                 });
-                
+
                 updatePagination();
                 updateProgress();
-                
                 document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
 
@@ -1790,26 +1843,22 @@
             // ============================================
             function attachEventListeners() {
                 document.getElementById('prev-btn').addEventListener('click', () => {
-                    if (currentPage > 0) {
-                        goToPage(currentPage - 1);
-                    }
+                    if (currentPage > 0) goToPage(currentPage - 1);
                 });
-                
+
                 document.getElementById('next-btn').addEventListener('click', () => {
-                    if (currentPage < (surveyData?.sections?.length || 0) - 1) {
-                        goToPage(currentPage + 1);
-                    }
+                    if (currentPage < (surveyData?.sections?.length || 0) - 1) goToPage(currentPage + 1);
                 });
-                
+
                 document.getElementById('submit-btn').addEventListener('click', submitSurvey);
-                
+
                 document.addEventListener('change', (e) => {
                     if (e.target.closest('.question-item')) {
                         scheduleSave();
                         updateProgress();
                     }
                 });
-                
+
                 document.addEventListener('input', (e) => {
                     if (e.target.closest('.question-item')) {
                         scheduleSave();
@@ -1817,30 +1866,28 @@
                     }
                 });
             }
-
+            const urlParams = new URLSearchParams(window.location.search);
+            const progressId = urlParams.get('progress_id');
             // ============================================
             // SAVE DRAFT
             // ============================================
             async function saveDraft() {
                 if (isSubmitted) return;
-                
                 const answersData = collectAnswers();
                 const stats = computeSectionStats();
                 const progress = {};
-                stats.forEach(s => {
-                    progress[s.code] = s.pct;
-                });
-                
+                stats.forEach(s => { progress[s.code] = s.pct; });
+
                 try {
                     const res = await API.submitResponse({
                         survey_id: SURVEY_ID,
                         response_id: responseData?.id,
+                        progress_id: progressId,
                         answers: answersData,
                         section_progress: progress,
                         status: 'draft',
                         time_taken: Math.round((Date.now() - startTime) / 1000)
                     });
-                    
                     if (res.success) {
                         responseData = res;
                         showToast('Đã lưu bản nháp', 'success');
@@ -1862,55 +1909,46 @@
                 const requiredFields = document.querySelectorAll('[required]');
                 let isValid = true;
                 let firstInvalid = null;
-                
+
                 requiredFields.forEach(el => {
                     if (el.type === 'radio') {
                         const name = el.name;
                         const checked = document.querySelector(`[name="${name}"]:checked`);
                         if (!checked) {
                             isValid = false;
-                            if (!firstInvalid) {
-                                firstInvalid = el.closest('.question-item');
-                            }
+                            if (!firstInvalid) firstInvalid = el.closest('.question-item');
                         }
                     } else if (el.type === 'checkbox') {
-                        // skip
+                        // skip (checkbox không bắt buộc thường)
                     } else if (el.value.trim() === '') {
                         isValid = false;
-                        if (!firstInvalid) {
-                            firstInvalid = el.closest('.question-item');
-                        }
+                        if (!firstInvalid) firstInvalid = el.closest('.question-item');
                     }
                 });
-                
+
                 if (!isValid) {
                     showToast('Vui lòng trả lời tất cả câu hỏi bắt buộc', 'warning');
-                    if (firstInvalid) {
-                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return;
                 }
-                
-                const isConfirmed = confirm('Bạn có chắc chắn muốn nộp khảo sát này?');
-                if (!isConfirmed) return;
-                
+
+                if (!confirm('Bạn có chắc chắn muốn nộp khảo sát này?')) return;
+
                 const answersData = collectAnswers();
                 const stats = computeSectionStats();
                 const progress = {};
-                stats.forEach(s => {
-                    progress[s.code] = s.pct;
-                });
-                
+                stats.forEach(s => { progress[s.code] = s.pct; });
+
                 try {
                     const res = await API.submitResponse({
                         survey_id: SURVEY_ID,
                         response_id: responseData?.id,
+                        progress_id: progressId,
                         answers: answersData,
                         section_progress: progress,
                         status: 'submitted',
                         time_taken: Math.round((Date.now() - startTime) / 1000)
                     });
-                    
                     if (res.success) {
                         isSubmitted = true;
                         document.getElementById('survey-content').style.display = 'none';
@@ -1933,28 +1971,27 @@
                         API.getSurvey(SURVEY_ID),
                         API.getResponse(SURVEY_ID)
                     ]);
-                    
+
                     surveyData = survey;
                     responseData = response;
                     answers = response.answers || {};
                     sectionProgress = response.section_progress || {};
-                    
+
                     renderSurvey(survey);
-                    
+
                     setInterval(() => {
                         if (!isSubmitted && Object.keys(collectAnswers()).length > 0) {
                             saveDraft();
                         }
                     }, 30000);
-                    
+
                     if (Object.keys(answers).length > 0) {
                         showToast('Đã khôi phục dữ liệu đã lưu', 'info');
                     }
-                    
+
                 } catch (error) {
                     console.error('Init error:', error);
                     showToast('Lỗi: ' + error.message, 'error');
-                    
                     document.getElementById('loading-state').innerHTML = `
                         <p style="color:#dc2626;font-weight:600">Không thể tải khảo sát</p>
                         <p style="font-size:13px;color:#dc2626;margin-top:6px">${escapeHtml(error.message)}</p>

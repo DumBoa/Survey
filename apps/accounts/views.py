@@ -13,7 +13,7 @@ import uuid
 
 # Import models
 from .models import User, Organization
-from apps.survey.models import Survey as SurveyModel, Response as ResponseModel, SurveyParticipant
+from apps.survey.models import Survey as SurveyModel, Response as ResponseModel, SurveyParticipant, SurveyProgress
 
 
 def accounts_main_render(request):
@@ -300,6 +300,8 @@ def congkhaosat_init(request):
         }, status=500)
 
 
+# apps/accounts/views.py - Sửa hàm congkhaosat_submit
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def congkhaosat_submit(request):
@@ -337,7 +339,7 @@ def congkhaosat_submit(request):
                 status='draft'
             ).first()
         
-        # Nếu chưa có, tìm theo email (trường hợp user quay lại sau khi mất session)
+        # Nếu chưa có, tìm theo email
         if not participant:
             email = data.get('email', '')
             if email:
@@ -348,7 +350,6 @@ def congkhaosat_submit(request):
                 ).first()
         
         if not participant:
-            # Tạo mới participant
             participant = SurveyParticipant(
                 survey=survey,
                 session_key=session_key,
@@ -357,7 +358,7 @@ def congkhaosat_submit(request):
                 status='draft'
             )
         
-        # Cập nhật thông tin từ form
+        # Cập nhật thông tin
         participant.agency = data.get('agency', '')
         participant.target_group_code = data.get('target_group_code', '')
         participant.target_group_name = data.get('target_group_name', '')
@@ -369,11 +370,8 @@ def congkhaosat_submit(request):
         participant.notes = data.get('notes', '')
         participant.assigned_forms = data.get('assigned_forms', [])
         
-        # ============================================================
-        # SỬA: GÁN USER CHO PARTICIPANT - LẤY USER OBJECT THỰC TẾ
-        # ============================================================
+        # Gán user
         if request.user.is_authenticated:
-            # Lấy user object thực tế từ database
             try:
                 from django.contrib.auth import get_user_model
                 User = get_user_model()
@@ -381,7 +379,6 @@ def congkhaosat_submit(request):
                 participant.user = actual_user
             except Exception as e:
                 print(f"Error getting user: {e}")
-                # Nếu không lấy được user, bỏ qua
         
         participant.save()
         
@@ -390,11 +387,9 @@ def congkhaosat_submit(request):
         # ============================================================
         response = None
         
-        # Kiểm tra xem participant đã có response chưa
         if participant.response:
             response = participant.response
         else:
-            # Tìm response theo session
             response_id = request.session.get(f'survey_response_{survey_id}')
             if response_id:
                 try:
@@ -407,7 +402,6 @@ def congkhaosat_submit(request):
                     response = None
         
         if not response:
-            # Tạo mới response
             response = ResponseModel(
                 survey=survey,
                 status='draft',
@@ -417,7 +411,6 @@ def congkhaosat_submit(request):
                 user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
             
-            # SỬA: GÁN USER CHO RESPONSE
             if request.user.is_authenticated:
                 try:
                     from django.contrib.auth import get_user_model
@@ -433,7 +426,6 @@ def congkhaosat_submit(request):
             
             response.save()
             
-            # Gán response vào participant
             participant.response = response
             participant.save()
         
@@ -455,7 +447,10 @@ def congkhaosat_submit(request):
         response.respondent_email = participant.email
         response.save()
         
-        # Lưu vào session
+        # ============================================================
+        # QUAN TRỌNG: LƯU PARTICIPANT_ID VÀO SESSION VỚI KEY ĐÚNG
+        # ============================================================
+        request.session['survey_participant'] = participant.id  # ← KHÔNG CÓ survey_id
         request.session[f'survey_response_{survey_id}'] = response.id
         request.session[f'survey_participant_{survey_id}'] = participant.id
         
@@ -465,7 +460,7 @@ def congkhaosat_submit(request):
             'response_id': response.id,
             'participant_id': participant.id,
             'assigned_forms': participant.assigned_forms,
-            'redirect_url': f'/survey/public/{survey_id}/',
+            'redirect_url': '/accounts/survey-dashboard/',
         })
         
     except SurveyModel.DoesNotExist:
@@ -485,3 +480,194 @@ def congkhaosat_submit(request):
             'success': False,
             'message': str(e)
         }, status=500)
+# apps/accounts/views.py - Thêm vào cuối file
+
+def get_survey_forms_api(request):
+    """
+    API lấy danh sách tất cả biểu mẫu khảo sát từ database
+    """
+    try:
+        from apps.survey.models import Survey
+        surveys = Survey.objects.filter(status='active').values(
+            'id', 'code', 'title', 'description', 'status'
+        ).order_by('code')
+        
+        data = []
+        for survey in surveys:
+            # Lấy số lượng câu hỏi trong mỗi biểu mẫu
+            question_count = 0
+            try:
+                from apps.survey.models import Section, Question
+                sections = Section.objects.filter(survey_id=survey['id'])
+                for section in sections:
+                    question_count += Question.objects.filter(section=section).count()
+            except:
+                pass
+            
+            data.append({
+                'id': survey['id'],
+                'code': survey['code'] or f"BM-{str(survey['id']).zfill(2)}",
+                'name': survey['title'],
+                'description': survey['description'] or '',
+                'status': survey['status'],
+                'question_count': question_count,
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+# apps/accounts/views.py - Thêm view dashboard
+
+# apps/accounts/views.py - Sửa hàm survey_dashboard
+
+@login_required
+def survey_dashboard(request):
+    """
+    Dashboard hiển thị tất cả khảo sát user được gán
+    """
+    # Lấy participant_id từ session
+    participant_id = request.session.get('survey_participant')
+    
+    if not participant_id:
+        # Thử lấy từ request.GET (trường hợp redirect từ congkhaosat_submit)
+        participant_id = request.GET.get('participant_id')
+    
+    if not participant_id:
+        # Thử lấy participant mới nhất của user
+        if request.user.is_authenticated:
+            participant = SurveyParticipant.objects.filter(
+                user=request.user,
+                status='draft'
+            ).order_by('-created_at').first()
+            if participant:
+                participant_id = participant.id
+                request.session['survey_participant'] = participant.id
+    
+    if not participant_id:
+        # Nếu vẫn chưa có, quay về cổng khảo sát
+        return redirect('accounts:congkhaosat')
+    
+    try:
+        participant = SurveyParticipant.objects.get(id=participant_id)
+    except SurveyParticipant.DoesNotExist:
+        # Nếu participant không tồn tại, quay về cổng
+        return redirect('accounts:congkhaosat')
+    
+    # Lấy danh sách biểu mẫu được gán
+    assigned_forms = participant.assigned_forms or []
+    
+    if not assigned_forms:
+        return render(request, 'accounts/survey_dashboard.html', {
+            'participant': participant,
+            'message': 'Bạn chưa được gán biểu mẫu nào.'
+        })
+    
+    # Lấy hoặc tạo progress cho từng biểu mẫu
+    progress_list = []
+    for form_code in assigned_forms:
+        progress, created = SurveyProgress.objects.get_or_create(
+            participant=participant,
+            form_code=form_code,
+            defaults={
+                'status': 'not_started'
+            }
+        )
+        
+        # Nếu đã có survey, gán vào
+        if not progress.survey:
+            try:
+                from apps.survey.models import Survey
+                survey = Survey.objects.filter(code=form_code, status='active').first()
+                if survey:
+                    progress.survey = survey
+                    progress.save()
+            except:
+                pass
+        
+        # Cập nhật tiến độ từ response nếu có
+        if progress.response:
+            answers = progress.response.answers or {}
+            total_questions = 0
+            answered = 0
+            
+            if progress.survey:
+                for section in progress.survey.sections.all():
+                    for question in section.questions.all():
+                        if question.question_type and question.question_type.code not in ['title', 'paragraph']:
+                            total_questions += 1
+                            if str(question.id) in answers:
+                                answered += 1
+                
+                if total_questions > 0:
+                    progress.progress_percent = round((answered / total_questions) * 100)
+                    progress.save()
+        
+        progress_list.append(progress)
+    
+    # Sắp xếp: Đang làm > Chưa làm > Hoàn thành
+    status_order = {'in_progress': 0, 'not_started': 1, 'completed': 2}
+    progress_list.sort(key=lambda p: status_order.get(p.status, 3))
+    
+    # Thống kê chung
+    total = len(progress_list)
+    completed = sum(1 for p in progress_list if p.status == 'completed')
+    in_progress = sum(1 for p in progress_list if p.status == 'in_progress')
+    not_started = sum(1 for p in progress_list if p.status == 'not_started')
+    
+    context = {
+        'participant': participant,
+        'progresses': progress_list,
+        'total': total,
+        'completed': completed,
+        'in_progress': in_progress,
+        'not_started': not_started,
+        'overall_progress': round((completed / total) * 100) if total > 0 else 0,
+    }
+    
+    return render(request, 'accounts/survey_dashboard.html', context)
+
+
+def survey_dashboard_continue(request, progress_id):
+    """
+    Tiếp tục làm một bài khảo sát cụ thể
+    """
+    try:
+        progress = SurveyProgress.objects.get(id=progress_id)
+    except SurveyProgress.DoesNotExist:
+        return redirect('accounts:survey_dashboard')
+    
+    # Kiểm tra quyền truy cập
+    if not progress.participant.session_key == request.session.session_key:
+        return redirect('accounts:survey_dashboard')
+    
+    # Nếu đã hoàn thành, không cho làm lại
+    if progress.status == 'completed':
+        return render(request, 'accounts/survey_dashboard.html', {
+            'message': 'Bạn đã hoàn thành khảo sát này.',
+            'progress': progress
+        })
+    
+    # Lấy hoặc tạo response
+    if not progress.response:
+        from apps.survey.models import Response as ResponseModel
+        response = ResponseModel.objects.create(
+            survey=progress.survey,
+            status='draft',
+            answers={},
+            section_progress={},
+            respondent_ip=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
+        progress.response = response
+        progress.status = 'in_progress'
+        progress.started_at = timezone.now()
+        progress.save()
+    
+    # Chuyển đến trang khảo sát
+    return redirect(f'/survey/public/{progress.survey.id}/?progress_id={progress.id}')

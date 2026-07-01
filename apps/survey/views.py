@@ -576,6 +576,8 @@ def survey_public_response(request, survey_id):
     return JsonResponse(serializer.data)
 
 
+# apps/survey/views.py - Hàm survey_submit_response
+
 @csrf_exempt
 def survey_submit_response(request):
     if request.method != 'POST':
@@ -584,7 +586,6 @@ def survey_submit_response(request):
     try:
         data = json.loads(request.body) if request.body else {}
         
-        # Validate
         serializer = ResponseSubmitSerializer(data=data)
         if not serializer.is_valid():
             return JsonResponse({'error': serializer.errors}, status=400)
@@ -593,7 +594,17 @@ def survey_submit_response(request):
         survey_id = validated['survey_id']
         survey = get_object_or_404(SurveyModel, id=survey_id)
         
-        # Lấy response_id từ data hoặc session
+        # Lấy progress_id
+        progress_id = validated.get('progress_id')
+        progress = None
+        if progress_id:
+            try:
+                from apps.survey.models import SurveyProgress
+                progress = SurveyProgress.objects.get(id=progress_id)
+            except SurveyProgress.DoesNotExist:
+                progress = None
+        
+        # Lấy hoặc tạo response
         response_id = validated.get('response_id')
         if not response_id:
             response_id = request.session.get(f'survey_response_{survey_id}')
@@ -606,20 +617,19 @@ def survey_submit_response(request):
                 response = None
 
         if not response:
-            # Tạo mới
             response = ResponseModel(
                 survey=survey,
                 status='draft',
                 answers={},
                 section_progress={}
             )
+            # ... set thông tin ...
             if request.user.is_authenticated:
                 response.user = request.user
                 response.respondent_email = request.user.email
             response.respondent_ip = request.META.get('REMOTE_ADDR')
             response.respondent_device_id = validated.get('device_id', '')
-            response.user_agent = request.META.get('HTTP_USER_AGENT', '')
-        
+            response.user_agent = request.META.get('HTTP_USER_AGENT', '')       
         # Cập nhật answers
         if 'answers' in validated:
             current_answers = response.answers or {}
@@ -637,7 +647,6 @@ def survey_submit_response(request):
         if 'time_taken' in validated:
             response.time_taken = validated['time_taken']
         
-        # Xử lý status
         new_status = validated.get('status', 'draft')
         if new_status == 'submitted' and response.status != 'submitted':
             response.submitted_at = timezone.now()
@@ -647,20 +656,51 @@ def survey_submit_response(request):
         
         response.save()
         
-        # Lưu vào session
+        # ============================================================
+        # CẬP NHẬT SURVEY PROGRESS
+        # ============================================================
+        if progress:
+            # Tính tiến độ
+            total_questions = 0
+            answered = 0
+            
+            for section in survey.sections.all():
+                for question in section.questions.all():
+                    if question.question_type and question.question_type.code not in ['title', 'paragraph']:
+                        total_questions += 1
+                        if str(question.id) in response.answers:
+                            answered += 1
+            
+            if total_questions > 0:
+                progress.progress_percent = round((answered / total_questions) * 100)
+            else:
+                progress.progress_percent = 0
+            
+            # Cập nhật trạng thái
+            if new_status == 'submitted':
+                progress.status = 'completed'
+                progress.completed_at = timezone.now()
+            elif progress.progress_percent > 0 and progress.status == 'not_started':
+                progress.status = 'in_progress'
+                if not progress.started_at:
+                    progress.started_at = timezone.now()
+            
+            if not progress.response:
+                progress.response = response
+            
+            progress.save()
+        
         request.session[f'survey_response_{survey_id}'] = response.id
         
         return JsonResponse({
             'success': True,
             'response_id': response.id,
             'status': response.status,
-            'submitted_at': response.submitted_at
+            'submitted_at': response.submitted_at,
+            'progress_id': progress.id if progress else None,
+            'progress_percent': progress.progress_percent if progress else 0,
         })
         
-    except SurveyModel.DoesNotExist:
-        return JsonResponse({'error': 'Không tìm thấy khảo sát'}, status=404)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Dữ liệu không hợp lệ'}, status=400)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 

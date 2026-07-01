@@ -14,4 +14,7 @@ urlpatterns = [
     path('api/congkhaosat/submit/', views.congkhaosat_submit, name='congkhaosat_submit'),
     path('api/organizations/', views.get_organizations_api, name='api_organizations'),
     path('api/target-groups/', views.get_target_groups_api, name='api_target_groups'),
+    path('api/survey-forms/', views.get_survey_forms_api, name='api_survey_forms'),
+    path('survey-dashboard/', views.survey_dashboard, name='survey_dashboard'),
+    path('survey-dashboard/continue/<int:progress_id>/', views.survey_dashboard_continue, name='survey_dashboard_continue'),
 ]

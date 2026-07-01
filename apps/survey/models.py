@@ -361,3 +361,85 @@ class SurveyParticipant(models.Model):
             models.Index(fields=['survey', 'session_key']),
             models.Index(fields=['survey', 'target_group_code']),
         ]
+# apps/survey/models.py - Sửa model SurveyProgress
+
+class SurveyProgress(models.Model):
+    """
+    Theo dõi tiến độ làm khảo sát của người dùng cho từng biểu mẫu
+    """
+    STATUS_CHOICES = [
+        ('not_started', 'Chưa bắt đầu'),
+        ('in_progress', 'Đang làm'),
+        ('completed', 'Đã hoàn thành'),
+        ('expired', 'Hết hạn'),
+    ]
+    
+    participant = models.ForeignKey(
+        'SurveyParticipant',
+        on_delete=models.CASCADE,
+        related_name='progresses',
+        verbose_name="Người tham gia"
+    )
+    
+    survey = models.ForeignKey(
+        'Survey',
+        on_delete=models.CASCADE,
+        null=True,  # ← THÊM null=True
+        blank=True,  # ← THÊM blank=True
+        related_name='user_progresses',
+        verbose_name="Khảo sát"
+    )
+    
+    form_code = models.CharField(
+        max_length=20,
+        verbose_name="Mã biểu mẫu"
+    )
+    
+    response = models.OneToOneField(
+        'Response',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='progress',
+        verbose_name="Phiếu trả lời"
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='not_started',
+        verbose_name="Trạng thái"
+    )
+    
+    progress_percent = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Tiến độ (%)"
+    )
+    
+    started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Bắt đầu lúc"
+    )
+    
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Hoàn thành lúc"
+    )
+    
+    last_accessed_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Truy cập lần cuối"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.participant.full_name} - {self.form_code} ({self.get_status_display()})"
+    
+    class Meta:
+        verbose_name = "Tiến độ khảo sát"
+        verbose_name_plural = "Tiến độ khảo sát"
+        unique_together = ('participant', 'form_code')
+        ordering = ['created_at']

@@ -154,6 +154,7 @@ class ResponseSubmitSerializer(serializers.Serializer):
     """Serializer cho submit response"""
     survey_id = serializers.IntegerField()
     response_id = serializers.IntegerField(required=False)
+    progress_id = serializers.IntegerField(required=False)
     answers = serializers.DictField(required=False, default=dict)
     section_progress = serializers.DictField(required=False, default=dict)
     status = serializers.ChoiceField(choices=['draft', 'submitted'])

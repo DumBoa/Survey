@@ -11,18 +11,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- TÙY CHỈNH CHUNG --- */
+        /* --- GIỮ NGUYÊN CSS CŨ --- */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F4F6F9;
             color: #334155;
             padding-bottom: 3rem;
         }
-
         .text-primary-custom { color: #1D4ED8; }
         .bg-primary-custom { background-color: #1D4ED8; }
         
-        /* --- TOP BAR & HEADER --- */
         .top-bar {
             background-color: #1D4ED8;
             color: white;
@@ -30,13 +28,11 @@
             padding: 0.5rem 0;
             font-weight: 500;
         }
-
         .header-section {
             background-color: #ffffff;
             padding: 1.5rem 0;
             border-bottom: 1px solid #E2E8F0;
         }
-
         .logo-circle {
             width: 56px;
             height: 56px;
@@ -52,14 +48,11 @@
             line-height: 1.1;
             flex-shrink: 0;
         }
-
-        /* --- STEP WIZARD --- */
         .stepper-wrapper {
             background-color: #ffffff;
             padding: 1.5rem 0;
             border-bottom: 1px solid #E2E8F0;
         }
-        
         .step {
             display: flex;
             align-items: flex-start;
@@ -67,7 +60,6 @@
             z-index: 1;
             cursor: pointer;
         }
-
         .step-number {
             width: 28px;
             height: 28px;
@@ -81,28 +73,23 @@
             flex-shrink: 0;
             transition: all 0.3s ease;
         }
-
         .step.active .step-number {
             background-color: #1D4ED8;
             color: white;
             box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.2);
         }
-
         .step.completed .step-number {
             background-color: #10B981;
             color: white;
         }
-
         .step.inactive .step-number {
             background-color: #E2E8F0;
             color: #64748B;
         }
-
         .step-title { font-weight: 600; font-size: 0.95rem; color: #1e293b; margin-bottom: 2px;}
         .step.inactive .step-title { color: #64748B; }
         .step.completed .step-title { color: #10B981; }
         .step-subtitle { font-size: 0.8rem; color: #64748B; }
-
         .step-line {
             height: 2px;
             background-color: #E2E8F0;
@@ -110,14 +97,8 @@
             margin: 14px 16px 0 16px;
             transition: background-color 0.3s ease;
         }
-
-        .step-line.completed {
-            background-color: #10B981;
-        }
-
-        /* --- KHUNG NỘI DUNG --- */
+        .step-line.completed { background-color: #10B981; }
         .main-container { margin-top: 2rem; }
-        
         .card-custom {
             background-color: #ffffff;
             border-radius: 12px;
@@ -126,22 +107,15 @@
             margin-bottom: 1.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
         }
-
-        .step-content {
-            display: none;
-        }
-
+        .step-content { display: none; }
         .step-content.active {
             display: block;
             animation: fadeIn 0.4s ease;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        /* --- ALERT INFO --- */
         .alert-info-custom {
             background-color: #EFF6FF;
             border: 1px solid #BFDBFE;
@@ -154,8 +128,6 @@
             margin-bottom: 1.5rem;
             font-size: 0.95rem;
         }
-
-        /* --- FORM FIELDS --- */
         .field-label {
             font-weight: 600;
             font-size: 1.05rem;
@@ -164,7 +136,6 @@
             display: flex;
             align-items: center;
         }
-        
         .field-label::before {
             content: '';
             display: inline-block;
@@ -174,9 +145,7 @@
             margin-right: 8px;
             border-radius: 2px;
         }
-
         .required-star { color: #EF4444; margin-left: 4px; }
-
         .searchable-input {
             padding: 0.8rem 1rem;
             border-radius: 8px;
@@ -188,14 +157,8 @@
             border-color: #1D4ED8;
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
-        .searchable-input.is-valid {
-            border-color: #10B981;
-        }
-        .searchable-input.is-invalid {
-            border-color: #EF4444;
-        }
-
-        /* --- RADIO CARDS --- */
+        .searchable-input.is-valid { border-color: #10B981; }
+        .searchable-input.is-invalid { border-color: #EF4444; }
         .radio-card {
             display: flex;
             align-items: flex-start;
@@ -207,33 +170,27 @@
             transition: all 0.2s ease-in-out;
             background-color: #ffffff;
         }
-
         .radio-card:hover {
             border-color: #93C5FD;
             background-color: #F8FAFC;
         }
-
         .radio-card.active {
             border-color: #1D4ED8;
             background-color: #EFF6FF;
         }
-
         .radio-card.selected {
             border-color: #10B981;
             background-color: #ECFDF5;
         }
-
         .radio-input-wrapper {
             margin-right: 1rem;
             margin-top: 4px;
         }
-
         .form-check-input-custom {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
-
         .radio-icon-box {
             width: 40px;
             height: 40px;
@@ -248,21 +205,17 @@
             flex-shrink: 0;
             transition: all 0.2s;
         }
-
         .radio-card.active .radio-icon-box {
             background-color: #1D4ED8;
             color: white;
         }
-
         .radio-card.selected .radio-icon-box {
             background-color: #10B981;
             color: white;
         }
-
         .radio-content { flex-grow: 1; }
         .radio-title { font-weight: 600; color: #1E293B; margin-bottom: 0.25rem; }
         .radio-subtitle { font-size: 0.85rem; color: #64748B; margin: 0; }
-
         .badge-form {
             background-color: #E2E8F0;
             color: #475569;
@@ -272,40 +225,32 @@
             border-radius: 4px;
             margin-left: 4px;
         }
-
         .radio-card.active .badge-form {
             background-color: #1D4ED8;
             color: white;
         }
-
         .radio-card.selected .badge-form {
             background-color: #10B981;
             color: white;
         }
-
-        /* --- PERSONAL INFO FORM --- */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.25rem;
         }
-
         .form-group {
             display: flex;
             flex-direction: column;
         }
-
         .form-group.full-width {
             grid-column: 1 / -1;
         }
-
         .form-group label {
             font-weight: 500;
             font-size: 0.9rem;
             color: #1E293B;
             margin-bottom: 0.4rem;
         }
-
         .form-group .form-control {
             padding: 0.7rem 1rem;
             border-radius: 8px;
@@ -313,20 +258,12 @@
             font-size: 0.95rem;
             transition: all 0.2s;
         }
-
         .form-group .form-control:focus {
             border-color: #1D4ED8;
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
-
-        .form-group .form-control.is-valid {
-            border-color: #10B981;
-        }
-        .form-group .form-control.is-invalid {
-            border-color: #EF4444;
-        }
-
-        /* --- SURVEY SELECTION --- */
+        .form-group .form-control.is-valid { border-color: #10B981; }
+        .form-group .form-control.is-invalid { border-color: #EF4444; }
         .survey-card {
             display: flex;
             align-items: flex-start;
@@ -338,12 +275,10 @@
             transition: all 0.2s ease-in-out;
             background-color: #ffffff;
         }
-
         .survey-card.active {
             border-color: #1D4ED8;
             background-color: #EFF6FF;
         }
-
         .survey-card .survey-icon {
             width: 48px;
             height: 48px;
@@ -358,70 +293,56 @@
             flex-shrink: 0;
             transition: all 0.2s;
         }
-
         .survey-card.active .survey-icon {
             background-color: #1D4ED8;
             color: white;
         }
-
         .survey-card .survey-code {
             font-weight: 700;
             color: #1D4ED8;
             font-size: 1.1rem;
         }
-
         .survey-card .survey-desc {
             font-size: 0.9rem;
             color: #64748B;
             margin: 0;
         }
-
-        /* --- BUTTONS --- */
         .btn-navigation {
             padding: 0.7rem 1.5rem;
             border-radius: 8px;
             font-weight: 600;
             transition: all 0.2s;
         }
-
         .btn-navigation:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-
         .btn-prev {
             background-color: #F1F5F9;
             color: #475569;
             border: 1px solid #E2E8F0;
         }
-
         .btn-prev:hover:not(:disabled) {
             background-color: #E2E8F0;
         }
-
         .btn-next {
             background-color: #1D4ED8;
             color: white;
             border: none;
         }
-
         .btn-next:hover:not(:disabled) {
             background-color: #1E40AF;
             box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
         }
-
         .btn-submit {
             background-color: #10B981;
             color: white;
             border: none;
         }
-
         .btn-submit:hover:not(:disabled) {
             background-color: #059669;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
-
-        /* --- RIGHT SIDEBAR --- */
         .sidebar-card {
             background-color: #ffffff;
             border-radius: 12px;
@@ -429,7 +350,6 @@
             padding: 1.5rem;
             margin-bottom: 1.5rem;
         }
-
         .sidebar-title {
             font-size: 0.85rem;
             font-weight: 700;
@@ -438,15 +358,12 @@
             text-transform: uppercase;
             margin-bottom: 1rem;
         }
-
         .dynamic-value {
             font-weight: 500;
             color: #0F172A;
             font-size: 0.95rem;
         }
-
         .dynamic-placeholder { color: #94A3B8; font-style: italic; }
-
         .sidebar-step-indicator {
             display: flex;
             align-items: center;
@@ -454,11 +371,9 @@
             padding: 8px 0;
             border-bottom: 1px solid #F1F5F9;
         }
-
         .sidebar-step-indicator:last-child {
             border-bottom: none;
         }
-
         .sidebar-step-indicator .step-dot {
             width: 8px;
             height: 8px;
@@ -466,36 +381,28 @@
             background-color: #E2E8F0;
             flex-shrink: 0;
         }
-
         .sidebar-step-indicator .step-dot.active {
             background-color: #1D4ED8;
         }
-
         .sidebar-step-indicator .step-dot.completed {
             background-color: #10B981;
         }
-
         .sidebar-step-indicator .step-label {
             font-size: 0.85rem;
             color: #64748B;
         }
-
         .sidebar-step-indicator .step-label.active {
             color: #1D4ED8;
             font-weight: 600;
         }
-
         .sidebar-step-indicator .step-label.completed {
             color: #10B981;
             font-weight: 600;
         }
-
-        /* --- SUCCESS SCREEN --- */
         .success-screen {
             text-align: center;
             padding: 3rem 2rem;
         }
-
         .success-screen .success-icon {
             width: 80px;
             height: 80px;
@@ -508,18 +415,15 @@
             color: #10B981;
             font-size: 2.5rem;
         }
-
         .success-screen h3 {
             color: #0F172A;
             font-weight: 700;
             margin-bottom: 0.5rem;
         }
-
         .success-screen p {
             color: #64748B;
             font-size: 0.95rem;
         }
-
         .success-screen .survey-assigned {
             display: inline-flex;
             align-items: center;
@@ -529,7 +433,6 @@
             border-radius: 8px;
             margin: 1rem 0;
         }
-
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -545,14 +448,22 @@
         .loading-overlay.show {
             display: flex;
         }
-
         .no-data-message {
             padding: 2rem;
             text-align: center;
             color: #64748B;
         }
-
-        /* --- RESPONSIVE --- */
+        .survey-forms-container .survey-card {
+            cursor: pointer;
+        }
+        .survey-forms-container .survey-card.active {
+            border-color: #10B981;
+            background-color: #ECFDF5;
+        }
+        .survey-forms-container .survey-card .badge {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+        }
         @media (max-width: 768px) {
             .step-line { display: none; }
             .step-subtitle { display: none; }
@@ -660,7 +571,6 @@
                             <div class="field-label">Chọn Nhóm đối tượng / Vai trò <span class="required-star">*</span></div>
                             <p class="text-muted mb-3" style="font-size: 0.85rem;">Chọn nhóm phù hợp với chức danh và nhiệm vụ của bạn</p>
 
-                            <!-- Container cho target groups - sẽ được render từ API -->
                             <div id="targetGroupsContainer">
                                 <div class="text-center py-3">
                                     <div class="spinner-border spinner-border-sm text-primary" role="status">
@@ -748,40 +658,11 @@
                             </div>
                         </div>
 
+                        <!-- Container động cho survey cards -->
                         <div id="surveySelection">
                             <p class="text-muted mb-3" style="font-size: 0.9rem;">Biểu mẫu được gán dựa trên Nhóm đối tượng bạn đã chọn:</p>
-                            
-                            <div class="survey-card" data-survey="BM-03">
-                                <div class="survey-icon"><i class="bi bi-file-earmark-check"></i></div>
-                                <div>
-                                    <div class="survey-code">BM-03</div>
-                                    <p class="survey-desc">Khảo sát Cải cách hành chính toàn diện - Dành cho các nhóm đối tượng chung</p>
-                                </div>
-                                <div class="ms-auto">
-                                    <span class="badge bg-secondary" id="badgeBM03">Chưa gán</span>
-                                </div>
-                            </div>
-
-                            <div class="survey-card" data-survey="BM-04">
-                                <div class="survey-icon"><i class="bi bi-file-earmark-person"></i></div>
-                                <div>
-                                    <div class="survey-code">BM-04</div>
-                                    <p class="survey-desc">Khảo sát Lãnh đạo quản lý - Đánh giá hiệu quả quản lý điều hành</p>
-                                </div>
-                                <div class="ms-auto">
-                                    <span class="badge bg-secondary" id="badgeBM04">Chưa gán</span>
-                                </div>
-                            </div>
-
-                            <div class="survey-card" data-survey="BM-05">
-                                <div class="survey-icon"><i class="bi bi-file-earmark-code"></i></div>
-                                <div>
-                                    <div class="survey-code">BM-05</div>
-                                    <p class="survey-desc">Khảo sát Hạ tầng số và CNTT - Đánh giá hiện trạng dữ liệu số</p>
-                                </div>
-                                <div class="ms-auto">
-                                    <span class="badge bg-secondary" id="badgeBM05">Chưa gán</span>
-                                </div>
+                            <div id="surveyCardsContainer" class="survey-forms-container">
+                                <!-- Sẽ được render từ JavaScript -->
                             </div>
                         </div>
 
@@ -806,6 +687,7 @@
 
             </div>
 
+            <!-- SIDEBAR -->
             <div class="col-lg-4">
                 
                 <div class="sidebar-card">
@@ -903,7 +785,6 @@
         const agencyInput = document.getElementById('agencyInput');
         const targetGroupsContainer = document.getElementById('targetGroupsContainer');
         
-        // Personal info fields
         const fullName = document.getElementById('fullName');
         const position = document.getElementById('position');
         const department = document.getElementById('department');
@@ -917,7 +798,6 @@
         const btnBackToStep2 = document.getElementById('btnBackToStep2');
         const btnSubmit = document.getElementById('btnSubmit');
         
-        // Sidebar previews
         const previewAgency = document.getElementById('previewAgency');
         const previewRole = document.getElementById('previewRole');
         const previewForms = document.getElementById('previewForms');
@@ -927,29 +807,24 @@
         const previewEmail = document.getElementById('previewEmail');
         const personalInfoPreview = document.getElementById('personalInfoPreview');
         
-        // Step indicators
         const stepDots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3')];
         const stepLabels = [document.getElementById('label1'), document.getElementById('label2'), document.getElementById('label3')];
         const stepElements = stepWizard.querySelectorAll('.step');
         const stepLines = [document.getElementById('line1'), document.getElementById('line2')];
         
-        // Survey badges
-        const badgeBM03 = document.getElementById('badgeBM03');
-        const badgeBM04 = document.getElementById('badgeBM04');
-        const badgeBM05 = document.getElementById('badgeBM05');
         const assignedSurveysList = document.getElementById('assignedSurveysList');
         const assignedSurveysDiv = document.getElementById('assignedSurveys');
-        const surveyCards = document.querySelectorAll('.survey-card');
+        const surveyCardsContainer = document.getElementById('surveyCardsContainer');
         
-        // Loading
         const loadingOverlay = document.getElementById('loadingOverlay');
         
-        // State
+        // ---------- State ----------
         let currentStep = 1;
         let selectedRole = null;
         let selectedForms = [];
         let organizations = [];
         let targetGroups = [];
+        let allSurveyForms = [];
         const surveyId = {{ survey_id|default:'null' }};
 
         // ---------- Helper Functions ----------
@@ -976,7 +851,88 @@
             return cookieValue;
         }
 
-        // ---------- Load Organizations ----------
+        // ============================================
+        // LOAD SURVEY FORMS (Biểu mẫu khảo sát)
+        // ============================================
+        function loadSurveyForms() {
+            fetch('/accounts/api/survey-forms/', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    allSurveyForms = data.data;
+                } else {
+                    console.error('Error loading survey forms:', data.error);
+                    // Fallback: dùng danh sách mặc định
+                    allSurveyForms = [
+                        { code: 'BM-03', name: 'Khảo sát CCHC toàn diện', description: 'Dành cho các nhóm đối tượng chung' },
+                        { code: 'BM-04', name: 'Khảo sát Lãnh đạo quản lý', description: 'Đánh giá hiệu quả quản lý điều hành' },
+                        { code: 'BM-05', name: 'Khảo sát Hạ tầng số và CNTT', description: 'Đánh giá hiện trạng dữ liệu số' },
+                        { code: 'BM-06', name: 'Khảo sát Công chức chuyên môn', description: 'Đánh giá nghiệp vụ chuyên môn' },
+                        { code: 'BM-07', name: 'Khảo sát Dịch vụ công', description: 'Đánh giá chất lượng dịch vụ công' },
+                        { code: 'BM-08', name: 'Khảo sát Cải cách thủ tục hành chính', description: 'Đánh giá cải cách TTHC' },
+                        { code: 'BM-09', name: 'Khảo sát Ứng dụng CNTT', description: 'Đánh giá ứng dụng CNTT trong CCHC' },
+                    ];
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
+        }
+
+        // ============================================
+        // RENDER SURVEY CARDS (ĐỘNG TỪ DỮ LIỆU)
+        // ============================================
+        function renderSurveyCards(formCodes) {
+            if (!surveyCardsContainer) return;
+            
+            if (!formCodes || formCodes.length === 0) {
+                surveyCardsContainer.innerHTML = `
+                    <div class="no-data-message">
+                        <i class="bi bi-inbox fs-4 text-muted"></i>
+                        <p class="mt-2">Chưa có biểu mẫu nào được gán cho nhóm này.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            formCodes.forEach(code => {
+                // Tìm thông tin biểu mẫu từ danh sách đã load
+                const form = allSurveyForms.find(f => f.code === code);
+                const icon = form ? 'bi bi-file-earmark-check' : 'bi bi-file-earmark-text';
+                const name = form ? form.name : code;
+                const desc = form ? form.description : 'Biểu mẫu khảo sát';
+                
+                html += `
+                    <div class="survey-card active" data-survey="${code}">
+                        <div class="survey-icon"><i class="${icon}"></i></div>
+                        <div>
+                            <div class="survey-code">${code}</div>
+                            <p class="survey-desc">${desc}</p>
+                        </div>
+                        <div class="ms-auto">
+                            <span class="badge bg-success">✓ Được gán</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            surveyCardsContainer.innerHTML = html;
+            
+            // Cập nhật assigned surveys
+            if (formCodes.length > 0) {
+                assignedSurveysDiv.style.display = 'block';
+                assignedSurveysList.textContent = formCodes.join(', ');
+            } else {
+                assignedSurveysDiv.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // LOAD ORGANIZATIONS
+        // ============================================
         function loadOrganizations() {
             fetch('/accounts/api/organizations/', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -998,7 +954,6 @@
             datalist.innerHTML = '';
             
             if (data.length === 0) {
-                // Fallback options nếu chưa có dữ liệu
                 const defaultOptions = [
                     'Sở Nội vụ TP. Hà Nội',
                     'Sở Thông tin và Truyền thông TP. Hà Nội',
@@ -1031,7 +986,9 @@
             }
         }
 
-        // ---------- Load Target Groups ----------
+        // ============================================
+        // LOAD TARGET GROUPS
+        // ============================================
         function loadTargetGroups() {
             fetch('/accounts/api/target-groups/', {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -1075,8 +1032,9 @@
             
             let html = '';
             groups.forEach((group, index) => {
-                const formsHtml = group.forms && group.forms.length > 0 
-                    ? group.forms.map(f => `<span class="badge-form">${f}</span>`).join(' ') 
+                const forms = group.forms || [];
+                const formsHtml = forms.length > 0 
+                    ? forms.map(f => `<span class="badge-form">${f}</span>`).join(' ') 
                     : '<span class="text-muted small">Chưa có biểu mẫu</span>';
                 
                 const iconMap = {
@@ -1097,7 +1055,7 @@
                                    name="roleSelection" value="${groupName}" 
                                    data-group-id="${group.id}"
                                    data-group-code="${group.code || ''}"
-                                   data-forms='${JSON.stringify(group.forms || [])}'>
+                                   data-forms='${JSON.stringify(forms)}'>
                         </div>
                         <div class="radio-icon-box"><i class="${iconClass}"></i></div>
                         <div class="radio-content">
@@ -1113,7 +1071,7 @@
             
             targetGroupsContainer.innerHTML = html;
             
-            // Gắn event listeners cho radio cards mới
+            // Gắn event listeners cho radio cards
             document.querySelectorAll('.radio-card').forEach(card => {
                 card.addEventListener('click', function() {
                     document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('active'));
@@ -1121,13 +1079,23 @@
                     const radio = this.querySelector('input[type="radio"]');
                     radio.checked = true;
                     selectedRole = radio.value;
+                    
+                    // Lấy danh sách biểu mẫu từ data-forms
+                    const formsData = JSON.parse(radio.dataset.forms || '[]');
+                    selectedForms = formsData;
+                    
+                    // Render survey cards - HIỂN THỊ TẤT CẢ BIỂU MẪU
+                    renderSurveyCards(formsData);
+                    
                     validateStep1();
                     updateSidebarInfo();
                 });
             });
         }
 
-        // ---------- Update Sidebar ----------
+        // ============================================
+        // UPDATE SIDEBAR
+        // ============================================
         function updateSidebarInfo() {
             // Cập nhật preview đơn vị
             const agencyVal = agencyInput.value.trim();
@@ -1139,25 +1107,24 @@
                 previewAgency.classList.add('dynamic-placeholder');
             }
 
-            // Cập nhật preview role
+            // Cập nhật preview role và forms
             const selectedRadio = document.querySelector('input[name="roleSelection"]:checked');
             if (selectedRadio) {
                 const roleName = selectedRadio.value;
                 const groupId = selectedRadio.dataset.groupId;
                 const group = targetGroups.find(g => g.id == groupId);
+                const forms = JSON.parse(selectedRadio.dataset.forms || '[]');
+                selectedForms = forms;
                 
                 previewRole.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> <span class="dynamic-value">${roleName}</span>`;
                 previewRole.classList.remove('dynamic-placeholder');
                 
-                const forms = group ? group.forms : JSON.parse(selectedRadio.dataset.forms || '[]');
-                selectedForms = forms;
+                // HIỂN THỊ TẤT CẢ BIỂU MẪU
                 const formHtml = forms.map(f => 
                     `<span class="badge bg-primary-custom me-1"><i class="bi bi-file-earmark-text me-1"></i>${f}</span>`
                 ).join('');
                 previewForms.innerHTML = formHtml || 'Chưa có';
                 previewForms.classList.remove('dynamic-placeholder');
-                
-                updateSurveyCards();
             } else {
                 previewRole.innerHTML = 'Chưa chọn';
                 previewRole.classList.add('dynamic-placeholder');
@@ -1186,38 +1153,9 @@
             }
         }
 
-        // ---------- Update Survey Cards ----------
-        function updateSurveyCards() {
-            surveyCards.forEach(card => {
-                card.classList.remove('active');
-                const badge = card.querySelector('.badge');
-                if (badge) {
-                    badge.textContent = 'Chưa gán';
-                    badge.className = 'badge bg-secondary';
-                }
-            });
-
-            if (selectedForms.length > 0) {
-                assignedSurveysDiv.style.display = 'block';
-                assignedSurveysList.textContent = selectedForms.join(', ');
-                
-                selectedForms.forEach(form => {
-                    const card = document.querySelector(`.survey-card[data-survey="${form}"]`);
-                    if (card) {
-                        card.classList.add('active');
-                        const badge = card.querySelector('.badge');
-                        if (badge) {
-                            badge.textContent = '✓ Được gán';
-                            badge.className = 'badge bg-success';
-                        }
-                    }
-                });
-            } else {
-                assignedSurveysDiv.style.display = 'none';
-            }
-        }
-
-        // ---------- Validations ----------
+        // ============================================
+        // VALIDATIONS
+        // ============================================
         function validateStep1() {
             const isAgencyFilled = agencyInput.value.trim().length > 0;
             const isRoleSelected = document.querySelector('input[name="roleSelection"]:checked') !== null;
@@ -1252,7 +1190,9 @@
             return isValid;
         }
 
-        // ---------- Navigation ----------
+        // ============================================
+        // NAVIGATION
+        // ============================================
         function goToStep(step) {
             document.querySelectorAll('.step-content').forEach(el => {
                 el.classList.remove('active');
@@ -1303,7 +1243,9 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // ---------- Submit ----------
+        // ============================================
+        // SUBMIT
+        // ============================================
         function submitAndRedirect() {
             const selectedRadio = document.querySelector('input[name="roleSelection"]:checked');
             if (!selectedRadio) {
@@ -1357,15 +1299,15 @@
             });
         }
 
-        // ---------- Event Listeners ----------
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
         
-        // Agency input
         agencyInput.addEventListener('input', function() {
             validateStep1();
             updateSidebarInfo();
         });
 
-        // Personal info inputs
         [fullName, position, department, phone, email, notes].forEach(input => {
             input.addEventListener('input', function() {
                 validateStep2();
@@ -1382,7 +1324,6 @@
             });
         });
 
-        // Navigation buttons
         btnToStep2.addEventListener('click', function() {
             if (!this.disabled) {
                 goToStep(2);
@@ -1413,7 +1354,6 @@
             submitAndRedirect();
         });
 
-        // Click on step wizard
         stepElements.forEach((el, idx) => {
             const stepNum = idx + 1;
             el.addEventListener('click', function() {
@@ -1431,9 +1371,12 @@
             });
         });
 
-        // ---------- Initialize ----------
+        // ============================================
+        // INITIALIZE
+        // ============================================
         loadOrganizations();
         loadTargetGroups();
+        loadSurveyForms();
         validateStep1();
         updateSidebarInfo();
 
