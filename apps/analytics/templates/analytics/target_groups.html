@@ -1,0 +1,504 @@
+<!-- apps/analytics/templates/analytics/target_groups.html -->
+{% extends "analytics/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Quản lý nhóm đối tượng{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h4 class="mb-1 fw-bold text-dark">Quản lý nhóm đối tượng</h4>
+        <p class="text-muted mb-0" style="font-size:14px;">Quản lý các nhóm đối tượng tham gia khảo sát</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#groupModal" id="btnAddGroup">
+        <i class="bi bi-plus-lg me-1"></i> Thêm nhóm mới
+    </button>
+</div>
+
+<!-- Bộ lọc -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">Trạng thái</label>
+                <select class="form-select form-select-sm" id="filterStatus">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="inactive">Tạm dừng</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-muted">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control form-control-sm border-start-0" 
+                           id="searchInput" placeholder="Tìm theo mã hoặc tên nhóm...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-primary w-100" id="btnSearch">
+                    <i class="bi bi-search me-1"></i> Tìm kiếm
+                </button>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-outline-secondary w-100" id="btnReset">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bảng danh sách -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="groupTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50px;">STT</th>
+                        <th style="width:100px;">Mã</th>
+                        <th>Tên nhóm</th>
+                        <th>Mô tả</th>
+                        <th style="width:120px;">Số biểu mẫu</th>
+                        <th style="width:180px;">Biểu mẫu</th>
+                        <th style="width:120px;">Trạng thái</th>
+                        <th style="width:140px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="groupTableBody">
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white border-top-0 py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small" id="tableInfo">Đang tải...</span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0" id="pagination">
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm/Sửa nhóm -->
+<div class="modal fade" id="groupModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="groupModalTitle">Thêm nhóm mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="groupForm">
+                    <input type="hidden" id="editId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mã nhóm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="groupCode" 
+                               placeholder="VD: GRP001" required>
+                        <div class="form-text">Mã nhóm không dấu, viết hoa, không có khoảng trắng</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tên nhóm <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="groupName" 
+                               placeholder="VD: Lãnh đạo quản lý" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mô tả</label>
+                        <textarea class="form-control" id="groupDescription" rows="2" 
+                                  placeholder="Mô tả ngắn gọn về nhóm đối tượng này"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Icon</label>
+                        <select class="form-select" id="groupIcon">
+                            <option value="bi-person-badge">👤 Lãnh đạo</option>
+                            <option value="bi-shield-check">🛡️ Chuyên trách</option>
+                            <option value="bi-display">💻 CNTT</option>
+                            <option value="bi-building">🏢 Đơn vị</option>
+                            <option value="bi-people" selected>👥 Nhóm</option>
+                            <option value="bi-person-workspace">🧑‍💼 Cán bộ</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="groupActive" checked>
+                        <label class="form-check-label" for="groupActive">
+                            Đang hoạt động
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="btnSaveGroup">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Bạn có chắc chắn muốn xóa nhóm <strong id="deleteName"></strong>?</p>
+                <p class="text-muted small mt-1">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    const pageSize = 10;
+    let deleteTargetId = null;
+    let editingId = null;
+
+    // ============================================
+    // LẤY CSRF TOKEN
+    // ============================================
+    function getCSRFToken() {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === 'csrftoken=') {
+                    cookieValue = decodeURIComponent(cookie.substring(10));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ============================================
+    // LOAD DỮ LIỆU
+    // ============================================
+    function loadGroups() {
+        const status = document.getElementById('filterStatus').value;
+        const search = document.getElementById('searchInput').value;
+        
+        let url = `/analytics/api/target-groups/?page=${currentPage}&per_page=${pageSize}`;
+        if (status) url += `&status=${status}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderTable(data);
+            } else {
+                showError('Không thể tải dữ liệu: ' + data.error);
+            }
+        })
+        .catch(error => {
+            showError('Có lỗi xảy ra khi tải dữ liệu');
+            console.error(error);
+        });
+    }
+
+    // ============================================
+    // RENDER BẢNG
+    // ============================================
+    function renderTable(data) {
+        const tbody = document.getElementById('groupTableBody');
+        const items = data.data || [];
+        
+        if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">Chưa có nhóm đối tượng nào</td></tr>`;
+        } else {
+            tbody.innerHTML = items.map((g, idx) => `
+                <tr>
+                    <td>${(data.page - 1) * data.per_page + idx + 1}</td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${g.code}</span></td>
+                    <td><i class="bi ${g.icon} me-2"></i>${g.name}</td>
+                    <td class="text-muted small">${g.description || '-'}</td>
+                    <td class="text-center"><span class="badge bg-primary bg-opacity-10 text-primary">${g.form_count || 0}</span></td>
+                    <td>
+                        ${g.forms && g.forms.length > 0 ? 
+                            g.forms.slice(0, 3).map(f => `<span class="badge bg-info bg-opacity-10 text-info me-1">${f}</span>`).join('') +
+                            (g.forms.length > 3 ? `<span class="badge bg-secondary bg-opacity-10 text-secondary">+${g.forms.length - 3}</span>` : '')
+                            : '<span class="text-muted small">Chưa gán</span>'
+                        }
+                    </td>
+                    <td>
+                        <span class="badge ${g.is_active ? 'bg-success' : 'bg-secondary'}">
+                            ${g.is_active ? 'Đang hoạt động' : 'Tạm dừng'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${g.id}" title="Sửa">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${g.id}" data-name="${g.name}" title="Xóa">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Cập nhật thông tin phân trang
+        const start = (data.page - 1) * data.per_page + 1;
+        const end = Math.min(data.page * data.per_page, data.total);
+        document.getElementById('tableInfo').textContent = 
+            data.total > 0 ? `Hiển thị ${start}-${end} trên tổng ${data.total}` : 'Không có dữ liệu';
+        
+        renderPagination(data);
+    }
+
+    // ============================================
+    // RENDER PHÂN TRANG
+    // ============================================
+    function renderPagination(data) {
+        const pagination = document.getElementById('pagination');
+        const totalPages = data.total_pages || 1;
+        const currentPage = data.page || 1;
+        
+        let html = '';
+        
+        // Previous
+        html += `<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage - 1}">Trang trước</a>
+        </li>`;
+        
+        // Pages
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        
+        if (endPage - startPage < maxVisible - 1) {
+            startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+        
+        if (startPage > 1) {
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+            if (startPage > 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>`;
+        }
+        
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+        }
+        
+        // Next
+        html += `<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${currentPage + 1}">Trang sau</a>
+        </li>`;
+        
+        pagination.innerHTML = html;
+        
+        // Event click cho pagination
+        pagination.querySelectorAll('a.page-link[data-page]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = parseInt(this.dataset.page);
+                if (page && page >= 1 && page <= totalPages) {
+                    currentPage = page;
+                    loadGroups();
+                }
+            });
+        });
+    }
+
+    // ============================================
+    // LƯU NHÓM (Tạo/Sửa)
+    // ============================================
+    document.getElementById('btnSaveGroup').addEventListener('click', function() {
+        const id = document.getElementById('editId').value;
+        const code = document.getElementById('groupCode').value.trim().toUpperCase();
+        const name = document.getElementById('groupName').value.trim();
+        const description = document.getElementById('groupDescription').value.trim();
+        const icon = document.getElementById('groupIcon').value;
+        const isActive = document.getElementById('groupActive').checked;
+
+        if (!code || !name) {
+            alert('Vui lòng nhập đầy đủ mã và tên nhóm');
+            return;
+        }
+
+        const data = { code, name, description, icon, is_active: isActive };
+        const url = id ? 
+            `/analytics/api/target-groups/${id}/update/` : 
+            '/analytics/api/target-groups/create/';
+        const method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Đóng modal và reload
+                bootstrap.Modal.getInstance(document.getElementById('groupModal')).hide();
+                loadGroups();
+                // Reset form
+                document.getElementById('groupForm').reset();
+                document.getElementById('editId').value = '';
+                document.getElementById('groupActive').checked = true;
+                document.getElementById('groupModalTitle').textContent = 'Thêm nhóm mới';
+            } else {
+                alert('Lỗi: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra: ' + error);
+        });
+    });
+
+    // ============================================
+    // XÓA NHÓM
+    // ============================================
+    document.getElementById('btnConfirmDelete').addEventListener('click', function() {
+        if (!deleteTargetId) return;
+        
+        fetch(`/analytics/api/target-groups/${deleteTargetId}/delete/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                loadGroups();
+            } else {
+                alert('Lỗi: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Có lỗi xảy ra: ' + error);
+        });
+    });
+
+    // ============================================
+    // SỬA NHÓM
+    // ============================================
+    document.getElementById('groupTableBody').addEventListener('click', function(e) {
+        // Nút Edit
+        const editBtn = e.target.closest('.btn-edit');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            fetch(`/analytics/api/target-groups/${id}/`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const group = data.data;
+                    document.getElementById('editId').value = group.id;
+                    document.getElementById('groupCode').value = group.code;
+                    document.getElementById('groupName').value = group.name;
+                    document.getElementById('groupDescription').value = group.description || '';
+                    document.getElementById('groupIcon').value = group.icon;
+                    document.getElementById('groupActive').checked = group.is_active;
+                    document.getElementById('groupModalTitle').textContent = 'Sửa nhóm đối tượng';
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('groupModal'));
+                    modal.show();
+                }
+            })
+            .catch(error => {
+                alert('Không thể tải thông tin nhóm');
+            });
+            return;
+        }
+
+        // Nút Delete
+        const delBtn = e.target.closest('.btn-delete');
+        if (delBtn) {
+            deleteTargetId = parseInt(delBtn.dataset.id);
+            document.getElementById('deleteName').textContent = delBtn.dataset.name;
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    });
+
+    // ============================================
+    // TÌM KIẾM
+    // ============================================
+    document.getElementById('btnSearch').addEventListener('click', function() {
+        currentPage = 1;
+        loadGroups();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', function() {
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('searchInput').value = '';
+        currentPage = 1;
+        loadGroups();
+    });
+
+    // Enter để tìm kiếm
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            document.getElementById('btnSearch').click();
+        }
+    });
+
+    // ============================================
+    // RESET MODAL KHI ĐÓNG
+    // ============================================
+    document.getElementById('groupModal').addEventListener('hidden.bs.modal', function() {
+        document.getElementById('groupForm').reset();
+        document.getElementById('editId').value = '';
+        document.getElementById('groupActive').checked = true;
+        document.getElementById('groupModalTitle').textContent = 'Thêm nhóm mới';
+    });
+
+    // ============================================
+    // KHỞI TẠO
+    // ============================================
+    loadGroups();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,3662 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+<link
+  href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<style>
+  /* ============================================
+   FONT & BASE STYLES
+   ============================================ */
+  * {
+    font-family: "Source Sans Pro", sans-serif;
+  }
+
+  /* ============================================
+   A4 PAGE LAYOUT
+   ============================================ */
+  .a4-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    gap: 30px;
+    background: #e8eaed;
+    min-height: 100vh;
+  }
+
+  .a4-page {
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    padding: 20mm 18mm;
+    background: white;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+    transform-origin: top center;
+    transition: transform 0.2s;
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+
+  .a4-page .page-content {
+    flex: 1 1 auto;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .a4-page .page-number {
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 11px;
+    color: #9aa0a6;
+    margin-top: 30px;
+    padding-top: 10px;
+    border-top: 1px solid #e8eaed;
+  }
+
+  .a4-page[data-size="Letter"] {
+    width: 215.9mm;
+    height: 279.4mm;
+    min-height: 279.4mm;
+    max-height: 279.4mm;
+  }
+
+  .a4-page * {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+
+  /* ============================================
+   DOC SECTION - COMPONENT CONTAINER
+   ============================================ */
+  .doc-section {
+    position: relative;
+    padding: 8px 6px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .doc-section [contenteditable="true"],
+  .doc-section input,
+  .doc-section textarea,
+  .doc-section .survey-input {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .doc-section[data-type="title"]:hover,
+  .doc-section[data-type="paragraph"]:hover,
+  .doc-section[data-type="short-text"]:hover,
+  .doc-section[data-type="long-text"]:hover,
+  .doc-section[data-type="personal-info"]:hover,
+  .doc-section[data-type="section-break"]:hover {
+    background: transparent;
+  }
+
+  .doc-section[data-type="single-choice"]:hover,
+  .doc-section[data-type="multi-choice"]:hover,
+  .doc-section[data-type="rating-grid"]:hover,
+  .doc-section[data-type="data-table"]:hover {
+    background: #f8f9fa;
+  }
+
+  .doc-section.selected-component {
+    outline: 2px solid #1a73e8;
+    outline-offset: 2px;
+    border-radius: 4px;
+    background: #f0f7ff !important;
+  }
+
+  .doc-section.dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+
+  .doc-section.drag-over {
+    border: 2px dashed #1a73e8;
+    background: #f0f7ff;
+  }
+  /* ============================================
+   CHANGE TYPE DROPDOWN
+   ============================================ */
+  .change-type-selector {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    background: white;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+
+  .change-type-selector:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+  }
+
+  .btn-change-type {
+    width: 100%;
+    padding: 6px 12px;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+
+  .btn-change-type:hover {
+    background: #1557b0;
+    box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+  }
+
+  .btn-change-type:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  /* ============================================
+   DRAG HANDLE
+   ============================================ */
+  .drag-handle {
+    cursor: grab;
+    opacity: 0.3;
+    padding: 0 4px;
+    user-select: none;
+    font-size: 14px;
+    display: inline-block;
+  }
+
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .drag-handle:hover {
+    opacity: 1;
+  }
+
+  .doc-section[data-type="title"] .drag-handle,
+  .doc-section[data-type="paragraph"] .drag-handle,
+  .doc-section[data-type="short-text"] .drag-handle,
+  .doc-section[data-type="long-text"] .drag-handle,
+  .doc-section[data-type="personal-info"] .drag-handle,
+  .doc-section[data-type="section-break"] .drag-handle {
+    display: none;
+  }
+
+  .doc-section[data-type="single-choice"] .drag-handle,
+  .doc-section[data-type="multi-choice"] .drag-handle,
+  .doc-section[data-type="rating-grid"] .drag-handle,
+  .doc-section[data-type="data-table"] .drag-handle {
+    display: inline-block;
+  }
+
+  /* ============================================
+   COMPONENT BADGE
+   ============================================ */
+  .component-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #1a73e8;
+    color: white;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    display: none;
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  .doc-section:hover .component-badge {
+    display: block;
+  }
+
+  /* ============================================
+   GHI CHÚ
+   ============================================ */
+  .component-note {
+    min-height: 1em;
+    outline: none;
+    border-radius: 4px;
+    padding: 1px 2px;
+    transition: background 0.15s;
+  }
+
+  .component-note:hover,
+  .component-note:focus {
+    background: #f8f9fa;
+  }
+
+  .component-note:empty::before {
+    content: attr(data-placeholder);
+    color: #c0c4cc;
+    pointer-events: none;
+  }
+
+  .component-note:empty:not(:focus) {
+    opacity: 0.7;
+  }
+  /* ============================================
+   CUSTOM SCROLLBAR
+   ============================================ */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #81bdf4;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #81bdf4;
+  }
+  .sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sidebar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+  }
+  .sidebar::-webkit-scrollbar-thumb {
+    background: #81bdf4;
+    border-radius: 10px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #81bdf4 #f1f5f9;
+  }
+  .sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: #81bdf4 #f1f5f9;
+  }
+  /* ============================================
+   SURVEY INPUTS
+   ============================================ */
+  .survey-input {
+    border-bottom: 1px solid #9aa0a6;
+    padding: 4px 0;
+    width: 100%;
+    outline: none;
+    background: transparent;
+    transition: border-color 0.3s;
+  }
+
+  .survey-input:focus {
+    border-bottom: 2px solid #1a73e8;
+  }
+
+  .survey-input:hover {
+    border-bottom-color: #1a73e8;
+  }
+
+  [contenteditable]:focus {
+    outline: none;
+  }
+
+  ::selection {
+    background: #b3d4fc;
+    color: #000;
+  }
+  .doc-section *::selection {
+    background: #b3d4fc;
+    color: #000;
+  }
+
+  /* ============================================
+   RICH TEXT TOOLBAR
+   ============================================ */
+  .rte-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    align-items: center;
+    padding: 4px 8px;
+    border-bottom: 1px solid #dadce0;
+    background: #fafbfc;
+    position: sticky;
+    top: 48px;
+    z-index: 39;
+  }
+
+  .rte-bar button,
+  .rte-bar select {
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: #5f6368;
+    font-size: 12px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .rte-bar button:hover {
+    background: #e8f0fe;
+    color: #1a73e8;
+  }
+
+  .rte-bar select {
+    border: 1px solid #dadce0;
+    padding: 2px 4px;
+  }
+
+  .rte-sep {
+    width: 1px;
+    height: 20px;
+    background: #dadce0;
+    margin: 0 4px;
+  }
+
+  /* ============================================
+   FLOATING TOOLBAR
+   ============================================ */
+  .floating-toolbar {
+    position: fixed;
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    display: none;
+    gap: 2px;
+    padding: 4px;
+    z-index: 1000;
+    pointer-events: auto;
+  }
+
+  .floating-toolbar.visible {
+    display: flex;
+  }
+
+  .floating-toolbar button {
+    padding: 6px 8px;
+    border-radius: 4px;
+    color: #5f6368;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    pointer-events: auto;
+  }
+
+  .floating-toolbar button:hover {
+    background: #f1f3f4;
+    color: #1a73e8;
+  }
+
+  .floating-toolbar button.danger:hover {
+    color: #dc3545;
+    background: #fff0f0;
+  }
+
+  .floating-toolbar .separator {
+    width: 1px;
+    height: 24px;
+    background: #dadce0;
+    margin: 0 2px;
+  }
+
+  /* ============================================
+   GRID TABLE
+   ============================================ */
+  .grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    table-layout: fixed;
+  }
+
+  .grid-table th,
+  .grid-table td {
+    border: 1px solid #d1d5db;
+    padding: 4px 6px;
+    text-align: center;
+    min-width: 30px;
+    position: relative;
+  }
+
+  .grid-table th {
+    background: #f3f4f6;
+  }
+
+  .grid-table td .resize-handle {
+    position: absolute;
+    right: -3px;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 10;
+  }
+
+  .grid-table td .resize-handle:hover {
+    background: rgba(26, 115, 232, 0.2);
+  }
+
+  .grid-table .row-resize-handle {
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    cursor: row-resize;
+    background: transparent;
+    z-index: 10;
+  }
+
+  .grid-table .row-resize-handle:hover {
+    background: rgba(26, 115, 232, 0.2);
+  }
+
+  /* ============================================
+   COMPONENT LIST (Left Sidebar)
+   ============================================ */
+  .component-item:hover {
+    background: #e8f0fe;
+  }
+
+  /* ============================================
+   AUTO SAVE BADGE
+   ============================================ */
+  .auto-save-badge {
+    font-size: 11px;
+    color: #34a853;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: opacity 0.3s;
+  }
+
+  .auto-save-badge.hidden {
+    opacity: 0;
+  }
+
+  /* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #323232;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    pointer-events: none;
+  }
+
+  .toast.success {
+    background: #34a853;
+  }
+
+  .toast.warning {
+    background: #f59e0b;
+  }
+
+  .toast.error {
+    background: #dc3545;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  /* ============================================
+   PAGE CONTROLS
+   ============================================ */
+  .page-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .page-controls button {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    border: 1px solid #dadce0;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .page-controls button:hover {
+    background: #f1f3f4;
+  }
+
+  .page-controls button.danger:hover {
+    background: #fee;
+    border-color: #dc3545;
+    color: #dc3545;
+  }
+
+  /* ============================================
+   HIDDEN SECTION
+   ============================================ */
+  .hidden-section {
+    opacity: 0.4;
+  }
+
+  /* ============================================
+   LOADING OVERLAY
+   ============================================ */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    font-size: 18px;
+    color: #1a73e8;
+  }
+
+  .loading-overlay.hidden {
+    display: none;
+  }
+
+  /* ============================================
+   LAYOUT - 3 COLUMNS
+   ============================================ */
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+    margin: 0;
+  }
+
+  #__page-root_height_fix,
+  [data-template-id="__page-root"] {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .app-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    height: 100%;
+    overflow-y: auto;
+    align-self: stretch;
+  }
+
+  #doc-container {
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* ============================================
+   SIDEBAR RIGHT - PROPS PANEL
+   ============================================ */
+  .sidebar-right .bg-white {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+  }
+
+  .sidebar-right .bg-white .text-xs.text-gray-500 {
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+  }
+
+  #props-panel .space-y-3 > * {
+    margin-bottom: 8px;
+  }
+
+  #props-panel .space-y-3 > *:last-child {
+    margin-bottom: 0;
+  }
+
+  #props-panel .p-3 {
+    padding: 10px 12px;
+  }
+
+  #props-panel .py-0\.5 {
+    padding-top: 1px;
+    padding-bottom: 1px;
+  }
+
+  #props-panel .break-words {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* ============================================
+   SECTION MANAGER UI
+   ============================================ */
+  .section-manager-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .section-manager-item:hover {
+    background: #e8f0fe;
+  }
+  .section-manager-item.active {
+    background: #e8f0fe;
+    border-left-color: #1a73e8;
+    font-weight: 600;
+  }
+  .section-manager-item .section-code {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    background: #1a73e8;
+    color: white;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-right: 6px;
+    flex-shrink: 0;
+  }
+  .section-manager-item .section-title-text {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 4px;
+  }
+  .section-manager-item .section-actions {
+    display: none;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .section-manager-item:hover .section-actions {
+    display: flex;
+  }
+  .section-manager-item .section-actions button {
+    padding: 1px 4px;
+    border-radius: 3px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 10px;
+    color: #5f6368;
+  }
+  .section-manager-item .section-actions button:hover {
+    background: rgba(0,0,0,0.05);
+  }
+  .section-manager-item .section-actions button.danger:hover {
+    color: #dc3545;
+    background: #fff0f0;
+  }
+  .section-manager-empty {
+    text-align: center;
+    color: #9aa0a6;
+    font-size: 11px;
+    padding: 10px 0;
+  }
+
+  /* ============================================
+   RESPONSIVE
+   ============================================ */
+  @media (max-width: 1024px) {
+    .sidebar-left,
+    .sidebar-right {
+      display: none !important;
+    }
+    .a4-page {
+      width: 100% !important;
+      min-height: auto;
+      padding: 16px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .rte-bar {
+      font-size: 11px;
+      flex-wrap: wrap;
+    }
+    .a4-page {
+      padding: 12px;
+    }
+  }
+
+  /* ============================================ */
+  @media print {
+    .a4-page {
+      box-shadow: none;
+      margin: 0;
+      transform: none !important;
+    }
+    header,
+    .sidebar-left,
+    .sidebar-right,
+    .rte-bar,
+    .floating-toolbar,
+    .zoom-controls,
+    .drag-handle,
+    .component-badge,
+    .page-controls {
+      display: none !important;
+    }
+  }
+</style>
+
+<div data-template-id="__page-root" class="w-full h-screen flex flex-col">
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="flex flex-col items-center gap-4">
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+      ></div>
+      <span>Đang tải...</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header
+    class="w-full h-11 flex items-center justify-between px-3 border-b border-gray-200 sticky top-0 z-40 bg-white flex-shrink-0"
+  >
+    <div class="flex items-center gap-2 min-w-0 flex-1">
+      <i
+        data-lucide="file-text"
+        class="w-4 h-4 text-blue-600 flex-shrink-0"
+      ></i>
+      <h1 class="font-semibold text-sm whitespace-nowrap flex-shrink-0">
+        Trình Tạo
+      </h1>
+      <input
+        id="survey-title-input"
+        type="text"
+        value="Khảo sát mới"
+        placeholder="Nhập tên biểu mẫu..."
+        oninput="onSurveyTitleInput(this)"
+        onblur="onSurveyTitleBlur(this)"
+        class="px-2 py-0.5 text-sm font-medium border border-transparent rounded hover:border-gray-300 focus:border-blue-400 focus:bg-white transition min-w-[120px] max-w-[300px] truncate"
+        title="Bấm để đổi tên biểu mẫu"
+      />
+      <span id="auto-save-indicator" class="auto-save-badge hidden text-xs">
+        <i data-lucide="check-circle" class="w-3 h-3"></i> Đã lưu
+      </span>
+    </div>
+    <div class="flex items-center gap-1 flex-shrink-0">
+      <div class="relative">
+        <select
+          id="survey-selector"
+          onchange="switchSurvey(this.value)"
+          class="px-2 py-1 rounded text-xs font-medium border border-gray-300 bg-white hover:bg-gray-50 transition max-w-[140px] truncate"
+        >
+          <option value="">-- Chọn --</option>
+        </select>
+      </div>
+      <button
+        onclick="createNewSurvey()"
+        class="px-2 py-1 rounded text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition whitespace-nowrap"
+      >
+        <i data-lucide="plus" class="w-3 h-3 inline"></i> Mới
+      </button>
+      <div
+        class="zoom-controls flex items-center gap-0.5 border-l border-gray-200 pl-1.5 ml-0.5"
+      >
+        <button
+          onclick="setZoom(0.75)"
+          class="text-[10px] px-1 py-0.5 rounded border border-gray-300 hover:bg-gray-100"
+        >
+          75%
+        </button>
+        <button
+          onclick="setZoom(1)"
+          class="text-[10px] px-1 py-0.5 rounded border border-gray-300 hover:bg-gray-100 font-bold"
+        >
+          100%
+        </button>
+        <button
+          onclick="setZoom(1.25)"
+          class="text-[10px] px-1 py-0.5 rounded border border-gray-300 hover:bg-gray-100"
+        >
+          125%
+        </button>
+      </div>
+      <button
+        onclick="importWord()"
+        class="px-2 py-1 rounded text-xs font-medium border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap"
+        title="Import Word"
+      >
+        <i data-lucide="file-text" class="w-3 h-3 inline"></i> Word
+      </button>
+      <button
+        onclick="saveSurvey()"
+        class="px-2 py-1 rounded text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition whitespace-nowrap"
+      >
+        <i data-lucide="save" class="w-3 h-3 inline"></i> Lưu
+      </button>
+      <button
+        onclick="previewSurvey()"
+        class="px-2 py-1 rounded text-xs font-medium border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap"
+        title="Xem trước"
+      >
+        <i data-lucide="eye" class="w-3 h-3 inline"></i>
+      </button>
+      <button
+        onclick="exportSurvey()"
+        class="px-2 py-1 rounded text-xs font-medium border border-gray-300 hover:bg-gray-50 transition whitespace-nowrap"
+        title="Xuất"
+      >
+        <i data-lucide="download" class="w-3 h-3 inline"></i>
+      </button>
+      <button
+        onclick="publishSurvey()"
+        class="px-2 py-1 rounded text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition whitespace-nowrap"
+      >
+        <i data-lucide="rocket" class="w-3 h-3 inline"></i> Phát hành
+      </button>
+    </div>
+  </header>
+
+  <!-- Rich Text Toolbar -->
+  <div class="rte-bar" id="rte-toolbar">
+    <select
+      onchange="
+        execCmd('fontName', this.value);
+        this.value = '';
+      "
+    >
+      <option value="">Font</option>
+      <option value="Source Sans Pro">Source Sans Pro</option>
+      <option value="Arial">Arial</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Courier New">Courier New</option>
+    </select>
+    <select
+      onchange="
+        execCmd('fontSize', this.value);
+        this.value = '';
+      "
+    >
+      <option value="">Cỡ</option>
+      <option value="1">8</option>
+      <option value="2">10</option>
+      <option value="3">12</option>
+      <option value="4">14</option>
+      <option value="5">18</option>
+      <option value="6">24</option>
+      <option value="7">36</option>
+    </select>
+    <div class="rte-sep"></div>
+    <button onclick="execCmd('bold')" title="Đậm"><b>B</b></button>
+    <button onclick="execCmd('italic')" title="Nghiêng"><i>I</i></button>
+    <button onclick="execCmd('underline')" title="Gạch chân"><u>U</u></button>
+    <button onclick="execCmd('strikeThrough')" title="Gạch ngang">
+      <s>S</s>
+    </button>
+    <div class="rte-sep"></div>
+    <input
+      type="color"
+      value="#000000"
+      onchange="execCmd('foreColor', this.value)"
+      title="Màu chữ"
+      style="width: 24px; height: 24px; border: none; cursor: pointer"
+    />
+    <div class="rte-sep"></div>
+    <button onclick="execCmd('justifyLeft')" title="Căn trái">
+      <i data-lucide="align-left" class="w-3.5 h-3.5"></i>
+    </button>
+    <button onclick="execCmd('justifyCenter')" title="Căn giữa">
+      <i data-lucide="align-center" class="w-3.5 h-3.5"></i>
+    </button>
+    <button onclick="execCmd('justifyRight')" title="Căn phải">
+      <i data-lucide="align-right" class="w-3.5 h-3.5"></i>
+    </button>
+    <div class="rte-sep"></div>
+    <button onclick="execCmd('insertOrderedList')" title="Danh sách số">
+      <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i>
+    </button>
+    <button onclick="execCmd('insertUnorderedList')" title="Danh sách bullet">
+      <i data-lucide="list" class="w-3.5 h-3.5"></i>
+    </button>
+  </div>
+
+  <div class="app-body flex overflow-hidden">
+    <!-- Left Sidebar -->
+    <aside
+      class="sidebar-left w-52 border-r border-gray-200 overflow-y-auto p-3 flex-shrink-0 bg-gray-50"
+    >
+      <p
+        class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3"
+      >
+        Thành phần
+      </p>
+      <div id="component-list" class="space-y-1"></div>
+      <hr class="my-3" />
+      <button
+        onclick="addComponent('section-break')"
+        class="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition"
+      >
+        + Thêm phần mới
+      </button>
+      <button
+        onclick="addPageBreak()"
+        class="w-full text-left px-3 py-2 text-sm text-purple-600 hover:bg-purple-50 rounded-md transition mt-1"
+      >
+        + Thêm trang mới
+      </button>
+      <button
+        onclick="deleteCurrentPage()"
+        class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition mt-1"
+      >
+        - Xóa trang hiện tại
+      </button>
+      <hr class="my-3" />
+      <p
+        class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2"
+      >
+        Quản lý phần <span id="section-count-badge" class="ml-1 text-blue-600 font-bold">0</span>
+      </p>
+      <div id="section-manager" class="space-y-0.5 mb-2">
+        <div class="section-manager-empty">Chưa có phần nào</div>
+      </div>
+      <hr class="my-3" />
+      <button
+        onclick="deleteSelectedText()"
+        class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition"
+      >
+        <i data-lucide="trash-2" class="w-4 h-4 inline mr-1"></i> Xóa văn bản đã
+        chọn
+      </button>
+      <hr class="my-3" />
+      <div class="text-xs text-gray-500">
+        <p>Survey ID: <span id="survey-id-display">-</span></p>
+        <p class="mt-1">
+          Trạng thái:
+          <span id="survey-status-display" class="font-medium">-</span>
+        </p>
+      </div>
+    </aside>
+
+    <!-- Center: A4 Document -->
+    <main
+      class="flex-1 overflow-auto"
+      style="background: #e8eaed"
+      id="doc-container"
+    >
+      <div class="a4-wrapper" id="pages-container">
+        <!-- Pages will be generated here -->
+      </div>
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside
+      class="sidebar-right w-64 border-l border-gray-200 overflow-y-auto p-4 flex-shrink-0 bg-gray-50"
+    >
+      <p
+        class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3"
+      >
+        Thuộc tính
+      </p>
+      <div id="props-panel" class="space-y-3 text-sm">
+        <div class="text-gray-500 text-center py-6 text-xs">
+          Chọn một thành phần để xem thuộc tính
+        </div>
+      </div>
+      <hr class="my-4" />
+      <p
+        class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3"
+      >
+        Cài đặt
+      </p>
+      <div class="space-y-3 text-sm">
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs">Khổ giấy</label>
+          <select
+            id="pageSize"
+            onchange="changePageSize(this.value)"
+            class="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+          >
+            <option value="A4">A4</option>
+            <option value="Letter">Letter</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs"
+            >Màu thương hiệu</label
+          >
+          <input
+            type="color"
+            value="#1a73e8"
+            onchange="changeBrandColor(this.value)"
+            class="w-8 h-8 rounded cursor-pointer border-0"
+          />
+        </div>
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs">Kiểu chữ</label>
+          <select
+            onchange="changeGlobalFont(this.value)"
+            class="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+          >
+            <option value="Source Sans Pro">Source Sans Pro</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Georgia">Georgia</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Floating Toolbar -->
+  <div id="floating-toolbar" class="floating-toolbar">
+    <button onclick="moveUp()" title="Lên">
+      <i data-lucide="chevron-up" class="w-4 h-4"></i>
+    </button>
+    <button onclick="moveDown()" title="Xuống">
+      <i data-lucide="chevron-down" class="w-4 h-4"></i>
+    </button>
+    <div class="separator"></div>
+    <button onclick="duplicateComponent()" title="Sao chép">
+      <i data-lucide="copy" class="w-4 h-4"></i>
+    </button>
+    <button onclick="toggleVisibility()" title="Ẩn/Hiện">
+      <i data-lucide="eye" class="w-4 h-4"></i>
+    </button>
+    <button onclick="toggleRequired()" title="Bắt buộc">
+      <i data-lucide="asterisk" class="w-4 h-4"></i>
+    </button>
+    <div class="separator"></div>
+    <button onclick="deleteComponent()" title="Xóa" class="danger">
+      <i data-lucide="trash-2" class="w-4 h-4"></i>
+    </button>
+  </div>
+
+  <!-- Hidden file input for Word import -->
+  <input
+    type="file"
+    id="wordFileInput"
+    accept=".docx"
+    style="display: none"
+    onchange="handleWordImport(event)"
+  />
+
+  <script>
+    // ============================================
+    // API CLIENT
+    // ============================================
+    const API = {
+      baseUrl: window.location.origin + "/survey",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCsrfToken(),
+      },
+
+      async request(endpoint, method = "GET", data = null) {
+        const url = `${this.baseUrl}/api${endpoint}`;
+        const options = {
+          method,
+          headers: this.headers,
+          credentials: "same-origin",
+        };
+        if (data) {
+          options.body = JSON.stringify(data);
+        }
+        try {
+          const response = await fetch(url, options);
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || `HTTP ${response.status}`);
+          }
+          return await response.json();
+        } catch (error) {
+          console.error("API Error:", error);
+          throw error;
+        }
+      },
+
+      // Survey
+      getSurveys() {
+        return this.request("/surveys/");
+      },
+      getSurvey(id) {
+        return this.request(`/surveys/${id}/`);
+      },
+      createSurvey(data) {
+        return this.request("/surveys/", "POST", data);
+      },
+      updateSurvey(id, data) {
+        return this.request(`/surveys/${id}/`, "PUT", data);
+      },
+      deleteSurvey(id) {
+        return this.request(`/surveys/${id}/`, "DELETE");
+      },
+      duplicateSurvey(id) {
+        return this.request(`/surveys/${id}/duplicate/`, "POST");
+      },
+      publishSurvey(id) {
+        return this.request(`/surveys/${id}/publish/`, "POST");
+      },
+
+      // Sections
+      getSections(surveyId) {
+        return this.request(`/surveys/${surveyId}/sections/`);
+      },
+      createSection(surveyId, data) {
+        return this.request(`/surveys/${surveyId}/sections/`, "POST", data);
+      },
+      updateSection(id, data) {
+        return this.request(`/sections/${id}/`, "PUT", data);
+      },
+      deleteSection(id) {
+        return this.request(`/sections/${id}/`, "DELETE");
+      },
+
+      // Questions
+      getQuestions(sectionId) {
+        return this.request(`/sections/${sectionId}/questions/`);
+      },
+      createQuestion(sectionId, data) {
+        return this.request(`/sections/${sectionId}/questions/`, "POST", data);
+      },
+      updateQuestion(id, data) {
+        return this.request(`/questions/${id}/`, "PUT", data);
+      },
+      deleteQuestion(id) {
+        return this.request(`/questions/${id}/`, "DELETE");
+      },
+
+      // Question Types
+      getQuestionTypes() {
+        return this.request("/question-types/");
+      },
+
+      // Categories
+      getCategories() {
+        return this.request("/categories/");
+      },
+
+      // Responses
+      createResponse(data) {
+        return this.request("/responses/", "POST", data);
+      },
+      getResponse(id) {
+        return this.request(`/responses/${id}/`);
+      },
+      getSurveyStats(id) {
+        return this.request(`/responses/${id}/stats/`);
+      },
+    };
+
+    function getCsrfToken() {
+      const cookieValue = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("csrftoken="));
+      return cookieValue ? cookieValue.split("=")[1] : "";
+    }
+
+    // ============================================
+    // SURVEY STATE
+    // ============================================
+    const SurveyState = {
+      surveyId: null,
+      surveyData: null,
+      sections: [],
+      questionTypes: [],
+      isDirty: false,
+      isSaving: false,
+      autoSaveInterval: null,
+
+      init() {
+        const params = new URLSearchParams(window.location.search);
+        this.surveyId = params.get("survey_id");
+        if (this.surveyId) {
+          document.getElementById("survey-id-display").textContent = this.surveyId;
+        }
+      },
+
+      async loadSurvey(surveyId) {
+        showLoading(true);
+        try {
+          const data = await API.getSurvey(surveyId);
+          this.surveyData = data;
+          this.surveyId = data.id;
+          document.getElementById("survey-id-display").textContent = data.id;
+          document.getElementById("survey-status-display").textContent = data.status;
+          document.getElementById("survey-status-display").className =
+            `font-medium ${data.status === "active" ? "text-green-600" : "text-gray-600"}`;
+          const titleInputEl = document.getElementById("survey-title-input");
+          if (titleInputEl) titleInputEl.value = data.title || "Khảo sát mới";
+          this.sections = data.sections || [];
+          return data;
+        } catch (error) {
+          showToast("Không thể tải khảo sát: " + error.message, "error");
+          throw error;
+        } finally {
+          showLoading(false);
+        }
+      },
+
+      async createNewSurvey(title = "Khảo sát mới") {
+        showLoading(true);
+        try {
+          const data = await API.createSurvey({
+            title: title,
+            create_default: true,
+          });
+          this.surveyId = data.id;
+          this.surveyData = data;
+          document.getElementById("survey-id-display").textContent = data.id;
+          const newTitleInputEl = document.getElementById("survey-title-input");
+          if (newTitleInputEl) newTitleInputEl.value = data.title || title;
+          const url = new URL(window.location);
+          url.searchParams.set("survey_id", data.id);
+          window.history.replaceState({}, "", url);
+          this.sections = data.sections || [];
+          return data;
+        } catch (error) {
+          showToast("Không thể tạo khảo sát: " + error.message, "error");
+          throw error;
+        } finally {
+          showLoading(false);
+        }
+      },
+
+      async loadQuestionTypes() {
+        try {
+          const data = await API.getQuestionTypes();
+          this.questionTypes = data;
+          return data;
+        } catch (error) {
+          console.error("Cannot load question types:", error);
+          return [];
+        }
+      },
+
+      getQuestionTypeByCode(code) {
+        return this.questionTypes.find((qt) => qt.code === code);
+      },
+
+      getQuestionTypeIdByCode(code) {
+        const qt = this.getQuestionTypeByCode(code);
+        return qt ? qt.id : null;
+      },
+
+      async save() {
+        if (this.isSaving) return;
+        this.isSaving = true;
+        try {
+          const surveyData = this.buildSurveyData();
+          await API.updateSurvey(this.surveyId, {
+            title: surveyData.title,
+            description: surveyData.description,
+            status: surveyData.status,
+            settings: surveyData.settings,
+          });
+          const droppedQuestions = await this.saveSections(surveyData.sections);
+          this.isDirty = false;
+          const badge = document.getElementById("auto-save-indicator");
+          if (droppedQuestions.length > 0) {
+            const typesList = [...new Set(droppedQuestions.map((d) => d.type_code))].join(", ");
+            showToast(
+              `Đã lưu, nhưng ${droppedQuestions.length} thành phần KHÔNG lưu được vì hệ thống chưa hỗ trợ loại: ${typesList}.`,
+              "warning"
+            );
+          } else {
+            badge.innerHTML = '<i data-lucide="check-circle" class="w-3 h-3"></i> Đã lưu';
+            badge.classList.remove("hidden");
+            lucide.createIcons();
+            setTimeout(() => badge.classList.add("hidden"), 2000);
+            showToast("Đã lưu khảo sát!", "success");
+            // Refresh section manager after save
+            updateSectionManager();
+          }
+        } catch (error) {
+          showToast("Lỗi khi lưu: " + error.message, "error");
+        } finally {
+          this.isSaving = false;
+        }
+      },
+
+      buildSurveyData() {
+        const allPages = document.querySelectorAll(".a4-page");
+        const allComponents = [];
+        allPages.forEach((page) => {
+          const comps = page.querySelectorAll(".doc-section");
+          comps.forEach((c) => allComponents.push(c));
+        });
+
+        const sections = [];
+        let currentSection = null;
+        let sectionCounter = 0;
+        let hasSectionBreak = false;
+        const usedCodes = new Set();
+
+        allComponents.forEach((comp) => {
+          const type = comp.dataset.type;
+
+          if (type === "section-break") {
+            hasSectionBreak = true;
+            sectionCounter++;
+
+            // QUAN TRỌNG: mã section CHỈ lấy từ data-section-code (gán 1 lần, ổn định,
+            // không đổi theo tiêu đề). KHÔNG được suy ra mã từ nội dung tiêu đề bằng regex
+            // nữa — tiêu đề mặc định "PHẦN MỚI" từng bị nhận nhầm thành mã "M" và làm nhiều
+            // section khác nhau bị coi là trùng mã, gộp hết vào 1 section khi lưu.
+            let code = comp.dataset.sectionCode;
+            if (!code) {
+              // Section-break cũ chưa từng có sectionCode (vd: phần tử được tạo trước khi
+              // có cơ chế này) -> gán một mã mới NGAY TẠI ĐÂY và lưu lại vào DOM để các lần
+              // build sau (vd autosave tiếp theo) dùng lại đúng mã này, không sinh mã mới mỗi lần.
+              code = "sec_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+              comp.dataset.sectionCode = code;
+            }
+            // Đảm bảo không bao giờ có 2 section-break khác nhau dùng cùng 1 mã
+            // (phòng trường hợp dữ liệu cũ/lỗi có sẵn mã trùng nhau).
+            while (usedCodes.has(code)) {
+              code = code + "_dup" + sectionCounter;
+              comp.dataset.sectionCode = code;
+            }
+            usedCodes.add(code);
+
+            const titleEl = comp.querySelector("h3");
+            const descEl = comp.querySelector("p:not(.component-note)");
+            const title = titleEl ? titleEl.textContent.trim() : `Phần ${sectionCounter}`;
+            const description = descEl ? descEl.textContent.trim() : "";
+
+            // Nếu có __default__ section (câu hỏi nằm trước section-break đầu tiên),
+            // merge nó vào section-break NÀY (đây là section-break đầu tiên gặp __default__,
+            // không liên quan gì đến việc trùng mã ở trên).
+            const defaultIdx = sections.findIndex((s) => s.code === "__default__");
+            if (defaultIdx >= 0 && sections[defaultIdx].questions.length > 0) {
+              currentSection = sections[defaultIdx];
+              currentSection.code = code;
+              currentSection.title = title;
+              currentSection.description = description;
+              currentSection.order = sectionCounter - 1;
+            } else {
+              if (defaultIdx >= 0) {
+                sections.splice(defaultIdx, 1);
+              }
+              // Mỗi section-break luôn tạo MỘT section MỚI và riêng biệt.
+              currentSection = {
+                code: code,
+                title: title,
+                description: description,
+                order: sectionCounter - 1,
+                questions: [],
+              };
+              sections.push(currentSection);
+            }
+            return;
+          }
+
+          // Nếu chưa có section nào, tạm thời tạo __default__
+          if (!currentSection) {
+            currentSection = {
+              code: "__default__",
+              title: "",
+              description: "",
+              order: 0,
+              questions: [],
+            };
+            sections.push(currentSection);
+          }
+
+          // Thêm câu hỏi vào section hiện tại
+          const questionData = this.extractQuestionData(comp);
+          questionData.order = currentSection.questions.length;
+          currentSection.questions.push(questionData);
+        });
+
+        // Nếu không có section-break nào
+        if (!hasSectionBreak && sections.length > 0) {
+          sections[0].code = "main";
+        }
+
+        // Dọn dẹp: xóa __default__ rỗng nếu có section-break
+        if (hasSectionBreak) {
+          const defaultIdx = sections.findIndex((s) => s.code === "__default__");
+          if (defaultIdx >= 0) {
+            sections.splice(defaultIdx, 1);
+          }
+          sections.forEach((s, idx) => { s.order = idx; });
+        }
+
+        return {
+          title: this.surveyData?.title || "Khảo sát",
+          description: this.surveyData?.description || "",
+          status: this.surveyData?.status || "draft",
+          settings: this.surveyData?.settings || {},
+          sections: sections,
+        };
+      },
+
+      extractQuestionData(comp) {
+        const type = comp.dataset.type;
+        const questionType = this.getQuestionTypeByCode(type);
+        return {
+          title: extractTitle(comp),
+          description: extractDescription(comp),
+          question_type: questionType ? questionType.id : null,
+          type_code: type,
+          is_required: comp.dataset.required === "true",
+          options: extractOptions(comp),
+          config: this.extractConfig(comp),
+          condition_logic: {},
+        };
+      },
+
+      extractConfig(comp) {
+        const config = {};
+        const type = comp.dataset.type;
+
+        if (type === "short-text" || type === "long-text") {
+          const input = comp.querySelector('.survey-input, [contenteditable="true"]');
+          if (input) {
+            config.placeholder = input.getAttribute("placeholder") || "";
+          }
+        }
+
+        if (type === "rating-grid") {
+          const table = comp.querySelector(".grid-table");
+          if (table) {
+            config.grid_type = table.dataset.gridType || "yesno";
+            const headers = table.querySelectorAll("thead th");
+            config.criteria_label = headers.length > 0 ? headers[0].textContent.trim() || "Tiêu chí" : "Tiêu chí";
+            const scale = [];
+            for (let i = 1; i < headers.length; i++) {
+              const th = headers[i];
+              const label = th.textContent.trim();
+              const kind = th.dataset.kind || "radio";
+              if (label) {
+                scale.push({ value: i, label: label, kind: kind });
+              }
+            }
+            if (scale.length < 2 && config.grid_type !== "checklist") {
+              const defaultScale = getDefaultScale(config.grid_type);
+              defaultScale.forEach((item) => {
+                if (!scale.some((s) => s.label === item.label)) {
+                  scale.push({ value: scale.length + 1, label: item.label, kind: item.kind || "radio" });
+                }
+              });
+            }
+            config.scale = scale;
+            const rows = table.querySelectorAll("tbody tr");
+            const criteria = [];
+            rows.forEach((row) => {
+              const firstTd = row.querySelector("td");
+              if (firstTd) {
+                const text = firstTd.textContent.trim();
+                if (text) criteria.push(text);
+              }
+            });
+            config.criteria = criteria.length > 0 ? criteria : ["Tiêu chí 1"];
+          }
+        }
+
+        if (type === "data-table") {
+          const table = comp.querySelector("table");
+          if (table) {
+            const firstRow = table.querySelector("tr");
+            const columns = [];
+            if (firstRow) {
+              firstRow.querySelectorAll("th, td").forEach((cell) => {
+                const text = cell.textContent.trim();
+                if (text) columns.push(text);
+              });
+            }
+            const allRows = table.querySelectorAll("tr");
+            const data = [];
+            allRows.forEach((row, rowIndex) => {
+              if (rowIndex === 0) return;
+              const rowData = [];
+              row.querySelectorAll("td").forEach((td) => {
+                rowData.push(td.textContent.trim());
+              });
+              if (rowData.some((cell) => cell !== "")) {
+                data.push(rowData);
+              }
+            });
+            config.columns = columns.length > 0 ? columns : ["Cột 1", "Cột 2", "Cột 3"];
+            config.data = data;
+            config.rows = data.length;
+          }
+        }
+
+        if (type === "single-choice" || type === "multi-choice") {
+          const options = [];
+          const optionItems = comp.querySelectorAll('.option-item span[contenteditable="true"]');
+          optionItems.forEach((el) => {
+            const text = el.textContent.trim();
+            if (text) options.push(text);
+          });
+          config.options = options;
+        }
+
+        return config;
+      },
+
+      async saveSections(sectionsData) {
+        const existingSections = await API.getSections(this.surveyId);
+        const sectionMap = {};
+        existingSections.forEach((s) => { sectionMap[s.code] = s; });
+
+        const droppedQuestions = [];
+        const updatedCodes = [];
+
+        let fallbackCounter = 0;
+        for (const sectionData of sectionsData) {
+          let code = sectionData.code;
+          // QUAN TRỌNG: KHÔNG dùng "A" làm mã mặc định chung cho mọi section thiếu mã —
+          // nếu có từ 2 section trở lên thiếu mã, cả 2 sẽ cùng map vào "A" và bị gộp/ghi
+          // đè lẫn nhau. Mỗi section thiếu mã phải nhận một mã DUY NHẤT riêng.
+          if (!code || code === "__default__" || updatedCodes.includes(code)) {
+            fallbackCounter++;
+            code = "sec_fallback_" + Date.now().toString(36) + "_" + fallbackCounter;
+          }
+          updatedCodes.push(code);
+          let section = sectionMap[code];
+
+          if (section) {
+            await API.updateSection(section.id, {
+              code: code,
+              title: sectionData.title || `Phần ${code}`,
+              order: sectionData.order || 0,
+              description: sectionData.description || "",
+            });
+            const existingQuestions = await API.getQuestions(section.id);
+            for (const q of existingQuestions) {
+              await API.deleteQuestion(q.id);
+            }
+          } else {
+            section = await API.createSection(this.surveyId, {
+              code: code,
+              title: sectionData.title || `Phần ${code}`,
+              order: sectionData.order || 0,
+              description: sectionData.description || "",
+            });
+          }
+
+          for (const questionData of sectionData.questions) {
+            if (questionData.question_type) {
+              await API.createQuestion(section.id, {
+                title: questionData.title || "Câu hỏi mới",
+                description: questionData.description || "",
+                question_type: questionData.question_type,
+                is_required: questionData.is_required || false,
+                order: questionData.order || 0,
+                options: questionData.options || [],
+                config: questionData.config || {},
+                condition_logic: questionData.condition_logic || {},
+              });
+            } else {
+              droppedQuestions.push({
+                section: code,
+                title: questionData.title || "(không có tiêu đề)",
+                type_code: questionData.type_code || "unknown",
+              });
+            }
+          }
+        }
+
+        for (const section of existingSections) {
+          if (!updatedCodes.includes(section.code)) {
+            await API.deleteSection(section.id);
+          }
+        }
+
+        return droppedQuestions;
+      },
+    };
+
+    // ============================================
+    // EXTRACT FUNCTIONS
+    // ============================================
+    // TRƯỚC ĐÂY hàm này suy ra "mã section" bằng cách đọc chữ trong tiêu đề (regex
+    // /PHẦN\s+([A-Z])/) rồi XOÁ LUÔN bất kỳ section-break nào bị coi là "trùng mã".
+    // Đây chính là nguyên nhân khiến nhiều section bị mất sau khi lưu: tiêu đề mặc định
+    // "PHẦN MỚI" vô tình khớp regex thành mã "M", nên 2 section khác nhau cùng dùng tiêu đề
+    // mặc định sẽ bị coi là trùng và 1 trong 2 bị xoá khỏi DOM.
+    // Bây giờ hàm chỉ làm một việc an toàn: đảm bảo MỌI section-break có một
+    // dataset.sectionCode ổn định, duy nhất — không bao giờ xoá phần tử của người dùng.
+    function cleanupSectionBreaks() {
+      const allSections = document.querySelectorAll('.doc-section[data-type="section-break"]');
+      const usedCodes = new Set();
+      allSections.forEach((section) => {
+        let code = section.dataset.sectionCode;
+        if (code && !usedCodes.has(code)) {
+          usedCodes.add(code);
+          return;
+        }
+        // Thiếu mã, hoặc mã bị trùng với một section khác (dữ liệu cũ/lỗi) -> cấp mã mới,
+        // KHÔNG xoá phần tử.
+        do {
+          code = "sec_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+        } while (usedCodes.has(code));
+        section.dataset.sectionCode = code;
+        usedCodes.add(code);
+      });
+    }
+
+    function extractTitle(comp) {
+      const type = comp.dataset.type;
+      if (type === "paragraph") {
+        const titleEl = comp.querySelector('p[contenteditable="true"]');
+        if (titleEl) {
+          const html = titleEl.innerHTML;
+          const text = html.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '');
+          return text.trim();
+        }
+        return "";
+      }
+      const titleEl = comp.querySelector('h1, h2, h3, h4, [contenteditable="true"]');
+      if (titleEl) return titleEl.textContent.trim();
+      return "Câu hỏi";
+    }
+
+    function extractDescription(comp) {
+      const descEl = comp.querySelector(".component-note");
+      if (descEl) return descEl.textContent.trim();
+      return "";
+    }
+
+    function extractOptions(comp) {
+      const options = [];
+      const optionItems = comp.querySelectorAll('.option-item span[contenteditable="true"]');
+      optionItems.forEach((el) => {
+        const text = el.textContent.trim();
+        if (text) options.push(text);
+      });
+      return options;
+    }
+
+    function getDefaultScale(gridType) {
+      if (gridType === "checklist") {
+        return [{ value: 1, label: "Có", kind: "checkbox" }];
+      } else if (gridType === "yesno") {
+        return [{ value: 1, label: "Có", kind: "radio" }, { value: 2, label: "Không", kind: "radio" }];
+      } else if (gridType === "scale5") {
+        return [{ value: 1, label: "1", kind: "radio" }, { value: 2, label: "2", kind: "radio" }, { value: 3, label: "3", kind: "radio" }, { value: 4, label: "4", kind: "radio" }, { value: 5, label: "5", kind: "radio" }];
+      } else {
+        return [
+          { value: 1, label: "1", kind: "radio" }, { value: 2, label: "2", kind: "radio" }, { value: 3, label: "3", kind: "radio" },
+          { value: 4, label: "4", kind: "radio" }, { value: 5, label: "5", kind: "radio" }, { value: 6, label: "6", kind: "radio" },
+          { value: 7, label: "7", kind: "radio" }, { value: 8, label: "8", kind: "radio" }, { value: 9, label: "9", kind: "radio" }, { value: 10, label: "10", kind: "radio" },
+        ];
+      }
+    }
+
+    // ============================================
+    // COMPONENT DEFINITIONS
+    // ============================================
+    let components = [];
+
+    async function loadComponents() {
+      try {
+        const types = await API.getQuestionTypes();
+        components = types.map((qt) => ({
+          icon: qt.icon || "file",
+          label: qt.name,
+          type: qt.code,
+        }));
+        renderComponentList();
+      } catch (error) {
+        console.error("Cannot load components:", error);
+        components = [
+          { icon: "type", label: "Tiêu đề", type: "title" },
+          { icon: "align-left", label: "Đoạn văn bản", type: "paragraph" },
+          { icon: "minus", label: "Văn bản ngắn", type: "short-text" },
+          { icon: "text", label: "Văn bản dài", type: "long-text" },
+          { icon: "circle-dot", label: "Một lựa chọn", type: "single-choice" },
+          { icon: "check-square", label: "Nhiều lựa chọn", type: "multi-choice" },
+          { icon: "grid-3x3", label: "Lưới đánh giá", type: "rating-grid" },
+          { icon: "table", label: "Bảng dữ liệu", type: "data-table" },
+          { icon: "user", label: "Thông tin cá nhân", type: "personal-info" },
+          { icon: "layout", label: "Phần mới", type: "section-break" },
+        ];
+        renderComponentList();
+      }
+    }
+
+    function renderComponentList() {
+      const listEl = document.getElementById("component-list");
+      listEl.innerHTML = "";
+      components.forEach((c) => {
+        const btn = document.createElement("button");
+        btn.className = "component-item w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-gray-700 text-left hover:bg-blue-50 transition";
+        btn.innerHTML = `<i data-lucide="${c.icon}" class="w-4 h-4"></i> ${c.label}`;
+        btn.onclick = () => addComponent(c.type);
+        listEl.appendChild(btn);
+      });
+      lucide.createIcons();
+    }
+
+    // ============================================
+    // SECTION MANAGER
+    // ============================================
+    function updateSectionManager() {
+      const container = document.getElementById("section-manager");
+      const badge = document.getElementById("section-count-badge");
+      const breakEls = document.querySelectorAll('.doc-section[data-type="section-break"]');
+      const count = breakEls.length;
+
+      badge.textContent = count;
+      if (count === 0) {
+        container.innerHTML = '<div class="section-manager-empty">Chưa có phần nào</div>';
+        return;
+      }
+
+      let html = "";
+      breakEls.forEach((el, idx) => {
+        const h3 = el.querySelector("h3");
+        const title = h3 ? h3.textContent.trim() : `Phần ${String.fromCharCode(65 + idx)}`;
+        const code = title.match(/PHẦN\s+([A-Z])/i)?.[1] || String.fromCharCode(65 + idx);
+        const isActive = selectedEl === el;
+        html += `
+          <div class="section-manager-item ${isActive ? 'active' : ''}" data-section-idx="${idx}" data-section-break-id="${el.dataset.id}">
+            <span class="section-code">${code}</span>
+            <span class="section-title-text">${title}</span>
+            <div class="section-actions">
+              <button onclick="event.stopPropagation();scrollToSectionBreak('${el.dataset.id}')" title="Đến phần này">📌</button>
+              <button onclick="event.stopPropagation();removeSectionBreak('${el.dataset.id}')" class="danger" title="Xóa phần">✕</button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+
+      // Click để chọn section-break
+      container.querySelectorAll(".section-manager-item").forEach((item) => {
+        item.addEventListener("click", function () {
+          const breakId = this.dataset.sectionBreakId;
+          scrollToSectionBreak(breakId);
+        });
+      });
+    }
+
+    function scrollToSectionBreak(breakId) {
+      const el = document.querySelector(`.doc-section[data-id="${breakId}"]`);
+      if (el) {
+        selectComponent(el);
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+
+    function removeSectionBreak(breakId) {
+      const el = document.querySelector(`.doc-section[data-id="${breakId}"]`);
+      if (el && confirm("Xóa phần này?")) {
+        el.remove();
+        if (selectedEl === el) {
+          selectedEl = null;
+          hideFloatingToolbar();
+        }
+        markDirty();
+        updateSectionManager();
+        showToast("Đã xóa phần", "success");
+      }
+    }
+
+    // ============================================
+    // SURVEY LIST
+    // ============================================
+    async function loadSurveyList() {
+      try {
+        const surveys = await API.getSurveys();
+        const selector = document.getElementById("survey-selector");
+        const currentId = SurveyState.surveyId;
+        selector.innerHTML = '<option value="">-- Chọn khảo sát --</option>';
+        surveys.forEach((survey) => {
+          const option = document.createElement("option");
+          option.value = survey.id;
+          option.textContent = `${survey.title} (${survey.status})`;
+          if (survey.id == currentId) {
+            option.selected = true;
+          }
+          selector.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Cannot load survey list:", error);
+      }
+    }
+
+    function switchSurvey(surveyId) {
+      if (!surveyId) return;
+      const url = new URL(window.location);
+      url.searchParams.set("survey_id", surveyId);
+      window.location.href = url.toString();
+    }
+
+    // ============================================
+    // STATE VARIABLES
+    // ============================================
+    let selectedEl = null;
+    let currentZoom = 1;
+    let componentCounter = 0;
+    let pageCounter = 1;
+    let repaginateScheduled = false;
+    let isRepaginating = false;
+    let dirtyTimeout = null;
+    let dragData = null;
+
+    // ============================================
+    // INIT
+    // ============================================
+    async function init() {
+      SurveyState.init();
+      await loadComponents();
+      await SurveyState.loadQuestionTypes();
+      await loadSurveyList();
+
+      const surveyId = SurveyState.surveyId;
+      if (surveyId) {
+        try {
+          await SurveyState.loadSurvey(surveyId);
+          renderSurveyFromData(SurveyState.surveyData);
+        } catch (error) {
+          await createNewSurvey();
+        }
+      } else {
+        await createNewSurvey();
+      }
+
+      lucide.createIcons();
+      scheduleRepaginate();
+      setTimeout(cleanupSectionBreaks, 100);
+      setTimeout(updateSectionManager, 200);
+
+      SurveyState.autoSaveInterval = setInterval(() => {
+        if (SurveyState.isDirty) {
+          SurveyState.save();
+        }
+      }, 30000);
+    }
+
+    async function createNewSurvey() {
+      try {
+        const data = await SurveyState.createNewSurvey("Khảo sát mới");
+        renderSurveyFromData(data);
+        showToast("Đã tạo khảo sát mới!", "success");
+      } catch (error) {
+        createDefaultPages();
+      }
+    }
+
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    function renderSurveyFromData(data) {
+      const container = document.getElementById("pages-container");
+      container.innerHTML = "";
+      pageCounter = 1;
+      componentCounter = 0;
+
+      if (data.sections && data.sections.length > 0) {
+        data.sections.forEach((section, index) => {
+          const page = createPage(index + 1);
+          const contentEl = page.querySelector(".page-content");
+
+          // Luôn thêm section-break cho mọi section (kể cả section đầu)
+          // Section-break đầu tiên có section code gốc từ dữ liệu
+          const breakEl = document.createElement("div");
+          breakEl.className = "doc-section";
+          breakEl.dataset.type = "section-break";
+          breakEl.dataset.id = "comp_" + ++componentCounter;
+          breakEl.dataset.required = "false";
+          breakEl.dataset.questionId = null;
+          // LƯU MÃ SECTION GỐC vào data attribute - ĐÂY LÀ CHÌA KHÓA SỬA LỖI
+          const sectionCode = section.code || String.fromCharCode(65 + index);
+          breakEl.dataset.sectionCode = sectionCode;
+
+          const sectionTitle = section.title || `Phần ${sectionCode}`;
+          const sectionDesc = section.description || "";
+          breakEl.innerHTML = `
+            <span class="component-badge">Phân cách</span>
+            <div class="flex items-start gap-2">
+              <div class="flex-1">
+                <hr class="my-3 border-gray-400">
+                <h3 contenteditable="true" class="font-bold text-base text-gray-800">${escapeHtml(sectionTitle)}</h3>
+                <p contenteditable="true" class="text-sm text-gray-600">${escapeHtml(sectionDesc)}</p>
+                <p class="component-note text-xs text-gray-400 italic mt-1.5" contenteditable="true" data-placeholder="Thêm ghi chú/hướng dẫn (không bắt buộc)..."></p>
+              </div>
+            </div>
+          `;
+          contentEl.appendChild(breakEl);
+
+          // Thêm các câu hỏi của section
+          if (section.questions && section.questions.length > 0) {
+            section.questions.forEach((question) => {
+              const comp = createComponentFromQuestion(question);
+              contentEl.appendChild(comp);
+            });
+          }
+
+          container.appendChild(page);
+        });
+      } else {
+        const page = createPage(1);
+        page.querySelector(".page-content").innerHTML = getDefaultContent();
+        container.appendChild(page);
+      }
+
+      reattachEvents();
+      updatePageNumbers();
+      scheduleRepaginate();
+    }
+
+    function resolveQuestionTypeCode(question) {
+      const qt = question.question_type;
+      if (qt && typeof qt === "object") {
+        if (qt.code) return qt.code;
+        if (qt.id != null) {
+          const found = SurveyState.questionTypes.find((t) => t.id === qt.id);
+          if (found) return found.code;
+        }
+      }
+      if (qt != null && (typeof qt === "number" || typeof qt === "string")) {
+        const found = SurveyState.questionTypes.find((t) => t.id === qt || String(t.id) === String(qt));
+        if (found) return found.code;
+      }
+      if (question.question_type_code) return question.question_type_code;
+      return "paragraph";
+    }
+
+    function createComponentFromQuestion(question) {
+      const el = document.createElement("div");
+      el.className = "doc-section";
+      el.dataset.type = resolveQuestionTypeCode(question);
+      el.dataset.id = `comp_${++componentCounter}`;
+      el.dataset.required = question.is_required ? "true" : "false";
+      el.dataset.questionId = question.id;
+      const type = el.dataset.type;
+      const config = question.config || {};
+      const options = question.options || [];
+      let html = "";
+      const typeLabels = {
+        title: "Tiêu đề", paragraph: "Đoạn văn", "short-text": "Văn bản ngắn", "long-text": "Văn bản dài",
+        "single-choice": "Một lựa chọn", "multi-choice": "Nhiều lựa chọn", "rating-grid": "Lưới đánh giá",
+        "data-table": "Bảng dữ liệu", "personal-info": "Thông tin cá nhân", "section-break": "Phân cách",
+      };
+      const badgeText = typeLabels[type] || type;
+      const hasDragHandle = ["single-choice", "multi-choice", "rating-grid", "data-table"].includes(type);
+      const dragHandleHtml = hasDragHandle ? '<span class="drag-handle">⠿</span>' : "";
+
+      switch (type) {
+        case "title":
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <h3 contenteditable="true" class="font-bold text-lg">${question.title || ""}</h3>
+                <p contenteditable="true" class="text-sm text-gray-600" data-placeholder="Nhập phụ đề...">${question.description || ""}</p>
+              </div>
+            </div>`;
+          break;
+        case "paragraph":
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <p contenteditable="true" class="text-sm text-gray-700 leading-relaxed" style="white-space: pre-wrap">${question.title || "Nhập nội dung đoạn văn..."}</p>
+              </div>
+            </div>`;
+          break;
+        case "short-text":
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <p contenteditable="true" class="text-sm mb-1 font-medium">${question.title || "Câu hỏi:"}</p>
+                <input class="survey-input text-sm" placeholder="${config.placeholder || "Câu trả lời ngắn"}">
+              </div>
+            </div>`;
+          break;
+        case "long-text":
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <p contenteditable="true" class="text-sm mb-1 font-medium">${question.title || "Câu hỏi:"}</p>
+                <div contenteditable="true" class="border border-gray-300 rounded-lg h-20 p-3 text-sm text-gray-400 hover:border-blue-400 focus:border-blue-500 transition">${config.placeholder || "Nhập nội dung..."}</div>
+              </div>
+            </div>`;
+          break;
+        case "single-choice":
+        case "multi-choice": {
+          const inputType = type === "multi-choice" ? "checkbox" : "radio";
+          const name = `q${Date.now()}`;
+          const optionList = options.length > 0 ? options : ["Lựa chọn 1", "Lựa chọn 2"];
+          let optHtml = buildOptionsHtml(optionList, inputType, name);
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <p contenteditable="true" class="text-sm mb-2 font-medium">${question.title || "Câu hỏi:"}</p>
+                <div class="space-y-1 text-sm pl-4 options-container">
+                  ${optHtml}
+                  <button onclick="addOption(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm lựa chọn</button>
+                </div>
+              </div>
+            </div>`;
+          break;
+        }
+        case "rating-grid": {
+          const gridType = config.grid_type || "yesno";
+          let scale = config.scale;
+          if (!scale || scale.length === 0) scale = getDefaultScale(gridType);
+          let criteria = config.criteria;
+          if (!criteria || criteria.length === 0) criteria = ["Tiêu chí 1"];
+          const timestamp = Date.now();
+          const criteriaLabel = config.criteria_label || "Tiêu chí";
+          let gridHeaderHtml = `<th contenteditable="true">${escapeHtml(criteriaLabel)}</th>`;
+          scale.forEach((item) => {
+            const label = typeof item === "string" ? item : item.label || item;
+            const kind = typeof item === "object" && item.kind ? item.kind : "radio";
+            gridHeaderHtml += `<th contenteditable="true" data-kind="${kind}">${escapeHtml(String(label))}</th>`;
+          });
+          let gridBodyHtml = "";
+          criteria.forEach((crit, rowIndex) => {
+            let rowHtml = `<tr><td contenteditable="true">${escapeHtml(crit)}</td>`;
+            scale.forEach((item) => {
+              const kind = typeof item === "object" && item.kind ? item.kind : "radio";
+              rowHtml += `<td>${gridInputHtml(kind, `g${timestamp}_${rowIndex}`)}</td>`;
+            });
+            rowHtml += "</tr>";
+            gridBodyHtml += rowHtml;
+          });
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <p contenteditable="true" class="text-sm mb-2 font-semibold">${question.title || "Lưới đánh giá:"}</p>
+                <div class="rating-grid-controls mb-2 flex gap-2 flex-wrap text-xs">
+                  <button onclick="event.stopPropagation();addGridRow(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Hàng</button>
+                  <button onclick="event.stopPropagation();removeGridRow(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Hàng</button>
+                  <button onclick="event.stopPropagation();addGridCol(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Cột</button>
+                  <button onclick="event.stopPropagation();removeGridCol(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Cột</button>
+                  <select onchange="event.stopPropagation();changeGridType(this)" class="border border-gray-300 rounded px-1 py-0.5">
+                    <option value="yesno" ${gridType === "yesno" ? "selected" : ""}>Có/Không</option>
+                    <option value="scale5" ${gridType === "scale5" ? "selected" : ""}>Thang 1-5</option>
+                    <option value="scale10" ${gridType === "scale10" ? "selected" : ""}>Thang 1-10</option>
+                    <option value="checklist" ${gridType === "checklist" ? "selected" : ""}>Danh sách tích chọn</option>
+                  </select>
+                </div>
+                <table class="grid-table" data-grid-type="${gridType}">
+                  <thead><tr>${gridHeaderHtml}</tr></thead>
+                  <tbody>${gridBodyHtml}</tbody>
+                </table>
+              </div>
+            </div>`;
+          break;
+        }
+        case "data-table": {
+          const columns = config.columns && config.columns.length > 0 ? config.columns : ["Cột 1", "Cột 2", "Cột 3"];
+          const tableData = config.data && config.data.length > 0 ? config.data : [];
+          let tableHeaderHtml = columns.map((col) => `<th class="border border-gray-300 p-1 bg-gray-50" contenteditable="true">${col}</th>`).join("");
+          let tableBodyHtml = "";
+          if (tableData.length > 0) {
+            tableData.forEach((rowData) => {
+              let rowHtml = "<tr>";
+              columns.forEach((col, idx) => {
+                rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true">${rowData[idx] || ""}</td>`;
+              });
+              rowHtml += "</tr>";
+              tableBodyHtml += rowHtml;
+            });
+          } else {
+            let rowHtml = "<tr>";
+            columns.forEach(() => { rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true"></td>`; });
+            rowHtml += "</tr>";
+            tableBodyHtml = rowHtml;
+          }
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <p contenteditable="true" class="text-sm mb-2 font-medium">${question.title || "Bảng dữ liệu:"}</p>
+                <table class="w-full border-collapse border border-gray-300 text-xs">
+                  <tr>${tableHeaderHtml}</tr>
+                  ${tableBodyHtml}
+                </table>
+                <div class="mt-1 table-controls">
+                  <button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800">+ Thêm hàng</button>
+                  <button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 ml-2">+ Thêm cột</button>
+                </div>
+              </div>
+            </div>`;
+          break;
+        }
+        case "personal-info":
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <p class="font-semibold text-sm mb-2">${question.title || "THÔNG TIN CÁ NHÂN"}</p>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                  <div><span>Họ tên: </span><input class="survey-input" placeholder="..."></div>
+                  <div><span>Email: </span><input class="survey-input" placeholder="..."></div>
+                  <div><span>Điện thoại: </span><input class="survey-input" placeholder="..."></div>
+                  <div><span>Đơn vị: </span><input class="survey-input" placeholder="..."></div>
+                </div>
+              </div>
+            </div>`;
+          break;
+        case "section-break":
+          html = `<span class="component-badge">${badgeText}</span>
+            <div class="flex items-start gap-2">
+              ${dragHandleHtml}
+              <div class="flex-1">
+                <hr class="my-3 border-gray-400">
+                <h3 contenteditable="true" class="font-bold text-base text-gray-800">${question.title || "PHẦN MỚI"}</h3>
+                <p contenteditable="true" class="text-sm text-gray-600">${question.description || "Mô tả phần..."}</p>
+              </div>
+            </div>`;
+          break;
+        default:
+          html = `<div class="flex-1"><p contenteditable="true" class="text-sm">${question.title || "Thành phần mới"}</p></div>`;
+      }
+
+      el.innerHTML = html;
+      const noteTarget = el.querySelector(".flex-1") || el;
+      const noteEl = document.createElement("p");
+      noteEl.className = "component-note text-xs text-gray-400 italic mt-1.5";
+      noteEl.contentEditable = "true";
+      noteEl.dataset.placeholder = "Thêm ghi chú/hướng dẫn (không bắt buộc)...";
+      noteEl.textContent = question.description || "";
+      noteTarget.appendChild(noteEl);
+      return el;
+    }
+
+    function createPage(num) {
+      const div = document.createElement("div");
+      div.className = "a4-page";
+      div.dataset.page = num;
+      div.innerHTML = `<div class="page-content"></div><div class="page-number">Trang ${num}</div>`;
+      return div;
+    }
+
+    function createDefaultPages() {
+      const container = document.getElementById("pages-container");
+      container.innerHTML = "";
+      pageCounter = 1;
+      componentCounter = 0;
+      const page1 = createPage(1);
+      page1.querySelector(".page-content").innerHTML = getDefaultContent();
+      container.appendChild(page1);
+      reattachEvents();
+      updatePageNumbers();
+    }
+
+    function getDefaultContent() {
+      return `
+        <div class="doc-section" data-type="title" data-required="false" data-id="comp_${++componentCounter}">
+          <span class="component-badge">Tiêu đề</span>
+          <div class="flex items-start gap-2">
+            <span class="drag-handle">⠿</span>
+            <div class="flex-1">
+              <h2 contenteditable="true" class="text-xl font-bold text-gray-900 text-center">PHIẾU KHẢO SÁT</h2>
+              <p contenteditable="true" class="text-sm text-gray-600 mt-1 text-center">Đơn vị thực hiện khảo sát</p>
+            </div>
+          </div>
+        </div>
+        <div class="doc-section" data-type="paragraph" data-required="false" data-id="comp_${++componentCounter}">
+          <span class="component-badge">Đoạn văn</span>
+          <div class="flex items-start gap-2">
+            <span class="drag-handle">⠿</span>
+            <div class="flex-1">
+              <p contenteditable="true" class="text-sm text-gray-700 leading-relaxed">~~~~.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================
+    // PAGE MANAGEMENT
+    // ============================================
+    function addPageBreak() {
+      const container = document.getElementById("pages-container");
+      const newPage = createPage(++pageCounter);
+      newPage.dataset.manual = "true";
+      container.appendChild(newPage);
+      reattachEvents();
+      updatePageNumbers();
+      markDirty();
+      showToast("Đã thêm trang mới", "success");
+      newPage.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function deleteCurrentPage() {
+      const pages = document.querySelectorAll(".a4-page");
+      if (pages.length <= 1) {
+        showToast("Không thể xóa trang cuối cùng!", "warning");
+        return;
+      }
+      let targetPage = null;
+      if (selectedEl) {
+        targetPage = selectedEl.closest(".a4-page");
+      }
+      if (!targetPage) {
+        targetPage = pages[pages.length - 1];
+      }
+      targetPage.remove();
+      updatePageNumbers();
+      if (selectedEl) {
+        selectedEl.classList.remove("selected-component");
+        selectedEl = null;
+        document.getElementById("floating-toolbar").classList.remove("visible");
+      }
+      markDirty();
+      showToast("Đã xóa trang", "success");
+    }
+
+    function updatePageNumbers() {
+      document.querySelectorAll(".a4-page").forEach((page, index) => {
+        const numEl = page.querySelector(".page-number");
+        if (numEl) numEl.textContent = `Trang ${index + 1}`;
+        page.dataset.page = index + 1;
+      });
+      pageCounter = document.querySelectorAll(".a4-page").length;
+    }
+
+    // ============================================
+    // REPAGINATION
+    // ============================================
+    function scheduleRepaginate() {
+      if (repaginateScheduled) return;
+      repaginateScheduled = true;
+      requestAnimationFrame(() => {
+        repaginateScheduled = false;
+        repaginate();
+      });
+    }
+
+    function repaginate() {
+      if (isRepaginating) return;
+      isRepaginating = true;
+      try {
+        const container = document.getElementById("pages-container");
+        let pages = Array.from(container.querySelectorAll(".a4-page"));
+        const rememberSelectedId = selectedEl ? selectedEl.dataset.id : null;
+        const activeEditEl = selectedEl || document.activeElement?.closest?.(".doc-section") || null;
+        let guard = 0;
+        const MAX_ITER = 500;
+        let i = 0;
+        while (i < pages.length && guard < MAX_ITER) {
+          guard++;
+          const page = pages[i];
+          const contentEl = page.querySelector(".page-content");
+          while (contentEl.scrollHeight > contentEl.clientHeight + 1 && contentEl.children.length > 1) {
+            let last = contentEl.lastElementChild;
+            if (activeEditEl && (last === activeEditEl || last.contains(activeEditEl))) {
+              let candidate = last.previousElementSibling;
+              while (candidate && (candidate === activeEditEl || candidate.contains(activeEditEl))) {
+                candidate = candidate.previousElementSibling;
+              }
+              if (!candidate) break;
+              last = candidate;
+            }
+            let nextPage = pages[i + 1];
+            if (!nextPage) {
+              nextPage = createPage(pages.length + 1);
+              container.appendChild(nextPage);
+              pages.push(nextPage);
+            }
+            nextPage.querySelector(".page-content").insertBefore(last, nextPage.querySelector(".page-content").firstChild);
+            delete nextPage.dataset.manual;
+            guard++;
+            if (guard >= MAX_ITER) break;
+          }
+          let nextPage = pages[i + 1];
+          while (nextPage) {
+            const nextContentEl = nextPage.querySelector(".page-content");
+            const firstOfNext = nextContentEl.firstElementChild;
+            if (!firstOfNext) break;
+            contentEl.appendChild(firstOfNext);
+            if (contentEl.scrollHeight > contentEl.clientHeight + 1) {
+              nextContentEl.insertBefore(firstOfNext, nextContentEl.firstChild);
+              break;
+            }
+            guard++;
+            if (guard >= MAX_ITER) break;
+            nextPage = pages[i + 1];
+          }
+          i++;
+        }
+        pages = Array.from(container.querySelectorAll(".a4-page"));
+        for (let p = pages.length - 1; p > 0; p--) {
+          const contentEl = pages[p].querySelector(".page-content");
+          const isEmpty = contentEl.children.length === 0;
+          const isLast = p === pages.length - 1;
+          if (isEmpty && (!pages[p].dataset.manual || !isLast)) {
+            pages[p].remove();
+            pages.splice(p, 1);
+          } else if (!isEmpty) {
+            break;
+          }
+        }
+        updatePageNumbers();
+        reattachEvents();
+        if (rememberSelectedId) {
+          const restored = container.querySelector(`[data-id="${rememberSelectedId}"]`);
+          if (restored) {
+            selectedEl = restored;
+            restored.classList.add("selected-component");
+          }
+        }
+        if (activeEditEl && document.contains(activeEditEl)) {
+          const stillVisible = activeEditEl.getBoundingClientRect();
+          const inViewport = stillVisible.top >= 0 && stillVisible.bottom <= window.innerHeight;
+          if (!inViewport) {
+            activeEditEl.scrollIntoView({ block: "nearest" });
+          }
+        }
+      } finally {
+        isRepaginating = false;
+      }
+    }
+
+    function updateComponentNoteFromProps(value) {
+      if (!selectedEl) return;
+      let noteEl = selectedEl.querySelector(".component-note");
+      if (!noteEl) {
+        const target = selectedEl.querySelector(".flex-1") || selectedEl;
+        noteEl = document.createElement("p");
+        noteEl.className = "component-note text-xs text-gray-400 italic mt-1.5";
+        noteEl.contentEditable = "true";
+        noteEl.dataset.placeholder = "Thêm ghi chú/hướng dẫn (không bắt buộc)...";
+        target.appendChild(noteEl);
+        noteEl.oninput = function (e) { e.stopPropagation(); markDirty(); };
+      }
+      noteEl.textContent = value;
+      markDirty();
+    }
+
+    // ============================================
+    // SURVEY TITLE
+    // ============================================
+    function onSurveyTitleInput(inputEl) {
+      if (!SurveyState.surveyData) SurveyState.surveyData = {};
+      SurveyState.surveyData.title = inputEl.value;
+      markDirty();
+    }
+
+    function onSurveyTitleBlur(inputEl) {
+      const trimmed = inputEl.value.trim();
+      if (!trimmed) {
+        inputEl.value = "Khảo sát mới";
+        if (!SurveyState.surveyData) SurveyState.surveyData = {};
+        SurveyState.surveyData.title = "Khảo sát mới";
+        markDirty();
+      }
+    }
+
+    // ============================================
+    // ZOOM FUNCTIONS
+    // ============================================
+    function setZoom(z) {
+      currentZoom = z;
+      document.querySelectorAll(".a4-page").forEach((page) => {
+        page.style.transform = `scale(${z})`;
+        page.style.transformOrigin = "top center";
+      });
+    }
+
+    // ============================================
+    // RICH TEXT COMMANDS
+    // ============================================
+    function execCmd(cmd, val) {
+      document.execCommand(cmd, false, val || null);
+      markDirty();
+    }
+
+    // ============================================
+    // SELECT COMPONENT
+    // ============================================
+    function selectComponent(el) {
+      document.querySelectorAll(".doc-section.selected-component").forEach((e) => e.classList.remove("selected-component"));
+      selectedEl = el;
+      el.classList.add("selected-component");
+      const toolbar = document.getElementById("floating-toolbar");
+      toolbar.classList.add("visible");
+      const rect = el.getBoundingClientRect();
+      const toolbarWidth = toolbar.offsetWidth || 220;
+      toolbar.style.top = Math.max(4, rect.top - 48) + "px";
+      toolbar.style.left = Math.min(window.innerWidth - toolbarWidth - 10, rect.right - toolbarWidth) + "px";
+      updatePropsPanel(el);
+      updateSectionManager();
+    }
+
+    function hideFloatingToolbar() {
+      document.getElementById("floating-toolbar").classList.remove("visible");
+    }
+
+    function updatePropsPanel(el) {
+      const panel = document.getElementById("props-panel");
+      const type = el.dataset.type || "unknown";
+      const required = el.dataset.required === "true";
+      const hidden = el.classList.contains("hidden-section");
+      const typeLabels = {
+        title: "Tiêu đề", paragraph: "Đoạn văn", "short-text": "Văn bản ngắn", "long-text": "Văn bản dài",
+        "single-choice": "Một lựa chọn", "multi-choice": "Nhiều lựa chọn", "rating-grid": "Lưới đánh giá",
+        "data-table": "Bảng dữ liệu", "personal-info": "Thông tin cá nhân", "section-break": "Phân cách",
+      };
+      const changeableTypes = [
+        { value: "title", label: "Tiêu đề" }, { value: "paragraph", label: "Đoạn văn" },
+        { value: "short-text", label: "Văn bản ngắn" }, { value: "long-text", label: "Văn bản dài" },
+        { value: "single-choice", label: "Một lựa chọn" }, { value: "multi-choice", label: "Nhiều lựa chọn" },
+        { value: "rating-grid", label: "Lưới đánh giá" }, { value: "data-table", label: "Bảng dữ liệu" },
+        { value: "personal-info", label: "Thông tin cá nhân" }, { value: "section-break", label: "Phân cách" },
+      ];
+      let content = "";
+      const titleEl = el.querySelector('[contenteditable="true"]:first-child');
+      if (titleEl) content = titleEl.textContent.trim();
+      const noteEl = el.querySelector(".component-note");
+      let optionsHtml = changeableTypes.map((t) => `<option value="${t.value}" ${t.value === type ? "selected" : ""}>${t.label}</option>`).join("");
+      let html = `
+        <div class="space-y-3">
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="text-xs text-gray-500 mb-2">Loại thành phần</div>
+            <select id="change-type-select" class="change-type-selector">${optionsHtml}</select>
+            <button id="btn-change-type" class="btn-change-type">🔄 Đổi loại thành phần</button>
+            <div style="font-size:10px;color:#9ca3af;margin-top:4px;text-align:center;">* Nội dung sẽ được giữ nguyên, cấu trúc sẽ thay đổi</div>
+          </div>
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="text-xs text-gray-500">Nội dung</div>
+            <div class="text-sm text-gray-800 break-words max-h-20 overflow-y-auto">${content || "(Trống)"}</div>
+          </div>
+          <div class="bg-white rounded p-3 shadow-sm">
+            <div class="text-xs text-gray-500 mb-1">Ghi chú / hướng dẫn</div>
+            <textarea rows="2" placeholder="VD: Chọn 1 đáp án duy nhất, đơn vị tính VNĐ..." class="w-full text-xs border border-gray-200 rounded p-1.5 resize-none focus:border-blue-400 outline-none" onchange="updateComponentNoteFromProps(this.value)">${noteEl ? escapeHtml(noteEl.textContent.trim()) : ""}</textarea>
+          </div>
+          <div class="bg-white rounded p-3 shadow-sm space-y-2">
+            <div class="text-xs text-gray-500 mb-1">Tùy chọn</div>
+            <label class="flex items-center gap-2 text-xs cursor-pointer">
+              <input type="checkbox" ${required ? "checked" : ""} onchange="selectedEl.dataset.required=this.checked; markDirty();">
+              <span>Bắt buộc trả lời</span>
+            </label>
+            <label class="flex items-center gap-2 text-xs cursor-pointer">
+              <input type="checkbox" ${hidden ? "checked" : ""} onchange="selectedEl.classList.toggle('hidden-section', this.checked); markDirty();">
+              <span>Ẩn thành phần</span>
+            </label>
+          </div>`;
+      if (type === "single-choice" || type === "multi-choice") {
+        const opts = el.querySelectorAll('.option-item span[contenteditable="true"]');
+        let optsHtml2 = "";
+        opts.forEach((opt, idx) => { optsHtml2 += `<div class="text-xs py-0.5">${idx + 1}. ${opt.textContent.trim()}</div>`; });
+        html += `<div class="bg-white rounded p-3 shadow-sm">
+          <div class="text-xs text-gray-500">Danh sách lựa chọn (${opts.length})</div>
+          <div class="text-xs text-gray-700 mt-1 max-h-24 overflow-y-auto">${optsHtml2 || '<span class="text-gray-400">Chưa có lựa chọn</span>'}</div>
+          <button onclick="addOptionToSelected()" class="w-full mt-2 text-xs bg-blue-50 text-blue-700 py-1 rounded hover:bg-blue-100 transition">+ Thêm lựa chọn</button>
+        </div>`;
+      }
+      if (type === "rating-grid") {
+        const table = el.querySelector(".grid-table");
+        if (table) {
+          const rows = table.querySelectorAll("tbody tr");
+          const cols = table.querySelectorAll("thead th");
+          html += `<div class="bg-white rounded p-3 shadow-sm">
+            <div class="text-xs text-gray-500">Lưới đánh giá</div>
+            <div class="text-xs text-gray-700 mt-1"><div>${rows.length} hàng × ${cols.length - 1} cột</div></div>
+            <div class="flex gap-1 mt-2 flex-wrap">
+              <button onclick="addGridRowFromProps()" class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100">+ Hàng</button>
+              <button onclick="addGridColFromProps()" class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100">+ Cột</button>
+            </div>
+          </div>`;
+        }
+      }
+      if (type === "data-table") {
+        const table = el.querySelector("table");
+        if (table) {
+          const rows = table.querySelectorAll("tr");
+          const cols = rows.length > 0 ? rows[0].querySelectorAll("th, td").length : 0;
+          html += `<div class="bg-white rounded p-3 shadow-sm">
+            <div class="text-xs text-gray-500">Bảng dữ liệu</div>
+            <div class="text-xs text-gray-700 mt-1"><div>${rows.length - 1} hàng × ${cols} cột</div></div>
+            <div class="flex gap-1 mt-2 flex-wrap">
+              <button onclick="addTableRowFromProps()" class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100">+ Hàng</button>
+              <button onclick="addTableColFromProps()" class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100">+ Cột</button>
+            </div>
+          </div>`;
+        }
+      }
+      html += `<div class="bg-white rounded p-3 shadow-sm">
+        <div class="text-xs text-gray-500">ID thành phần</div>
+        <div class="text-xs font-mono text-gray-600">${el.dataset.id}</div>
+      </div></div>`;
+      panel.innerHTML = html;
+      const btnChangeType = document.getElementById("btn-change-type");
+      if (btnChangeType) {
+        btnChangeType.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          changeComponentType();
+        });
+      }
+    }
+
+    function changeComponentType() {
+      if (!selectedEl) {
+        showToast("Vui lòng chọn một thành phần!", "warning");
+        return;
+      }
+      const select = document.getElementById("change-type-select");
+      if (!select) {
+        showToast("Không tìm thấy dropdown!", "error");
+        return;
+      }
+      const newType = select.value;
+      const currentType = selectedEl.dataset.type;
+      if (newType === currentType) {
+        showToast("Đã là loại này rồi!", "info");
+        return;
+      }
+      const oldTitle = extractTitle(selectedEl);
+      const oldDescription = extractDescription(selectedEl);
+      const oldOptions = extractOptions(selectedEl);
+      const oldContent = extractContentFromComponent(selectedEl);
+      const newTemplate = getComponentTemplate(newType);
+      selectedEl.innerHTML = newTemplate;
+      selectedEl.dataset.type = newType;
+      const titleEl = selectedEl.querySelector('[contenteditable="true"]:first-child');
+      if (titleEl && oldTitle) titleEl.textContent = oldTitle;
+      let noteEl = selectedEl.querySelector(".component-note");
+      if (!noteEl) {
+        const target = selectedEl.querySelector(".flex-1") || selectedEl;
+        noteEl = document.createElement("p");
+        noteEl.className = "component-note text-xs text-gray-400 italic mt-1.5";
+        noteEl.contentEditable = "true";
+        noteEl.dataset.placeholder = "Thêm ghi chú/hướng dẫn (không bắt buộc)...";
+        target.appendChild(noteEl);
+      }
+      if (oldDescription) noteEl.textContent = oldDescription;
+      if (newType === "section-break") {
+        let h3El = selectedEl.querySelector("h3");
+        if (!h3El) {
+          const flexDiv = selectedEl.querySelector(".flex-1");
+          if (flexDiv) {
+            flexDiv.querySelectorAll("h2, h3, h4, p:not(.component-note)").forEach((el) => {
+              if (!el.classList.contains("component-note")) el.remove();
+            });
+            h3El = document.createElement("h3");
+            h3El.contentEditable = true;
+            h3El.className = "font-bold text-base text-gray-800";
+            flexDiv.insertBefore(h3El, noteEl);
+          }
+        }
+        if (h3El && oldTitle) h3El.textContent = oldTitle;
+        let descP = selectedEl.querySelector("p:not(.component-note)");
+        if (!descP) {
+          const flexDiv = selectedEl.querySelector(".flex-1");
+          if (flexDiv && h3El) {
+            descP = document.createElement("p");
+            descP.contentEditable = true;
+            descP.className = "text-sm text-gray-600";
+            flexDiv.insertBefore(descP, noteEl);
+          }
+        }
+        if (descP && oldDescription) descP.textContent = oldDescription;
+      }
+      if (newType === "single-choice" || newType === "multi-choice") {
+        const optionsContainer = selectedEl.querySelector(".options-container");
+        if (optionsContainer) {
+          optionsContainer.querySelectorAll(".option-item").forEach((el) => el.remove());
+          let options = oldOptions;
+          if (!options || options.length === 0) options = ["Lựa chọn 1", "Lựa chọn 2"];
+          const inputType = newType === "multi-choice" ? "checkbox" : "radio";
+          const name = `q${Date.now()}`;
+          options.forEach((opt) => {
+            const label = document.createElement("label");
+            label.className = "flex items-center gap-2 option-item group";
+            label.innerHTML = buildOptionRowHtml(opt, inputType, name).replace(/^<label[^>]*>|<\/label>$/g, "");
+            optionsContainer.insertBefore(label, optionsContainer.querySelector("button"));
+          });
+        }
+      }
+      if (newType === "rating-grid" && oldContent.config) {
+        const table = selectedEl.querySelector(".grid-table");
+        if (table) {
+          const config = oldContent.config;
+          if (config.criteria && config.criteria.length > 0) {
+            const tbody = table.querySelector("tbody");
+            if (tbody) {
+              tbody.innerHTML = "";
+              const headers = table.querySelectorAll("thead th");
+              const scaleCount = headers.length - 1;
+              config.criteria.forEach((crit, idx) => {
+                const tr = document.createElement("tr");
+                const td1 = document.createElement("td");
+                td1.contentEditable = true;
+                td1.textContent = crit;
+                tr.appendChild(td1);
+                for (let i = 0; i < scaleCount; i++) {
+                  const td = document.createElement("td");
+                  td.innerHTML = `<input type="radio" name="g${Date.now()}_${idx}">`;
+                  tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+              });
+            }
+          }
+        }
+      }
+      if (newType === "data-table" && oldContent.config) {
+        const table = selectedEl.querySelector("table");
+        if (table) {
+          const config = oldContent.config;
+          if (config.columns && config.columns.length > 0) {
+            const headerRow = table.querySelector("tr");
+            if (headerRow) {
+              headerRow.innerHTML = "";
+              config.columns.forEach((col) => {
+                const th = document.createElement("th");
+                th.className = "border border-gray-300 p-1 bg-gray-50";
+                th.contentEditable = true;
+                th.textContent = col;
+                headerRow.appendChild(th);
+              });
+            }
+            if (config.data && config.data.length > 0) {
+              table.querySelectorAll("tr:not(:first-child)").forEach((tr) => tr.remove());
+              config.data.forEach((rowData) => {
+                const tr = document.createElement("tr");
+                config.columns.forEach((col, idx) => {
+                  const td = document.createElement("td");
+                  td.className = "border border-gray-300 p-1";
+                  td.contentEditable = true;
+                  td.textContent = rowData[idx] || "";
+                  tr.appendChild(td);
+                });
+                table.appendChild(tr);
+              });
+            }
+          }
+        }
+      }
+      const badgeText = {
+        title: "Tiêu đề", paragraph: "Đoạn văn", "short-text": "Văn bản ngắn", "long-text": "Văn bản dài",
+        "single-choice": "Một lựa chọn", "multi-choice": "Nhiều lựa chọn", "rating-grid": "Lưới đánh giá",
+        "data-table": "Bảng dữ liệu", "personal-info": "Thông tin cá nhân", "section-break": "Phân cách",
+      };
+      const badge = selectedEl.querySelector(".component-badge");
+      if (badge) badge.textContent = badgeText[newType] || newType;
+      fixClonedElement(selectedEl);
+      updatePropsPanel(selectedEl);
+      markDirty();
+      showToast(`Đã đổi thành: ${badgeText[newType] || newType}`, "success");
+    }
+
+    function extractContentFromComponent(el) {
+      const type = el.dataset.type;
+      const content = { title: extractTitle(el), description: extractDescription(el), options: extractOptions(el), config: {} };
+      if (type === "rating-grid") {
+        const table = el.querySelector(".grid-table");
+        if (table) {
+          const headers = table.querySelectorAll("thead th");
+          const rows = table.querySelectorAll("tbody tr");
+          const config = { criteria: [], scale: [], criteria_label: headers.length > 0 ? headers[0].textContent.trim() : "Tiêu chí", grid_type: table.dataset.gridType || "yesno" };
+          rows.forEach((row) => { const firstTd = row.querySelector("td"); if (firstTd) { const text = firstTd.textContent.trim(); if (text) config.criteria.push(text); } });
+          for (let i = 1; i < headers.length; i++) { const label = headers[i].textContent.trim(); const kind = headers[i].dataset.kind || "radio"; if (label) config.scale.push({ value: i, label: label, kind: kind }); }
+          content.config = config;
+        }
+      }
+      if (type === "data-table") {
+        const table = el.querySelector("table");
+        if (table) {
+          const config = { columns: [], data: [] };
+          const firstRow = table.querySelector("tr");
+          if (firstRow) firstRow.querySelectorAll("th, td").forEach((cell) => { const text = cell.textContent.trim(); if (text) config.columns.push(text); });
+          const rows = table.querySelectorAll("tr:not(:first-child)");
+          rows.forEach((row) => { const rowData = []; row.querySelectorAll("td").forEach((cell) => rowData.push(cell.textContent.trim())); if (rowData.some((cell) => cell !== "")) config.data.push(rowData); });
+          content.config = config;
+        }
+      }
+      return content;
+    }
+
+    // ============================================
+    // COMPONENT OPERATIONS
+    // ============================================
+    function deleteComponent() {
+      if (selectedEl) {
+        const type = selectedEl.dataset.type;
+        selectedEl.remove();
+        selectedEl = null;
+        hideFloatingToolbar();
+        markDirty();
+        if (type === "section-break") {
+          setTimeout(() => { cleanupSectionBreaks(); updateSectionManager(); }, 100);
+        }
+        showToast("Đã xóa thành phần", "success");
+      }
+    }
+
+    function duplicateComponent() {
+      if (selectedEl) {
+        const clone = selectedEl.cloneNode(true);
+        clone.dataset.id = "comp_" + ++componentCounter;
+        clone.dataset.questionId = null;
+        clone.onclick = function (e) { if (!e.target.closest(".drag-handle") && !e.target.closest("button")) selectComponent(this); };
+        fixClonedElement(clone);
+        selectedEl.after(clone);
+        selectComponent(clone);
+        markDirty();
+        showToast("Đã sao chép thành phần", "success");
+      }
+    }
+
+    function fixClonedElement(el) {
+      el.querySelectorAll(".option-item .text-red-400").forEach((btn) => { btn.onclick = function (e) { e.stopPropagation(); removeOption(this); }; });
+      el.querySelectorAll('button[onclick*="addOption"]').forEach((btn) => { btn.onclick = function (e) { e.stopPropagation(); addOption(this); }; });
+      el.querySelectorAll(".rating-grid-controls button, .rating-grid-controls select").forEach((btn) => {
+        const onclick = btn.getAttribute("onclick");
+        if (onclick) { btn.removeAttribute("onclick"); btn.addEventListener("click", function (e) { e.stopPropagation(); eval(onclick); }); }
+      });
+    }
+
+    function moveUp() {
+      if (selectedEl && selectedEl.previousElementSibling) {
+        selectedEl.parentNode.insertBefore(selectedEl, selectedEl.previousElementSibling);
+        selectComponent(selectedEl);
+        markDirty();
+      }
+    }
+
+    function moveDown() {
+      if (selectedEl && selectedEl.nextElementSibling) {
+        selectedEl.parentNode.insertBefore(selectedEl.nextElementSibling, selectedEl);
+        selectComponent(selectedEl);
+        markDirty();
+      }
+    }
+
+    function toggleRequired() {
+      if (selectedEl) {
+        selectedEl.dataset.required = selectedEl.dataset.required === "true" ? "false" : "true";
+        updatePropsPanel(selectedEl);
+        markDirty();
+      }
+    }
+
+    function toggleVisibility() {
+      if (selectedEl) {
+        selectedEl.classList.toggle("hidden-section");
+        updatePropsPanel(selectedEl);
+        markDirty();
+      }
+    }
+
+    function deleteSelectedText() {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) { showToast("Vui lòng bôi đen văn bản cần xóa!", "warning"); return; }
+      const range = selection.getRangeAt(0);
+      const container = range.commonAncestorContainer;
+      const docSection = container.closest ? container.closest(".doc-section") : null;
+      if (!docSection) { showToast("Vui lòng chọn văn bản trong khảo sát!", "warning"); return; }
+      const activeElement = document.activeElement;
+      if (activeElement && (activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA")) {
+        const start = activeElement.selectionStart;
+        const end = activeElement.selectionEnd;
+        if (start !== end) {
+          const value = activeElement.value;
+          activeElement.value = value.substring(0, start) + value.substring(end);
+          activeElement.selectionStart = activeElement.selectionEnd = start;
+          markDirty();
+          showToast("Đã xóa văn bản đã chọn", "success");
+          return;
+        }
+      }
+      try {
+        const selectedText = selection.toString();
+        if (selectedText.trim() === "") { showToast("Vui lòng bôi đen văn bản cần xóa!", "warning"); return; }
+        const rangeClone = range.cloneRange();
+        range.deleteContents();
+        selection.removeAllRanges();
+        selection.addRange(rangeClone);
+        markDirty();
+        showToast("Đã xóa văn bản đã chọn", "success");
+      } catch (e) {
+        console.error("Lỗi khi xóa văn bản:", e);
+        showToast("Không thể xóa văn bản này", "error");
+      }
+    }
+
+    // ============================================
+    // ADD COMPONENT
+    // ============================================
+    function addComponent(type) {
+      const el = document.createElement("div");
+      el.className = "doc-section";
+      el.dataset.type = type;
+      el.dataset.id = "comp_" + ++componentCounter;
+      el.dataset.required = "false";
+      el.dataset.questionId = null;
+      el.onclick = function (e) { if (!e.target.closest(".drag-handle") && !e.target.closest("button")) selectComponent(this); };
+      const templates = getComponentTemplate(type);
+      el.innerHTML = templates;
+      // QUAN TRỌNG: gán mã section DUY NHẤT ngay khi tạo, không suy ra từ tiêu đề.
+      // Tiêu đề mặc định "PHẦN MỚI" từng bị regex /PHẦN\s+([A-Z])/ nhận nhầm thành mã "M",
+      // khiến nhiều section-break mới thêm bị coi là trùng mã và bị gộp/xoá khi lưu.
+      if (type === "section-break") {
+        el.dataset.sectionCode = generateUniqueSectionCode();
+      }
+      const activePage = getActivePage();
+      const content = activePage.querySelector(".page-content");
+      content.appendChild(el);
+      fixClonedElement(el);
+      lucide.createIcons();
+      markDirty();
+      selectComponent(el);
+      const componentLabel = components.find((c) => c.type === type)?.label || type;
+      showToast("Đã thêm: " + componentLabel, "success");
+      if (type === "section-break") {
+        setTimeout(updateSectionManager, 100);
+      }
+    }
+
+    // Sinh mã section nội bộ DUY NHẤT (không phụ thuộc tiêu đề, không bao giờ trùng).
+    // Mã này chỉ dùng để định danh ổn định trong lúc chỉnh sửa/lưu; không hiển thị cho người dùng.
+    function generateUniqueSectionCode() {
+      const existing = new Set(
+        Array.from(document.querySelectorAll('.doc-section[data-type="section-break"]'))
+          .map((el) => el.dataset.sectionCode)
+          .filter(Boolean)
+      );
+      let code;
+      do {
+        code = "sec_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+      } while (existing.has(code));
+      return code;
+    }
+
+    function getActivePage() {
+      const pages = document.querySelectorAll(".a4-page");
+      if (selectedEl) { const page = selectedEl.closest(".a4-page"); if (page) return page; }
+      return pages[pages.length - 1];
+    }
+
+    function getComponentTemplate(type) {
+      const hasDragHandle = ["single-choice", "multi-choice", "rating-grid", "data-table"].includes(type);
+      const dragHandleHtml = hasDragHandle ? '<span class="drag-handle">⠿</span>' : "";
+      const templates = {
+        title: `<span class="component-badge">Tiêu đề</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><h3 contenteditable="true" class="font-bold text-lg">TIÊU ĐỀ MỚI</h3><p contenteditable="true" class="text-sm text-gray-600" data-placeholder="Nhập phụ đề..."></p></div></div>`,
+        paragraph: `<span class="component-badge">Đoạn văn</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p contenteditable="true" class="text-sm text-gray-700 leading-relaxed" style="white-space: pre-wrap">Nhập nội dung đoạn văn...</p></div></div>`,
+        "short-text": `<span class="component-badge">Văn bản ngắn</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p contenteditable="true" class="text-sm mb-1 font-medium">Câu hỏi:</p><input class="survey-input text-sm" placeholder="Câu trả lời ngắn"></div></div>`,
+        "long-text": `<span class="component-badge">Văn bản dài</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p contenteditable="true" class="text-sm mb-1 font-medium">Câu hỏi:</p><div contenteditable="true" class="border border-gray-300 rounded-lg h-20 p-3 text-sm text-gray-400 hover:border-blue-400 focus:border-blue-500 transition">Nhập nội dung...</div></div></div>`,
+        "single-choice": `<span class="component-badge">Một chọn</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">Câu hỏi một lựa chọn:</p><div class="space-y-1 text-sm pl-4 options-container"><label class="flex items-center gap-2 option-item group"><input type="radio" name="q${Date.now()}"><span contenteditable="true" class="flex-1">Lựa chọn 1</span><button onclick="removeOption(this)" class="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition">×</button></label><label class="flex items-center gap-2 option-item group"><input type="radio" name="q${Date.now()}"><span contenteditable="true" class="flex-1">Lựa chọn 2</span><button onclick="removeOption(this)" class="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition">×</button></label><button onclick="addOption(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm lựa chọn</button></div></div></div>`,
+        "multi-choice": `<span class="component-badge">Nhiều chọn</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">Câu hỏi nhiều lựa chọn:</p><div class="space-y-1 text-sm pl-4 options-container"><label class="flex items-center gap-2 option-item group"><input type="checkbox"><span contenteditable="true" class="flex-1">Lựa chọn 1</span><button onclick="removeOption(this)" class="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition">×</button></label><label class="flex items-center gap-2 option-item group"><input type="checkbox"><span contenteditable="true" class="flex-1">Lựa chọn 2</span><button onclick="removeOption(this)" class="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition">×</button></label><button onclick="addOption(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm lựa chọn</button></div></div></div>`,
+        "rating-grid": `<span class="component-badge">Lưới đánh giá</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-semibold">Lưới đánh giá:</p><div class="rating-grid-controls mb-2 flex gap-2 flex-wrap text-xs"><button onclick="event.stopPropagation();addGridRow(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Hàng</button><button onclick="event.stopPropagation();removeGridRow(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Hàng</button><button onclick="event.stopPropagation();addGridCol(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Cột</button><button onclick="event.stopPropagation();removeGridCol(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Cột</button><select onchange="event.stopPropagation();changeGridType(this)" class="border border-gray-300 rounded px-1 py-0.5"><option value="yesno">Có/Không</option><option value="scale5">Thang 1-5</option><option value="scale10">Thang 1-10</option><option value="checklist">Danh sách tích chọn</option></select></div><table class="grid-table" data-grid-type="yesno"><thead><tr><th contenteditable="true">Tiêu chí</th><th contenteditable="true" data-kind="radio">Có</th><th contenteditable="true" data-kind="radio">Không</th></tr></thead><tbody><tr><td contenteditable="true">Tiêu chí 1</td><td><input type="radio" name="ng${Date.now()}"></td><td><input type="radio" name="ng${Date.now()}"></td></tr></tbody></table></div></div>`,
+        "data-table": `<span class="component-badge">Bảng</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">Bảng dữ liệu:</p><table class="w-full border-collapse border border-gray-300 text-xs"><tr><th class="border border-gray-300 p-1 bg-gray-50" contenteditable="true">Cột 1</th><th class="border border-gray-300 p-1 bg-gray-50" contenteditable="true">Cột 2</th><th class="border border-gray-300 p-1 bg-gray-50" contenteditable="true">Cột 3</th></tr><tr><td class="border border-gray-300 p-1" contenteditable="true"></td><td class="border border-gray-300 p-1" contenteditable="true"></td><td class="border border-gray-300 p-1" contenteditable="true"></td></tr></table><button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm hàng</button><button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1 ml-2">+ Thêm cột</button></div></div>`,
+        "personal-info": `<span class="component-badge">Thông tin</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><p class="font-semibold text-sm mb-2">THÔNG TIN CÁ NHÂN</p><div class="grid grid-cols-2 gap-2 text-sm"><div><span>Họ tên: </span><input class="survey-input" placeholder="..."></div><div><span>Email: </span><input class="survey-input" placeholder="..."></div><div><span>Điện thoại: </span><input class="survey-input" placeholder="..."></div><div><span>Đơn vị: </span><input class="survey-input" placeholder="..."></div></div></div></div>`,
+        "section-break": `<span class="component-badge">Phân cách</span><div class="flex items-start gap-2">${dragHandleHtml}<div class="flex-1"><hr class="my-3 border-gray-400"><h3 contenteditable="true" class="font-bold text-base text-gray-800">PHẦN MỚI</h3><p contenteditable="true" class="text-sm text-gray-600">Mô tả phần...</p></div></div>`,
+      };
+      return templates[type] || '<p contenteditable="true" class="text-sm">Thành phần mới</p>';
+    }
+
+    // ============================================
+    // OPTION FUNCTIONS
+    // ============================================
+    function addOption(btn) {
+      const container = btn.closest(".options-container") || btn.closest(".space-y-1");
+      const radioName = container.querySelector('input[type="radio"]')?.name || "q" + Date.now();
+      const label = document.createElement("label");
+      label.className = "flex items-center gap-2 option-item group";
+      const inputType = container.querySelector('input[type="checkbox"]') ? "checkbox" : "radio";
+      label.innerHTML = `<input type="${inputType}" name="${radioName}"><span contenteditable="true" class="flex-1">Lựa chọn mới</span><button onclick="removeOption(this)" class="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition">×</button>`;
+      container.insertBefore(label, btn);
+      markDirty();
+      lucide.createIcons();
+    }
+
+    function removeOption(btn) {
+      const container = btn.closest(".options-container") || btn.closest(".space-y-1");
+      const items = container.querySelectorAll(".option-item");
+      if (items.length > 2) {
+        btn.closest(".option-item").remove();
+        markDirty();
+      } else {
+        showToast("Cần ít nhất 2 lựa chọn!", "warning");
+      }
+    }
+
+    function addOptionToSelected() {
+      if (selectedEl) {
+        const btn = selectedEl.querySelector('button[onclick*="addOption"]');
+        if (btn) addOption(btn);
+      }
+    }
+
+    // ============================================
+    // TABLE FUNCTIONS
+    // ============================================
+    function addTableRow(btn) {
+      const table = btn.closest(".doc-section").querySelector("table");
+      if (!table) return;
+      const cols = table.querySelector("tr")?.children?.length || 0;
+      const row = document.createElement("tr");
+      for (let i = 0; i < cols; i++) { const td = document.createElement("td"); td.className = "border border-gray-300 p-1"; td.contentEditable = true; row.appendChild(td); }
+      table.appendChild(row);
+      reattachEvents();
+      markDirty();
+      showToast("Đã thêm hàng mới", "success");
+    }
+
+    function addTableCol(btn) {
+      const table = btn.closest(".doc-section").querySelector("table");
+      if (!table) return;
+      table.querySelectorAll("tr").forEach((tr) => {
+        const isHeader = tr.parentElement?.tagName === "THEAD";
+        const td = document.createElement(isHeader ? "th" : "td");
+        td.className = "border border-gray-300 p-1";
+        td.contentEditable = true;
+        tr.appendChild(td);
+      });
+      reattachEvents();
+      markDirty();
+      showToast("Đã thêm cột mới", "success");
+    }
+
+    function addTableRowFromProps() {
+      if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addTableRow"]'); if (btn) addTableRow(btn); }
+    }
+    function addTableColFromProps() {
+      if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addTableCol"]'); if (btn) addTableCol(btn); }
+    }
+
+    // ============================================
+    // RATING GRID FUNCTIONS
+    // ============================================
+    function getGridTable(el) { return el.closest ? el.closest(".doc-section").querySelector(".grid-table") : el.closest(".doc-section").querySelector(".grid-table"); }
+
+    function addGridRow(btn) {
+      const table = getGridTable(btn);
+      if (!table) return;
+      const headerCells = Array.from(table.querySelectorAll("thead th"));
+      const tbody = table.querySelector("tbody");
+      if (!tbody) return;
+      const rIdx = tbody.children.length + 1;
+      const timestamp = Date.now();
+      let row = document.createElement("tr");
+      let td = document.createElement("td");
+      td.contentEditable = true;
+      td.textContent = "Tiêu chí mới";
+      row.appendChild(td);
+      for (let i = 1; i < headerCells.length; i++) {
+        const kind = headerCells[i].dataset.kind || "radio";
+        td = document.createElement("td");
+        td.innerHTML = gridInputHtml(kind, `g${timestamp}_${rIdx}`);
+        row.appendChild(td);
+      }
+      tbody.appendChild(row);
+      reattachEvents();
+      markDirty();
+      showToast("Đã thêm hàng mới", "success");
+    }
+
+    function removeGridRow(btn) {
+      const tbody = getGridTable(btn)?.querySelector("tbody");
+      if (!tbody) return;
+      if (tbody.children.length > 1) { tbody.lastElementChild.remove(); markDirty(); showToast("Đã xóa hàng", "success"); }
+      else showToast("Cần ít nhất 1 hàng!", "warning");
+    }
+
+    function addGridCol(btn) {
+      const table = getGridTable(btn);
+      if (!table) return;
+      const timestamp = Date.now();
+      const thead = table.querySelector("thead");
+      const tbody = table.querySelector("tbody");
+      if (!thead || !tbody) return;
+      thead.querySelector("tr").insertAdjacentHTML("beforeend", '<th contenteditable="true" data-kind="radio">Mới</th>');
+      tbody.querySelectorAll("tr").forEach((r, i) => { r.insertAdjacentHTML("beforeend", `<td>${gridInputHtml("radio", `g${timestamp}_${i + 1}`)}</td>`); });
+      reattachEvents();
+      markDirty();
+      showToast("Đã thêm cột mới", "success");
+    }
+
+    function removeGridCol(btn) {
+      const table = getGridTable(btn);
+      if (!table) return;
+      const thead = table.querySelector("thead");
+      const tbody = table.querySelector("tbody");
+      if (!thead || !tbody) return;
+      const hdr = thead.querySelector("tr");
+      if (hdr.children.length > 2) { hdr.lastElementChild.remove(); tbody.querySelectorAll("tr").forEach((r) => r.lastElementChild.remove()); markDirty(); showToast("Đã xóa cột", "success"); }
+      else showToast("Cần ít nhất 2 cột!", "warning");
+    }
+
+    function changeGridType(sel) {
+      const table = getGridTable(sel);
+      if (!table) return;
+      const type = sel.value;
+      const hdr = table.querySelector("thead tr");
+      const tbody = table.querySelector("tbody");
+      if (!hdr || !tbody) return;
+      const criteria = hdr.children[0];
+      let cols = [];
+      let kind = "radio";
+      if (type === "yesno") cols = ["Có", "Không"];
+      else if (type === "scale5") cols = ["1", "2", "3", "4", "5"];
+      else if (type === "checklist") { cols = ["Có"]; kind = "checkbox"; }
+      else if (type === "scale10") cols = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+      else cols = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+      hdr.innerHTML = "";
+      hdr.appendChild(criteria);
+      cols.forEach((c) => { const th = document.createElement("th"); th.contentEditable = true; th.textContent = c; th.dataset.kind = kind; hdr.appendChild(th); });
+      const timestamp = Date.now();
+      const rows = tbody.querySelectorAll("tr");
+      rows.forEach((r, ri) => { const firstTd = r.children[0]; r.innerHTML = ""; r.appendChild(firstTd); cols.forEach(() => { const td = document.createElement("td"); td.innerHTML = gridInputHtml(kind, `gr_${timestamp}_${ri}`); r.appendChild(td); }); });
+      table.dataset.gridType = type;
+      const scaleData = cols.map((label, index) => ({ value: index + 1, label: label, kind }));
+      table.dataset.scaleData = JSON.stringify(scaleData);
+      reattachEvents();
+      markDirty();
+      showToast("Đã đổi loại lưới đánh giá", "success");
+    }
+
+    function addGridRowFromProps() { if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addGridRow"]'); if (btn) addGridRow(btn); } }
+    function addGridColFromProps() { if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addGridCol"]'); if (btn) addGridCol(btn); } }
+
+    // ============================================
+    // SAVE / PREVIEW / EXPORT / PUBLISH
+    // ============================================
+    function saveSurvey() { SurveyState.save(); }
+
+    function previewSurvey() {
+      const content = document.getElementById("pages-container").innerHTML;
+      const win = window.open("", "_blank");
+      win.document.write(`
+        <html><head><title>Xem trước khảo sát</title>
+        <style>
+          body { padding: 40px; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+          .preview-page { width: 210mm; min-height: 297mm; padding: 20mm 18mm; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.12); font-family: 'Source Sans Pro', sans-serif; }
+          .survey-input { border-bottom: 1px solid #9aa0a6; padding: 4px 0; width: 100%; }
+          .grid-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+          .grid-table th, .grid-table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: center; }
+          .grid-table th { background: #f3f4f6; }
+          .hidden-section { display: none; }
+          .component-badge, .drag-handle, .rating-grid-controls, .floating-toolbar, .rte-bar { display: none !important; }
+          .doc-section { padding: 8px 6px; margin-bottom: 8px; }
+          .page-number { text-align: center; font-size: 11px; color: #9aa0a6; margin-top: 30px; padding-top: 10px; border-top: 1px solid #e8eaed; }
+        </style>
+        </head>
+        <body>
+          ${content.replace(/a4-page/g, "preview-page")}
+          <script>
+            document.querySelectorAll('[contenteditable="true"]').forEach(el => el.contentEditable = false);
+            document.querySelectorAll('.survey-input').forEach(el => el.disabled = true);
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(el => el.disabled = true);
+          <\/script>
+        </body></html>
+      `);
+      win.document.close();
+    }
+
+    function exportSurvey() {
+      const content = document.getElementById("pages-container").innerHTML;
+      const blob = new Blob([
+        `<!DOCTYPE html>
+        <html><head><title>Khảo sát</title>
+        <style>
+          body { padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 30px; background: #f5f5f5; }
+          .page { width: 210mm; min-height: 297mm; padding: 20mm 18mm; background: white; box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+          .survey-input { border-bottom: 1px solid #9aa0a6; padding: 4px 0; width: 100%; }
+          .grid-table { width: 100%; border-collapse: collapse; }
+          .grid-table th, .grid-table td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: center; }
+          .grid-table th { background: #f3f4f6; }
+          .hidden-section { display: none; }
+          .component-badge, .drag-handle, .rating-grid-controls, .floating-toolbar { display: none !important; }
+          .page-number { text-align: center; font-size: 11px; color: #9aa0a6; margin-top: 30px; padding-top: 10px; border-top: 1px solid #e8eaed; }
+        </style>
+        </head>
+        <body>
+          ${content.replace(/a4-page/g, "page")}
+        </body></html>`
+      ], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `khao_sat_${new Date().toISOString().slice(0, 10)}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Đã xuất khảo sát!", "success");
+    }
+
+    async function publishSurvey() {
+      if (!SurveyState.surveyId) {
+        showToast("Vui lòng lưu khảo sát trước khi phát hành!", "warning");
+        return;
+      }
+      if (confirm("Bạn có chắc muốn phát hành khảo sát này?")) {
+        try {
+          const result = await API.publishSurvey(SurveyState.surveyId);
+          SurveyState.surveyData.status = result.status;
+          document.getElementById("survey-status-display").textContent = result.status;
+          document.getElementById("survey-status-display").className = `font-medium ${result.status === "active" ? "text-green-600" : "text-gray-600"}`;
+          showToast(result.message, "success");
+        } catch (error) {
+          showToast("Lỗi khi phát hành: " + error.message, "error");
+        }
+      }
+    }
+
+    // ============================================
+    // IMPORT WORD
+    // ============================================
+    function importWord() {
+      document.getElementById("wordFileInput").click();
+    }
+
+    const CHECKBOX_RE = /[☐☑☒□]/g;
+    const CHECKBOX_TEST_RE = /[☐☑☒□]/;
+    const MULTI_OPTION_LINE_RE = CHECKBOX_TEST_RE;
+
+    function handleWordImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const arrayBuffer = e.target.result;
+        mammoth.convertToHtml({ arrayBuffer: arrayBuffer }).then((result) => {
+          const html = result.value;
+          const activePage = getActivePage();
+          const content = activePage.querySelector(".page-content");
+          const temp = document.createElement("div");
+          temp.innerHTML = html;
+          temp.querySelectorAll('a[id^="_Toc"], a[name]').forEach((a) => { if (!a.textContent.trim()) a.remove(); });
+          const blocks = parseWordBlocks(temp);
+          blocks.forEach((block) => appendImportedBlock(content, block));
+          reattachEvents();
+          markDirty();
+          updateSectionManager();
+          if (result.messages && result.messages.length) console.warn("Mammoth messages:", result.messages);
+          showToast(`Đã import ${blocks.length} thành phần từ Word!`, "success");
+        }).catch((err) => { showToast("Lỗi import: " + err.message, "error"); });
+      };
+      reader.readAsArrayBuffer(file);
+      event.target.value = "";
+    }
+
+    function parseWordBlocks(root) {
+      const children = Array.from(root.children);
+      const n = children.length;
+      const rawItems = children.map((el) => {
+        const tag = el.tagName.toLowerCase();
+        const text = el.textContent.trim();
+        return { el, tag, text, isTable: tag === "table", isEmpty: text === "", isHeading: tag === "h1" || tag === "h2" || tag === "h3" || tag === "h4" || isWholeLineBold(el), isCheckboxLine: !el.querySelector("table") && CHECKBOX_TEST_RE.test(text) && text.replace(CHECKBOX_RE, "").trim().length > 0 };
+      });
+      const blocks = [];
+      let i = 0;
+      let pendingHeading = null;
+      let pendingHeadingNote = null;
+      // Tiêu đề trông như một "PHẦN"/"MỤC" thật (mốc phân chia section trong file Word)
+      // sẽ được nhập thành một section-break thật, để cấu trúc phần được giữ lại sau khi lưu.
+      // Các tiêu đề khác (in hoa toàn dòng, chữ đậm cả dòng...) vẫn nhập thành "title" như cũ.
+      const isSectionMarkerHeading = (text) => /^(PHẦN|MỤC)\s+\S/i.test(text);
+      const flushPendingHeadingAsTitle = () => {
+        if (pendingHeading) {
+          blocks.push({ type: isSectionMarkerHeading(pendingHeading) ? "section-break" : "title", text: pendingHeading });
+          pendingHeading = null;
+        }
+        if (pendingHeadingNote) { blocks.push({ type: "paragraph", text: pendingHeadingNote }); pendingHeadingNote = null; }
+      };
+      while (i < n) {
+        const item = rawItems[i];
+        if (item.isTable) {
+          const heading = pendingHeading; const note = pendingHeadingNote; pendingHeading = null; pendingHeadingNote = null;
+          const tableBlock = parseWordTable(item.el, heading); tableBlock.note = note || ""; blocks.push(tableBlock); i++; continue;
+        }
+        if (item.isEmpty) { i++; continue; }
+        if (item.isCheckboxLine) {
+          const heading = pendingHeading; const note = pendingHeadingNote; pendingHeading = null; pendingHeadingNote = null;
+          const options = []; let j = i;
+          while (j < n && rawItems[j].isCheckboxLine) {
+            const lineOptions = rawItems[j].text.split(CHECKBOX_RE).map((s) => s.trim()).filter(Boolean);
+            options.push(...lineOptions); j++;
+          }
+          const finalOptions = options.length ? options : ["Lựa chọn 1", "Lựa chọn 2"];
+          // Nếu câu hỏi chỉ có đúng 2 lựa chọn dạng nhị phân (Có/Không, Yes/No...)
+          // thì đây thực chất là câu hỏi 1 lựa chọn, không phải nhiều lựa chọn.
+          const isBinaryYesNo = finalOptions.length === 2 && finalOptions.every((o) => /^(có|không|yes|no)$/i.test(o.trim()));
+          blocks.push({ type: isBinaryYesNo ? "single-choice" : "multi-choice", question: heading || "Lựa chọn:", options: finalOptions, note: note || "" });
+          i = j; continue;
+        }
+        const text = item.text;
+        const numberedMatch = text.match(/^((?:\d+|[a-zđA-ZĐ])[\.\)]\s+.+)$/);
+        if (item.isHeading || looksLikeHeading(text)) {
+          if (numberedMatch) {
+            let j = i + 1; let blankFollow = false;
+            while (j < n && rawItems[j].isEmpty && children[j].textContent.length > 0) { blankFollow = true; j++; }
+            if (blankFollow) { flushPendingHeadingAsTitle(); blocks.push({ type: "long-text", question: numberedMatch[1] }); i = j; continue; }
+          }
+          flushPendingHeadingAsTitle(); pendingHeading = text; i++; continue;
+        }
+        if (pendingHeading && !item.isHeading) {
+          const isShortCaption = text.length > 0 && text.length <= 120 && !numberedMatch;
+          const nextIsTableOrCheckbox = i + 1 < n && (rawItems[i + 1].isTable || rawItems[i + 1].isCheckboxLine);
+          if (isShortCaption && nextIsTableOrCheckbox) { pendingHeadingNote = pendingHeadingNote ? pendingHeadingNote + " " + text : text; i++; continue; }
+        }
+        flushPendingHeadingAsTitle();
+        const labelMatch = text.match(/^([^:：]{2,60})[:：]\s*$/);
+        if (labelMatch) { blocks.push({ type: "short-text", label: labelMatch[1].trim() }); i++; continue; }
+        if (numberedMatch) {
+          let j = i + 1; let blankFollow = false;
+          while (j < n && rawItems[j].isEmpty && children[j].textContent.length > 0) { blankFollow = true; j++; }
+          if (blankFollow) { blocks.push({ type: "long-text", question: numberedMatch[1] }); i = j; continue; }
+        }
+        if (/^[-•]\s+\S/.test(text)) {
+          const lines = [text.replace(/^[-•]\s+/, "")]; let j = i + 1;
+          while (j < n && !rawItems[j].isEmpty && /^[-•]\s+\S/.test(rawItems[j].text)) { lines.push(rawItems[j].text.replace(/^[-•]\s+/, "")); j++; }
+          blocks.push({ type: "paragraph", text: lines.map((l) => "• " + l).join("\n") }); i = j; continue;
+        }
+        blocks.push({ type: "paragraph", text }); i++;
+      }
+      flushPendingHeadingAsTitle();
+      return blocks;
+    }
+
+    function isWholeLineBold(el) {
+      const text = el.textContent.trim();
+      if (!text) return false;
+      let boldText = "";
+      el.querySelectorAll("strong, b").forEach((n) => { boldText += n.textContent; });
+      return boldText.replace(/\s+/g, "") === text.replace(/\s+/g, "") && boldText.trim().length > 0;
+    }
+
+    function looksLikeHeading(text) {
+      if (!text || text.length > 80) return false;
+      if (/^(PHẦN|MỤC)\s/i.test(text)) return true;
+      if (/^[A-ZĐ]\.\s+\S/.test(text)) return true;
+      const isAllCaps = text === text.toUpperCase() && /[A-ZĐ]/.test(text);
+      if (isAllCaps && text.split(" ").length >= 2) return true;
+      return false;
+    }
+
+    function parseWordTable(tableEl, heading) {
+      const rows = Array.from(tableEl.querySelectorAll("tr")).map((tr) => Array.from(tr.children).map((td) => td.textContent.trim()));
+      if (rows.length === 0) return { type: "data-table", question: heading, rows: [["Cột 1"]] };
+      const header = rows[0]; const bodyRows = rows.slice(1); const numCols = header.length;
+      const hasAnyRealCheckbox = bodyRows.some((r) => r.some((cell) => CHECKBOX_TEST_RE.test(cell)));
+      if (!hasAnyRealCheckbox) return { type: "data-table", question: heading, rows };
+      function colCheckboxRatio(colIdx) { let checkbox = 0, total = 0; bodyRows.forEach((r) => { const cell = r[colIdx] ?? ""; total++; if (CHECKBOX_TEST_RE.test(cell) || cell === "") checkbox++; }); return total > 0 ? checkbox / total : 0; }
+      let checkboxStartCol = -1;
+      for (let c = 1; c < numCols; c++) { let allRestAreCheckbox = true; for (let c2 = c; c2 < numCols; c2++) { if (colCheckboxRatio(c2) <= 0.6) { allRestAreCheckbox = false; break; } } if (allRestAreCheckbox) { checkboxStartCol = c; break; } }
+      if (checkboxStartCol === -1) return { type: "data-table", question: heading, rows };
+      let criteriaCol = checkboxStartCol - 1;
+      const looksLikeOrdinal = (colIdx) => bodyRows.every((r) => /^\d+$/.test((r[colIdx] ?? "").trim()));
+      while (criteriaCol > 0 && looksLikeOrdinal(criteriaCol)) criteriaCol--;
+      // Xác định từng cột trong vùng tích chọn là cột tích thật (có ký hiệu ☐/☑...)
+      // hay cột để trống hoàn toàn (dành cho việc ghi/nhập dữ liệu tự do, ví dụ "Khối lượng").
+      const regionCols = [];
+      for (let c = checkboxStartCol; c < numCols; c++) {
+        const label = (header[c] || "").trim();
+        const hasReal = bodyRows.some((r) => CHECKBOX_TEST_RE.test(r[c] ?? ""));
+        regionCols.push({ label, hasReal });
+      }
+      const realCount = regionCols.filter((c) => c.hasReal).length;
+      let cols, gridType;
+      if (realCount >= 2) {
+        // Lưới thật: nhiều cột tích loại trừ nhau theo từng hàng (vd Có/Không, thang điểm 1-5).
+        // Cột nào hoàn toàn trống (không có ký hiệu tích) trong vùng này được coi là cột nhập text.
+        const realLabels = regionCols.filter((c) => c.hasReal).map((c) => c.label);
+        const isYesNo = realLabels.length >= 1 && realLabels.every((h) => /^(Có|Không|Yes|No|Cần)$/i.test(h));
+        const isScale = realLabels.length >= 3 && realLabels.every((h) => /^\d+$/.test(h));
+        gridType = isYesNo ? "yesno" : realLabels.length === 10 && isScale ? "scale10" : isScale ? "scale5" : "yesno";
+        cols = regionCols.map((c) => ({ label: c.label, kind: c.hasReal ? "radio" : "text" }));
+      } else {
+        // Chỉ có 1 cột tích thật (vd "Có dữ liệu") -> đây là kiểu tích chọn độc lập theo từng hàng
+        // (checkbox, không loại trừ nhau), các cột trống còn lại (vd "Khối lượng") là cột nhập text.
+        gridType = "checklist";
+        cols = regionCols.map((c) => ({ label: c.label, kind: c.hasReal ? "checkbox" : "text" }));
+      }
+      if (!cols.length) cols = [{ label: "Có", kind: "checkbox" }];
+      return { type: "rating-grid", question: heading || "Đánh giá theo từng tiêu chí:", gridType, criteriaLabel: header[criteriaCol] || "Tiêu chí", cols, criteria: bodyRows.map((r) => r[criteriaCol]).filter(Boolean) };
+    }
+
+    function appendImportedBlock(content, block) {
+      const el = document.createElement("div");
+      el.className = "doc-section"; el.dataset.id = "comp_" + ++componentCounter; el.dataset.required = "false"; el.dataset.questionId = null;
+      const noteHtml = `<p class="component-note text-xs text-gray-400 italic mt-1.5" contenteditable="true" data-placeholder="Thêm ghi chú/hướng dẫn (không bắt buộc)...">${block.note ? escapeHtml(block.note) : ""}</p>`;
+      if (block.type === "section-break") {
+        el.dataset.type = "section-break";
+        // Mỗi section-break nhập từ Word PHẢI có mã riêng, không trùng với section khác,
+        // và không suy ra từ chữ trong tiêu đề (xem ghi chú ở addComponent/buildSurveyData).
+        el.dataset.sectionCode = generateUniqueSectionCode();
+        // Tách "PHẦN A: Mô tả..." thành tiêu đề + mô tả nếu có dấu hai chấm/gạch ngang
+        const headingMatch = block.text.match(/^(.+?)[\:\-–—]\s*(.+)$/);
+        const sectionTitle = headingMatch ? headingMatch[1].trim() : block.text;
+        const sectionDesc = headingMatch ? headingMatch[2].trim() : "";
+        el.innerHTML = `<span class="component-badge">Phân cách (Word)</span><div class="flex items-start gap-2"><div class="flex-1"><hr class="my-3 border-gray-400"><h3 contenteditable="true" class="font-bold text-base text-gray-800">${escapeHtml(sectionTitle)}</h3><p contenteditable="true" class="text-sm text-gray-600">${escapeHtml(sectionDesc)}</p>${noteHtml}</div></div>`;
+      } else if (block.type === "title") {
+        el.dataset.type = "title";
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><h3 contenteditable="true" class="font-bold text-base text-gray-800">${escapeHtml(block.text)}</h3>${noteHtml}</div></div>`;
+      } else if (block.type === "paragraph") {
+        el.dataset.type = "paragraph";
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm text-gray-700 leading-relaxed" style="white-space: pre-wrap">${escapeHtml(block.text)}</p>${noteHtml}</div></div>`;
+      } else if (block.type === "short-text") {
+        el.dataset.type = "short-text";
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-1 font-medium">${escapeHtml(block.label)}:</p><input class="survey-input text-sm" placeholder="Câu trả lời ngắn">${noteHtml}</div></div>`;
+      } else if (block.type === "long-text") {
+        el.dataset.type = "long-text";
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-1 font-medium">${escapeHtml(block.question)}</p><div contenteditable="true" class="border border-gray-300 rounded-lg h-20 p-3 text-sm text-gray-400 hover:border-blue-400 focus:border-blue-500 transition">Nhập nội dung...</div>${noteHtml}</div></div>`;
+      } else if (block.type === "single-choice") {
+        el.dataset.type = "single-choice";
+        const groupName = "q" + ++componentCounter + "_" + Date.now();
+        const optionsHtml = buildOptionsHtml(block.options, "radio", groupName);
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">${escapeHtml(block.question)}</p><div class="space-y-1 text-sm pl-4 options-container">${optionsHtml}<button onclick="addOption(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm lựa chọn</button></div>${noteHtml}</div></div>`;
+      } else if (block.type === "multi-choice") {
+        el.dataset.type = "multi-choice";
+        const optionsHtml = buildOptionsHtml(block.options, "checkbox", "");
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">${escapeHtml(block.question)}</p><div class="space-y-1 text-sm pl-4 options-container">${optionsHtml}<button onclick="addOption(this)" class="text-xs text-blue-600 hover:text-blue-800 mt-1">+ Thêm lựa chọn</button></div>${noteHtml}</div></div>`;
+      } else if (block.type === "rating-grid") {
+        el.dataset.type = "rating-grid";
+        const timestamp = Date.now();
+        const headerHtml = `<th contenteditable="true">${escapeHtml(block.criteriaLabel)}</th>` + block.cols.map((c) => `<th contenteditable="true" data-kind="${c.kind}">${escapeHtml(c.label)}</th>`).join("");
+        const bodyHtml = (block.criteria.length ? block.criteria : ["Tiêu chí 1"]).map((crit, ri) => {
+          const cells = block.cols.map((c) => `<td>${gridInputHtml(c.kind, `g${timestamp}_${ri}`)}</td>`).join("");
+          return `<tr><td contenteditable="true">${escapeHtml(crit)}</td>${cells}</tr>`;
+        }).join("");
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-semibold">${escapeHtml(block.question)}</p><div class="rating-grid-controls mb-2 flex gap-2 flex-wrap text-xs"><button onclick="event.stopPropagation();addGridRow(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Hàng</button><button onclick="event.stopPropagation();removeGridRow(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Hàng</button><button onclick="event.stopPropagation();addGridCol(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Cột</button><button onclick="event.stopPropagation();removeGridCol(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Cột</button><select onchange="event.stopPropagation();changeGridType(this)" class="border border-gray-300 rounded px-1 py-0.5"><option value="yesno" ${block.gridType === "yesno" ? "selected" : ""}>Có/Không</option><option value="scale5" ${block.gridType === "scale5" ? "selected" : ""}>Thang 1-5</option><option value="scale10" ${block.gridType === "scale10" ? "selected" : ""}>Thang 1-10</option><option value="checklist" ${block.gridType === "checklist" ? "selected" : ""}>Danh sách tích chọn</option></select></div><table class="grid-table" data-grid-type="${block.gridType}"><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>${noteHtml}</div></div>`;
+      } else if (block.type === "data-table") {
+        el.dataset.type = "data-table";
+        const rowsHtml = block.rows.map((row, ri) => {
+          const cellTag = ri === 0 ? "th" : "td";
+          const cellClass = ri === 0 ? "border border-gray-300 p-1 bg-gray-50" : "border border-gray-300 p-1";
+          const cells = row.map((c) => `<${cellTag} class="${cellClass}" contenteditable="true">${escapeHtml(c)}</${cellTag}>`).join("");
+          return `<tr>${cells}</tr>`;
+        }).join("");
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">${escapeHtml(block.question || "Bảng dữ liệu:")}</p><table class="w-full border-collapse border border-gray-300 text-xs">${rowsHtml}</table><div class="mt-1 table-controls"><button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800">+ Thêm hàng</button><button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 ml-2">+ Thêm cột</button></div>${noteHtml}</div></div>`;
+      } else {
+        el.dataset.type = "paragraph";
+        el.innerHTML = `<div class="flex-1"><p contenteditable="true" class="text-sm">${escapeHtml(block.text || "")}</p>${noteHtml}</div>`;
+      }
+      content.appendChild(el);
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str == null ? "" : String(str);
+      return div.innerHTML;
+    }
+
+    // ============================================
+    // "KHÁC" (OTHER) OPTION SUPPORT
+    // Cho phép lựa chọn "Khác" trong câu hỏi 1/nhiều lựa chọn có thêm
+    // một ô nhập văn bản tự do đi kèm.
+    // ============================================
+    function isOtherOptionLabel(text) {
+      return /^kh[aá]c\b/i.test((text || "").trim());
+    }
+
+    function buildOptionRowHtml(optText, inputType, groupName) {
+      const isOther = isOtherOptionLabel(optText);
+      const otherInputHtml = isOther
+        ? `<input type="text" class="survey-input other-input text-xs flex-1 ml-1" placeholder="Nhập nội dung khác..." onfocus="onOtherInputFocus(this)">`
+        : "";
+      return `<label class="flex items-center gap-2 option-item group"><input type="${inputType}" name="${groupName}"><span contenteditable="true" class="flex-1">${escapeHtml(optText)}</span>${otherInputHtml}<button onclick="removeOption(this)" class="text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition">×</button></label>`;
+    }
+
+    function buildOptionsHtml(options, inputType, groupName) {
+      return options.map((opt) => buildOptionRowHtml(opt, inputType, groupName)).join("");
+    }
+
+    // Khi người dùng bấm vào ô nhập "Khác", tự động tích chọn ô checkbox/radio tương ứng
+    function onOtherInputFocus(input) {
+      const label = input.closest(".option-item");
+      if (!label) return;
+      const box = label.querySelector('input[type="radio"], input[type="checkbox"]');
+      if (box && !box.checked) { box.checked = true; markDirty(); }
+    }
+
+    // ============================================
+    // LƯỚI ĐÁNH GIÁ / BẢNG TÍCH CHỌN LINH HOẠT
+    // Mỗi cột trong lưới có thể là: "radio" (chọn 1 trong các cột loại trừ nhau),
+    // "checkbox" (tích chọn độc lập, ví dụ cột "Có dữ liệu"), hoặc
+    // "text" (cột để nhập dữ liệu tự do, ví dụ cột "Khối lượng").
+    // ============================================
+    function gridInputHtml(kind, radioName) {
+      if (kind === "text") return `<input type="text" class="survey-input text-xs w-full text-center" placeholder="Nhập...">`;
+      if (kind === "checkbox") return `<input type="checkbox">`;
+      return `<input type="radio" name="${radioName}">`;
+    }
+
+    // ============================================
+    // SETTINGS FUNCTIONS
+    // ============================================
+    function changePageSize(size) {
+      const pages = document.querySelectorAll(".a4-page");
+      pages.forEach((p) => { if (size === "A4") p.removeAttribute("data-size"); else p.dataset.size = "Letter"; });
+      showToast("Đã đổi khổ giấy: " + size, "success");
+      scheduleRepaginate();
+    }
+
+    function changeBrandColor(color) {
+      document.querySelectorAll(".doc-section.selected-component").forEach((el) => { el.style.outlineColor = color; });
+      showToast("Đã đổi màu thương hiệu", "success");
+    }
+
+    function changeGlobalFont(font) {
+      document.querySelectorAll(".a4-page").forEach((p) => { p.style.fontFamily = font; });
+      showToast("Đã đổi font: " + font, "success");
+    }
+
+    // ============================================
+    // MARK DIRTY / AUTO-SAVE
+    // ============================================
+    function markDirty() {
+      SurveyState.isDirty = true;
+      const badge = document.getElementById("auto-save-indicator");
+      badge.innerHTML = '<i data-lucide="clock" class="w-3 h-3"></i> Đang soạn...';
+      badge.classList.remove("hidden");
+      lucide.createIcons();
+      clearTimeout(dirtyTimeout);
+      dirtyTimeout = setTimeout(() => { SurveyState.save(); }, 30000);
+      scheduleRepaginate();
+    }
+
+    // ============================================
+    // LOADING OVERLAY
+    // ============================================
+    function showLoading(show) {
+      const overlay = document.getElementById("loading-overlay");
+      if (show) overlay.classList.remove("hidden");
+      else overlay.classList.add("hidden");
+    }
+
+    // ============================================
+    // TOAST NOTIFICATION
+    // ============================================
+    function showToast(message, type = "success") {
+      const existing = document.querySelector(".toast");
+      if (existing) existing.remove();
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.style.animation = "fadeOut 0.3s ease forwards"; setTimeout(() => toast.remove(), 300); }, 2500);
+    }
+
+    // ============================================
+    // EVENT RE-ATTACHMENT
+    // ============================================
+    function reattachEvents() {
+      document.querySelectorAll(".doc-section").forEach((el) => {
+        el.onclick = function (e) {
+          const selection = window.getSelection();
+          if (selection && !selection.isCollapsed) return;
+          if (!e.target.closest(".drag-handle") && !e.target.closest("button")) selectComponent(this);
+        };
+        el.ondblclick = function (e) {
+          const editable = this.querySelector('[contenteditable="true"]');
+          if (editable) { editable.focus(); const range = document.createRange(); range.selectNodeContents(editable); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range); }
+        };
+        el.querySelectorAll(".option-item .text-red-400").forEach((btn) => { btn.onclick = function (e) { e.stopPropagation(); removeOption(this); }; });
+        el.querySelectorAll('button[onclick*="addOption"]').forEach((btn) => { btn.onclick = function (e) { e.stopPropagation(); addOption(this); }; });
+        el.querySelectorAll(".rating-grid-controls button, .rating-grid-controls select").forEach((btn) => {
+          const onclick = btn.getAttribute("onclick");
+          if (onclick) { btn.removeAttribute("onclick"); btn.addEventListener("click", function (e) { e.stopPropagation(); eval(onclick); }); }
+        });
+        el.querySelectorAll('button[onclick*="addTableRow"]').forEach((btn) => {
+          const onclick = btn.getAttribute("onclick");
+          if (onclick) { btn.removeAttribute("onclick"); btn.addEventListener("click", function (e) { e.stopPropagation(); addTableRow(this); }); }
+        });
+        el.querySelectorAll('button[onclick*="addTableCol"]').forEach((btn) => {
+          const onclick = btn.getAttribute("onclick");
+          if (onclick) { btn.removeAttribute("onclick"); btn.addEventListener("click", function (e) { e.stopPropagation(); addTableCol(this); }); }
+        });
+        const handle = el.querySelector(".drag-handle");
+        if (handle) {
+          handle.removeEventListener("mousedown", handle._dragListener);
+          const dragListener = function (e) { e.stopPropagation(); startDrag(e, el); };
+          handle._dragListener = dragListener;
+          handle.addEventListener("mousedown", dragListener);
+        }
+        el.querySelectorAll(".survey-input").forEach((input) => { input.onchange = function (e) { e.stopPropagation(); markDirty(); }; input.oninput = function (e) { e.stopPropagation(); markDirty(); }; });
+        el.querySelectorAll('[contenteditable="true"]').forEach((editable) => {
+          editable.oninput = function (e) { e.stopPropagation(); markDirty(); };
+          editable.onblur = function (e) { if (selectedEl === el) updatePropsPanel(el); };
+        });
+        el.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => { input.onclick = function (e) { e.stopPropagation(); }; input.onchange = function (e) { e.stopPropagation(); markDirty(); }; });
+        el.onkeydown = function (e) {
+          if (e.ctrlKey && e.key === "s") { e.preventDefault(); saveSurvey(); }
+          if (e.key === "Escape") { e.preventDefault(); if (selectedEl) { selectedEl.classList.remove("selected-component"); selectedEl = null; hideFloatingToolbar(); } }
+        };
+        el.oncontextmenu = function (e) { e.stopPropagation(); return true; };
+      });
+      document.addEventListener("paste", function (e) { if (e.target.closest && e.target.closest(".doc-section")) markDirty(); });
+      document.addEventListener("cut", function (e) { if (e.target.closest && e.target.closest(".doc-section")) markDirty(); });
+      lucide.createIcons();
+    }
+
+    // ============================================
+    // DRAG & DROP
+    // ============================================
+    function startDrag(e, el) {
+      dragData = { element: el, startY: e.clientY, placeholder: null };
+      el.classList.add("dragging");
+      const placeholder = document.createElement("div");
+      placeholder.className = "doc-section drag-over";
+      placeholder.style.height = el.offsetHeight + "px";
+      placeholder.style.margin = "8px 6px";
+      dragData.placeholder = placeholder;
+      document.addEventListener("mousemove", onDrag);
+      document.addEventListener("mouseup", endDrag);
+      e.preventDefault();
+    }
+
+    function onDrag(e) {
+      if (!dragData) return;
+      const el = dragData.element;
+      const container = el.parentNode;
+      const rect = container.getBoundingClientRect();
+      const mouseY = e.clientY - rect.top;
+      const children = Array.from(container.children);
+      let insertIndex = children.indexOf(el);
+      for (let i = 0; i < children.length; i++) {
+        if (i === insertIndex) continue;
+        const childRect = children[i].getBoundingClientRect();
+        if (mouseY > childRect.top - rect.top + childRect.height / 2) insertIndex = i + 1;
+      }
+      if (dragData.placeholder.parentNode) dragData.placeholder.remove();
+      container.insertBefore(dragData.placeholder, children[insertIndex] || null);
+    }
+
+    function endDrag(e) {
+      if (!dragData) return;
+      const el = dragData.element;
+      const placeholder = dragData.placeholder;
+      el.classList.remove("dragging");
+      if (placeholder && placeholder.parentNode) { placeholder.parentNode.insertBefore(el, placeholder); placeholder.remove(); selectComponent(el); markDirty(); }
+      document.removeEventListener("mousemove", onDrag);
+      document.removeEventListener("mouseup", endDrag);
+      dragData = null;
+    }
+
+    // ============================================
+    // KEYBOARD SHORTCUTS
+    // ============================================
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "s") { e.preventDefault(); saveSurvey(); }
+      const activeTarget = e.target;
+      const isEditingField = !!(activeTarget && (activeTarget.isContentEditable || activeTarget.tagName === "INPUT" || activeTarget.tagName === "TEXTAREA" || activeTarget.closest?.('[contenteditable="true"]')));
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedEl) {
+        if (isEditingField) return;
+        e.preventDefault();
+        deleteComponent();
+        return;
+      }
+      if (e.ctrlKey && e.key === "d") { e.preventDefault(); duplicateComponent(); }
+      if (e.key === "Escape") { if (selectedEl) { selectedEl.classList.remove("selected-component"); selectedEl = null; hideFloatingToolbar(); } }
+      if (e.ctrlKey && e.shiftKey && (e.key === "X" || e.key === "x")) { e.preventDefault(); deleteSelectedText(); }
+    });
+
+    // ============================================
+    // DESELECT ON OUTSIDE CLICK
+    // ============================================
+    document.addEventListener("click", (e) => {
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) return;
+      if (!e.target.closest(".doc-section") && !e.target.closest("#floating-toolbar") && !e.target.closest(".rating-grid-controls") && !e.target.closest("#rte-toolbar") && !e.target.closest("#component-list") && !e.target.closest(".sidebar-left") && !e.target.closest(".sidebar-right")) {
+        document.querySelectorAll(".doc-section.selected-component").forEach((el) => el.classList.remove("selected-component"));
+        selectedEl = null;
+        hideFloatingToolbar();
+      }
+    });
+
+    // ============================================
+    // INIT
+    // ============================================
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</div>
+{% endblock %}
