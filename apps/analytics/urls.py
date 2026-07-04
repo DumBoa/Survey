@@ -13,6 +13,7 @@ urlpatterns = [
     path('target-groups/', views.target_groups_view, name='target_groups'),
     path('survey-forms/', views.survey_forms_view, name='survey_forms'),
     path('assignments/', views.assignments_view, name='assignments'),
+    path('account-manage/', views.account_manage, name='account_manage'),
     
     # === API TARGET GROUPS ===
     path('api/target-groups/', views.target_group_list_api, name='api_target_group_list'),
@@ -38,4 +39,12 @@ urlpatterns = [
     path('api/survey-forms/<int:survey_id>/update/', views.survey_form_update_api, name='api_survey_form_update'),
     path('api/survey-forms/<int:survey_id>/delete/', views.survey_form_delete_api, name='api_survey_form_delete'),
     path('api/survey-forms/categories/', views.survey_form_categories_api, name='api_survey_form_categories'),
+    # === API QUẢN LÝ TÀI KHOẢN ===
+    path('api/accounts/', views.account_list_api, name='api_account_list'),
+    path('api/accounts/<int:user_id>/', views.account_detail_api, name='api_account_detail'),
+    path('api/accounts/create/', views.account_create_api, name='api_account_create'),
+    path('api/accounts/<int:user_id>/update/', views.account_update_api, name='api_account_update'),
+    path('api/accounts/<int:user_id>/delete/', views.account_delete_api, name='api_account_delete'),
+    path('api/accounts/organizations/', views.account_organizations_api, name='api_account_organizations'),
+    path('api/accounts/bulk-action/', views.account_bulk_action_api, name='api_account_bulk_action'),
 ]

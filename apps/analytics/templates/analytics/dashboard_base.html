@@ -304,7 +304,11 @@
                 <span class="nav-icon"><i class="bi bi-link-45deg"></i></span>
                 <span>Gán biểu mẫu</span>
             </a>
-            
+  
+            <a href="{% url 'analytics:account_manage' %}" class="nav-item {% if active_menu == 'account_manage' %}active{% endif %}">
+                <span class="nav-icon"><i class="bi bi-people"></i></span>
+                <span>Quản lý tài khoản</span>
+            </a>
             <div class="nav-section" style="margin-top:20px;">Thống kê</div>
             
             <a href="#" class="nav-item">

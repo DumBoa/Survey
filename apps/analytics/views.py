@@ -47,7 +47,12 @@ def assignments_view(request):
     """Gán biểu mẫu cho nhóm"""
     return render(request, 'analytics/assignments.html', {'active_menu': 'assignments'})
 
-
+@login_required(login_url='/accounts/login/')
+def account_manage(request):
+    context = {
+        'active_menu': 'account_manage',
+    }
+    return render(request, 'analytics/account_manage.html', context)
 # ============================================
 # API TARGET GROUPS
 # ============================================
@@ -1072,3 +1077,407 @@ def survey_form_categories_api(request):
             'success': False,
             'error': str(e)
         }, status=500)
+# apps/analytics/views.py - Thêm vào cuối file
+
+# ============================================
+# API QUẢN LÝ TÀI KHOẢN (ACCOUNTS)
+# ============================================
+
+from apps.accounts.models import User, Organization
+
+@login_required(login_url='/accounts/login/')
+def account_list_api(request):
+    """
+    API lấy danh sách tài khoản người dùng
+    """
+    try:
+        queryset = User.objects.all().order_by('-date_joined')
+        
+        # Filter theo đơn vị
+        department = request.GET.get('department')
+        if department:
+            queryset = queryset.filter(organization__name__icontains=department)
+        
+        # Filter theo vai trò
+        role = request.GET.get('role')
+        if role == 'admin':
+            queryset = queryset.filter(is_superuser=True)
+        elif role == 'manager':
+            queryset = queryset.filter(is_staff=True, is_superuser=False)
+        elif role == 'staff':
+            queryset = queryset.filter(is_staff=False, is_superuser=False, is_active=True)
+        elif role == 'viewer':
+            queryset = queryset.filter(is_staff=False, is_superuser=False)
+        
+        # Filter theo trạng thái
+        status = request.GET.get('status')
+        if status == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status == 'inactive':
+            queryset = queryset.filter(is_active=False)
+        elif status == 'pending':
+            queryset = queryset.filter(is_active=False, last_login__isnull=True)
+        
+        # Tìm kiếm
+        search = request.GET.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                models.Q(username__icontains=search) |
+                models.Q(first_name__icontains=search) |
+                models.Q(last_name__icontains=search) |
+                models.Q(email__icontains=search) |
+                models.Q(phone_number__icontains=search)
+            )
+        
+        # Pagination
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
+        
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+        
+        data = []
+        for user in page_obj:
+            full_name = f"{user.last_name} {user.first_name}".strip() or user.username
+            
+            if user.is_superuser:
+                role_display = "Quản trị viên"
+                role_code = "admin"
+            elif user.is_staff:
+                role_display = "Quản lý"
+                role_code = "manager"
+            else:
+                role_display = "Nhân viên"
+                role_code = "staff"
+            
+            if user.is_active:
+                if user.last_login:
+                    status_display = "Hoạt động"
+                    status_class = "success"
+                else:
+                    status_display = "Chờ kích hoạt"
+                    status_class = "warning"
+            else:
+                status_display = "Đã khóa"
+                status_class = "danger"
+            
+            data.append({
+                'id': user.id,
+                'username': user.username,
+                'full_name': full_name,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'phone': user.phone_number or '',
+                'organization': user.organization.name if user.organization else '',
+                'organization_id': user.organization.id if user.organization else None,
+                'position': user.position or '',
+                'role': role_code,
+                'role_display': role_display,
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser,
+                'is_active': user.is_active,
+                'status': status_display,
+                'status_class': status_class,
+                'last_login': user.last_login.isoformat() if user.last_login else None,
+                'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+                'initials': ''.join([word[0].upper() for word in full_name.split() if word])[:2] or user.username[:2].upper(),
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'data': data,
+            'total': paginator.count,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': paginator.num_pages,
+        })
+        
+    except Exception as e:
+        import traceback
+        print(f"Error in account_list_api: {traceback.format_exc()}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+def account_detail_api(request, user_id):
+    """API lấy chi tiết một tài khoản"""
+    try:
+        user = get_object_or_404(User, id=user_id)
+        
+        full_name = f"{user.last_name} {user.first_name}".strip() or user.username
+        
+        if user.is_superuser:
+            role_display = "Quản trị viên"
+            role_code = "admin"
+        elif user.is_staff:
+            role_display = "Quản lý"
+            role_code = "manager"
+        else:
+            role_display = "Nhân viên"
+            role_code = "staff"
+        
+        if user.is_active:
+            if user.last_login:
+                status_display = "Hoạt động"
+                status_class = "success"
+            else:
+                status_display = "Chờ kích hoạt"
+                status_class = "warning"
+        else:
+            status_display = "Đã khóa"
+            status_class = "danger"
+        
+        data = {
+            'id': user.id,
+            'username': user.username,
+            'full_name': full_name,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'phone': user.phone_number or '',
+            'organization': user.organization.name if user.organization else '',
+            'organization_id': user.organization.id if user.organization else None,
+            'position': user.position or '',
+            'role': role_code,
+            'role_display': role_display,
+            'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
+            'is_active': user.is_active,
+            'status': status_display,
+            'status_class': status_class,
+            'last_login': user.last_login.isoformat() if user.last_login else None,
+            'date_joined': user.date_joined.isoformat() if user.date_joined else None,
+            'initials': ''.join([word[0].upper() for word in full_name.split() if word])[:2] or user.username[:2].upper(),
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@csrf_exempt
+@require_http_methods(["POST"])
+def account_create_api(request):
+    """API tạo mới tài khoản"""
+    try:
+        from django.contrib.auth.hashers import make_password
+        
+        data = json.loads(request.body) if request.body else {}
+        
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '')
+        full_name = data.get('full_name', '').strip()
+        
+        if not username:
+            return JsonResponse({'success': False, 'error': 'Tên đăng nhập là bắt buộc'}, status=400)
+        if not email:
+            return JsonResponse({'success': False, 'error': 'Email là bắt buộc'}, status=400)
+        if not password or len(password) < 8:
+            return JsonResponse({'success': False, 'error': 'Mật khẩu phải có ít nhất 8 ký tự'}, status=400)
+        
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'success': False, 'error': f'Tên đăng nhập "{username}" đã tồn tại'}, status=400)
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'error': f'Email "{email}" đã được sử dụng'}, status=400)
+        
+        name_parts = full_name.split()
+        first_name = name_parts[-1] if name_parts else ''
+        last_name = ' '.join(name_parts[:-1]) if len(name_parts) > 1 else ''
+        
+        organization = None
+        organization_id = data.get('organization_id')
+        if organization_id:
+            try:
+                organization = Organization.objects.get(id=organization_id)
+            except Organization.DoesNotExist:
+                pass
+        
+        role = data.get('role', 'staff')
+        is_staff = role in ['admin', 'manager']
+        is_superuser = role == 'admin'
+        
+        user = User.objects.create(
+            username=username,
+            email=email,
+            password=make_password(password),
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=data.get('phone', ''),
+            organization=organization,
+            position=data.get('position', ''),
+            is_staff=is_staff,
+            is_superuser=is_superuser,
+            is_active=data.get('is_active', True),
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Tạo tài khoản thành công!',
+            'data': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'full_name': f"{user.last_name} {user.first_name}".strip(),
+                'is_active': user.is_active,
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@csrf_exempt
+@require_http_methods(["PUT", "PATCH"])
+def account_update_api(request, user_id):
+    """API cập nhật tài khoản"""
+    try:
+        user = get_object_or_404(User, id=user_id)
+        data = json.loads(request.body) if request.body else {}
+        
+        if 'username' in data and data['username']:
+            new_username = data['username'].strip()
+            if new_username != user.username and User.objects.filter(username=new_username).exists():
+                return JsonResponse({'success': False, 'error': f'Tên đăng nhập "{new_username}" đã tồn tại'}, status=400)
+            user.username = new_username
+        
+        if 'email' in data and data['email']:
+            new_email = data['email'].strip()
+            if new_email != user.email and User.objects.filter(email=new_email).exists():
+                return JsonResponse({'success': False, 'error': f'Email "{new_email}" đã được sử dụng'}, status=400)
+            user.email = new_email
+        
+        if 'full_name' in data:
+            full_name = data['full_name'].strip()
+            name_parts = full_name.split()
+            user.first_name = name_parts[-1] if name_parts else ''
+            user.last_name = ' '.join(name_parts[:-1]) if len(name_parts) > 1 else ''
+        
+        if 'phone' in data:
+            user.phone_number = data['phone']
+        if 'position' in data:
+            user.position = data['position']
+        if 'is_active' in data:
+            user.is_active = data['is_active']
+        
+        if 'organization_id' in data:
+            if data['organization_id']:
+                try:
+                    user.organization = Organization.objects.get(id=data['organization_id'])
+                except Organization.DoesNotExist:
+                    pass
+            else:
+                user.organization = None
+        
+        if 'role' in data:
+            role = data['role']
+            user.is_superuser = role == 'admin'
+            user.is_staff = role in ['admin', 'manager']
+        
+        if 'password' in data and data['password']:
+            if len(data['password']) >= 8:
+                from django.contrib.auth.hashers import make_password
+                user.password = make_password(data['password'])
+        
+        user.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Cập nhật tài khoản thành công!',
+            'data': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'full_name': f"{user.last_name} {user.first_name}".strip(),
+                'is_active': user.is_active,
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def account_delete_api(request, user_id):
+    """API xóa tài khoản"""
+    try:
+        if request.user.id == user_id:
+            return JsonResponse({'success': False, 'error': 'Bạn không thể xóa tài khoản của chính mình!'}, status=400)
+        
+        user = get_object_or_404(User, id=user_id)
+        user.delete()
+        
+        return JsonResponse({'success': True, 'message': 'Xóa tài khoản thành công!'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+def account_organizations_api(request):
+    """API lấy danh sách tổ chức/đơn vị"""
+    try:
+        orgs = Organization.objects.filter(is_active=True).order_by('name')
+        data = [{
+            'id': org.id,
+            'name': org.name,
+            'code': org.code,
+            'level': org.level,
+            'level_display': org.get_level_display(),
+        } for org in orgs]
+        
+        return JsonResponse({'success': True, 'data': data})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@csrf_exempt
+@require_http_methods(["POST"])
+def account_bulk_action_api(request):
+    """API thao tác hàng loạt trên tài khoản"""
+    try:
+        data = json.loads(request.body) if request.body else {}
+        user_ids = data.get('user_ids', [])
+        action = data.get('action', '')
+        
+        if not user_ids:
+            return JsonResponse({'success': False, 'error': 'Vui lòng chọn ít nhất một tài khoản'}, status=400)
+        
+        if request.user.id in user_ids:
+            return JsonResponse({'success': False, 'error': 'Bạn không thể thực hiện thao tác trên tài khoản của chính mình!'}, status=400)
+        
+        users = User.objects.filter(id__in=user_ids)
+        
+        if action == 'activate':
+            users.update(is_active=True)
+            message = f'Đã kích hoạt {users.count()} tài khoản'
+        elif action == 'deactivate':
+            users.update(is_active=False)
+            message = f'Đã khóa {users.count()} tài khoản'
+        elif action == 'delete':
+            users.delete()
+            message = f'Đã xóa {users.count()} tài khoản'
+        else:
+            return JsonResponse({'success': False, 'error': 'Hành động không hợp lệ'}, status=400)
+        
+        return JsonResponse({'success': True, 'message': message})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

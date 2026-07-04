@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- GIỮ NGUYÊN CSS CŨ --- */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F4F6F9;
@@ -264,6 +263,11 @@
         }
         .form-group .form-control.is-valid { border-color: #10B981; }
         .form-group .form-control.is-invalid { border-color: #EF4444; }
+        .form-control:disabled {
+            background-color: #F1F5F9;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
         .survey-card {
             display: flex;
             align-items: flex-start;
@@ -424,15 +428,6 @@
             color: #64748B;
             font-size: 0.95rem;
         }
-        .success-screen .survey-assigned {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #EFF6FF;
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -464,6 +459,23 @@
             font-size: 0.75rem;
             padding: 4px 12px;
         }
+        .user-info-box {
+            background: #F8FAFC;
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid #1D4ED8;
+        }
+        .user-info-box .label {
+            font-size: 0.75rem;
+            color: #64748B;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .user-info-box .value {
+            font-weight: 600;
+            color: #0F172A;
+            font-size: 1rem;
+        }
         @media (max-width: 768px) {
             .step-line { display: none; }
             .step-subtitle { display: none; }
@@ -494,12 +506,24 @@
     </div>
 
     <header class="header-section">
-        <div class="container-lg d-flex align-items-center">
-            <div class="logo-circle me-3">CCHC</div>
-            <div>
-                <div class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Bộ Nội Vụ • Vụ Cải Cách Hành Chính</div>
-                <h1 class="h4 mb-1 fw-bold text-dark" id="surveyTitle">Hệ thống Theo dõi, Đánh giá Cải cách Hành chính (CCHC)</h1>
-                <div class="text-muted" style="font-size: 0.9rem;">Cổng khảo sát trực tuyến dành cho cán bộ, công chức</div>
+        <div class="container-lg d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <div class="logo-circle me-3">CCHC</div>
+                <div>
+                    <div class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Bộ Nội Vụ • Vụ Cải Cách Hành Chính</div>
+                    <h1 class="h4 mb-1 fw-bold text-dark" id="surveyTitle">Hệ thống Theo dõi, Đánh giá Cải cách Hành chính (CCHC)</h1>
+                    <div class="text-muted" style="font-size: 0.9rem;">Cổng khảo sát trực tuyến dành cho cán bộ, công chức</div>
+                </div>
+            </div>
+            <!-- User Info -->
+            <div class="text-end">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-muted small">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span id="userDisplayName">{{ request.user.get_full_name|default:request.user.username }}</span>
+                    </div>
+                    
+                </div>
             </div>
         </div>
     </header>
@@ -519,7 +543,7 @@
                     <div class="step-number">2</div>
                     <div>
                         <div class="step-title">Thông tin cá nhân</div>
-                        <div class="step-subtitle">Họ tên, chức vụ</div>
+                        <div class="step-subtitle">Xác nhận thông tin</div>
                     </div>
                 </div>
                 <div class="step-line" id="line2"></div>
@@ -548,16 +572,47 @@
                         <div class="alert-info-custom">
                             <i class="bi bi-info-circle fs-5 mt-1"></i>
                             <div>
-                                Vui lòng điền đầy đủ thông tin bên dưới để hệ thống xác định biểu mẫu khảo sát phù hợp. Thông tin của bạn sẽ được đối chiếu với danh sách đối tượng chính thức.
+                                <strong>Xin chào {{ request.user.get_full_name|default:request.user.username }}!</strong><br>
+                                Vui lòng xác nhận đơn vị công tác và nhóm đối tượng phù hợp để hệ thống gán biểu mẫu khảo sát.
+                            </div>
+                        </div>
+
+                        <!-- User Info từ tài khoản -->
+                        <div class="user-info-box mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="label">Họ và tên</div>
+                                    <div class="value">{{ request.user.get_full_name|default:request.user.username }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="label">Email</div>
+                                    <div class="value">{{ request.user.email|default:"Chưa cập nhật" }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="label">Đơn vị công tác</div>
+                                    <div class="value" id="userOrganization">
+                                        {{ request.user.organization.name|default:"Chưa cập nhật" }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="label">Chức vụ</div>
+                                    <div class="value" id="userPosition">
+                                        {{ request.user.position|default:"Chưa cập nhật" }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div style="margin-bottom: 1.5rem;">
-                            <label for="agencyInput" class="field-label">Chọn Đơn vị / Cơ quan công tác <span class="required-star">*</span></label>
-                            <p class="text-muted mb-3" style="font-size: 0.85rem;">Tìm kiếm Sở, Ban, Ngành hoặc UBND theo tên đơn vị</p>
+                            <label for="agencyInput" class="field-label">Xác nhận Đơn vị / Cơ quan công tác <span class="required-star">*</span></label>
+                            <p class="text-muted mb-3" style="font-size: 0.85rem;">Chọn hoặc tìm kiếm đơn vị công tác của bạn</p>
                             
                             <div class="position-relative">
-                                <input type="text" id="agencyInput" class="form-control searchable-input" list="hanoiAgencies" placeholder="Tìm kiếm đơn vị công tác..." autocomplete="off">
+                                <input type="text" id="agencyInput" class="form-control searchable-input" 
+                                       list="hanoiAgencies" 
+                                       placeholder="Tìm kiếm đơn vị công tác..." 
+                                       autocomplete="off"
+                                       value="{{ request.user.organization.name|default:'' }}">
                                 <i class="bi bi-chevron-down position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%); color: #64748B; pointer-events: none;"></i>
                                 
                                 <datalist id="hanoiAgencies">
@@ -596,38 +651,48 @@
                         <div class="alert-info-custom">
                             <i class="bi bi-person-circle fs-5 mt-1"></i>
                             <div>
-                                Vui lòng nhập đầy đủ thông tin cá nhân để xác thực danh tính. Thông tin này sẽ được bảo mật và chỉ sử dụng cho mục đích khảo sát.
+                                Xác nhận thông tin cá nhân từ tài khoản của bạn. Có thể chỉnh sửa nếu cần.
                             </div>
                         </div>
 
                         <div class="form-grid">
                             <div class="form-group full-width">
                                 <label>Họ và tên <span class="required-star">*</span></label>
-                                <input type="text" id="fullName" class="form-control" placeholder="Nhập họ và tên đầy đủ">
+                                <input type="text" id="fullName" class="form-control" 
+                                       placeholder="Nhập họ và tên đầy đủ"
+                                       value="{{ request.user.get_full_name|default:'' }}">
                                 <div class="invalid-feedback" id="fullNameError" style="display:none;">Vui lòng nhập họ và tên</div>
                             </div>
 
                             <div class="form-group">
                                 <label>Chức vụ <span class="required-star">*</span></label>
-                                <input type="text" id="position" class="form-control" placeholder="Nhập chức vụ hiện tại">
+                                <input type="text" id="position" class="form-control" 
+                                       placeholder="Nhập chức vụ hiện tại"
+                                       value="{{ request.user.position|default:'' }}">
                                 <div class="invalid-feedback" id="positionError" style="display:none;">Vui lòng nhập chức vụ</div>
                             </div>
 
                             <div class="form-group">
                                 <label>Bộ phận công tác <span class="required-star">*</span></label>
-                                <input type="text" id="department" class="form-control" placeholder="Nhập bộ phận/phòng ban">
+                                <input type="text" id="department" class="form-control" 
+                                       placeholder="Nhập bộ phận/phòng ban"
+                                       value="{{ request.user.organization.name|default:'' }}">
                                 <div class="invalid-feedback" id="departmentError" style="display:none;">Vui lòng nhập bộ phận công tác</div>
                             </div>
 
                             <div class="form-group">
                                 <label>Số điện thoại <span class="required-star">*</span></label>
-                                <input type="tel" id="phone" class="form-control" placeholder="Nhập số điện thoại liên hệ">
+                                <input type="tel" id="phone" class="form-control" 
+                                       placeholder="Nhập số điện thoại liên hệ"
+                                       value="{{ request.user.phone_number|default:'' }}">
                                 <div class="invalid-feedback" id="phoneError" style="display:none;">Vui lòng nhập số điện thoại</div>
                             </div>
 
                             <div class="form-group">
                                 <label>Email công vụ <span class="required-star">*</span></label>
-                                <input type="email" id="email" class="form-control" placeholder="example@domain.gov.vn">
+                                <input type="email" id="email" class="form-control" 
+                                       placeholder="example@domain.gov.vn"
+                                       value="{{ request.user.email|default:'' }}">
                                 <div class="invalid-feedback" id="emailError" style="display:none;">Vui lòng nhập email hợp lệ</div>
                             </div>
 
@@ -713,7 +778,7 @@
                     
                     <div class="mb-3">
                         <div class="text-muted" style="font-size: 0.75rem; margin-bottom: 4px;">ĐƠN VỊ CÔNG TÁC</div>
-                        <div id="previewAgency" class="dynamic-placeholder">Chưa chọn</div>
+                        <div id="previewAgency" class="dynamic-placeholder">{{ request.user.organization.name|default:"Chưa chọn" }}</div>
                     </div>
 
                     <div class="mb-3">
@@ -729,23 +794,23 @@
                     </div>
                 </div>
 
-                <div class="sidebar-card" id="personalInfoPreview" style="display: none;">
+                <div class="sidebar-card" id="personalInfoPreview">
                     <div class="sidebar-title">Thông tin cá nhân</div>
                     <div class="mb-2">
                         <div class="text-muted" style="font-size: 0.75rem;">HỌ VÀ TÊN</div>
-                        <div id="previewName" class="dynamic-placeholder">Chưa nhập</div>
+                        <div id="previewName" class="dynamic-value">{{ request.user.get_full_name|default:"Chưa nhập" }}</div>
                     </div>
                     <div class="mb-2">
                         <div class="text-muted" style="font-size: 0.75rem;">CHỨC VỤ</div>
-                        <div id="previewPosition" class="dynamic-placeholder">Chưa nhập</div>
+                        <div id="previewPosition" class="dynamic-value">{{ request.user.position|default:"Chưa nhập" }}</div>
                     </div>
                     <div class="mb-2">
                         <div class="text-muted" style="font-size: 0.75rem;">BỘ PHẬN</div>
-                        <div id="previewDepartment" class="dynamic-placeholder">Chưa nhập</div>
+                        <div id="previewDepartment" class="dynamic-value">{{ request.user.organization.name|default:"Chưa nhập" }}</div>
                     </div>
                     <div>
                         <div class="text-muted" style="font-size: 0.75rem;">EMAIL</div>
-                        <div id="previewEmail" class="dynamic-placeholder">Chưa nhập</div>
+                        <div id="previewEmail" class="dynamic-value">{{ request.user.email|default:"Chưa nhập" }}</div>
                     </div>
                 </div>
 
@@ -805,7 +870,6 @@
         const previewPosition = document.getElementById('previewPosition');
         const previewDepartment = document.getElementById('previewDepartment');
         const previewEmail = document.getElementById('previewEmail');
-        const personalInfoPreview = document.getElementById('personalInfoPreview');
         
         const stepDots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3')];
         const stepLabels = [document.getElementById('label1'), document.getElementById('label2'), document.getElementById('label3')];
@@ -864,7 +928,6 @@
                     allSurveyForms = data.data;
                 } else {
                     console.error('Error loading survey forms:', data.error);
-                    // Fallback: dùng danh sách mặc định
                     allSurveyForms = [
                         { code: 'BM-03', name: 'Khảo sát CCHC toàn diện', description: 'Dành cho các nhóm đối tượng chung' },
                         { code: 'BM-04', name: 'Khảo sát Lãnh đạo quản lý', description: 'Đánh giá hiệu quả quản lý điều hành' },
@@ -882,7 +945,7 @@
         }
 
         // ============================================
-        // RENDER SURVEY CARDS (ĐỘNG TỪ DỮ LIỆU)
+        // RENDER SURVEY CARDS
         // ============================================
         function renderSurveyCards(formCodes) {
             if (!surveyCardsContainer) return;
@@ -899,7 +962,6 @@
 
             let html = '';
             formCodes.forEach(code => {
-                // Tìm thông tin biểu mẫu từ danh sách đã load
                 const form = allSurveyForms.find(f => f.code === code);
                 const icon = form ? 'bi bi-file-earmark-check' : 'bi bi-file-earmark-text';
                 const name = form ? form.name : code;
@@ -921,7 +983,6 @@
 
             surveyCardsContainer.innerHTML = html;
             
-            // Cập nhật assigned surveys
             if (formCodes.length > 0) {
                 assignedSurveysDiv.style.display = 'block';
                 assignedSurveysList.textContent = formCodes.join(', ');
@@ -1080,11 +1141,9 @@
                     radio.checked = true;
                     selectedRole = radio.value;
                     
-                    // Lấy danh sách biểu mẫu từ data-forms
                     const formsData = JSON.parse(radio.dataset.forms || '[]');
                     selectedForms = formsData;
                     
-                    // Render survey cards - HIỂN THỊ TẤT CẢ BIỂU MẪU
                     renderSurveyCards(formsData);
                     
                     validateStep1();
@@ -1097,7 +1156,6 @@
         // UPDATE SIDEBAR
         // ============================================
         function updateSidebarInfo() {
-            // Cập nhật preview đơn vị
             const agencyVal = agencyInput.value.trim();
             if (agencyVal) {
                 previewAgency.innerHTML = `<span class="dynamic-value">${agencyVal}</span>`;
@@ -1107,19 +1165,15 @@
                 previewAgency.classList.add('dynamic-placeholder');
             }
 
-            // Cập nhật preview role và forms
             const selectedRadio = document.querySelector('input[name="roleSelection"]:checked');
             if (selectedRadio) {
                 const roleName = selectedRadio.value;
-                const groupId = selectedRadio.dataset.groupId;
-                const group = targetGroups.find(g => g.id == groupId);
                 const forms = JSON.parse(selectedRadio.dataset.forms || '[]');
                 selectedForms = forms;
                 
                 previewRole.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> <span class="dynamic-value">${roleName}</span>`;
                 previewRole.classList.remove('dynamic-placeholder');
                 
-                // HIỂN THỊ TẤT CẢ BIỂU MẪU
                 const formHtml = forms.map(f => 
                     `<span class="badge bg-primary-custom me-1"><i class="bi bi-file-earmark-text me-1"></i>${f}</span>`
                 ).join('');
@@ -1132,25 +1186,19 @@
                 previewForms.classList.add('dynamic-placeholder');
             }
 
-            // Cập nhật thông tin cá nhân
             const nameVal = fullName.value.trim();
             const posVal = position.value.trim();
             const deptVal = department.value.trim();
             const emailVal = email.value.trim();
             
-            if (nameVal || posVal || deptVal || emailVal) {
-                personalInfoPreview.style.display = 'block';
-                previewName.textContent = nameVal || 'Chưa nhập';
-                previewName.className = nameVal ? 'dynamic-value' : 'dynamic-placeholder';
-                previewPosition.textContent = posVal || 'Chưa nhập';
-                previewPosition.className = posVal ? 'dynamic-value' : 'dynamic-placeholder';
-                previewDepartment.textContent = deptVal || 'Chưa nhập';
-                previewDepartment.className = deptVal ? 'dynamic-value' : 'dynamic-placeholder';
-                previewEmail.textContent = emailVal || 'Chưa nhập';
-                previewEmail.className = emailVal ? 'dynamic-value' : 'dynamic-placeholder';
-            } else {
-                personalInfoPreview.style.display = 'none';
-            }
+            previewName.textContent = nameVal || 'Chưa nhập';
+            previewName.className = nameVal ? 'dynamic-value' : 'dynamic-placeholder';
+            previewPosition.textContent = posVal || 'Chưa nhập';
+            previewPosition.className = posVal ? 'dynamic-value' : 'dynamic-placeholder';
+            previewDepartment.textContent = deptVal || 'Chưa nhập';
+            previewDepartment.className = deptVal ? 'dynamic-value' : 'dynamic-placeholder';
+            previewEmail.textContent = emailVal || 'Chưa nhập';
+            previewEmail.className = emailVal ? 'dynamic-value' : 'dynamic-placeholder';
         }
 
         // ============================================
