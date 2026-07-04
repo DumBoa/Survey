@@ -5,122 +5,191 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập - CCHC Admin</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #f8fafc;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
+            position: relative;
         }
+
+        /* Decorative circle */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 800px;
+            height: 800px;
+            background: #2563eb;
+            border-radius: 50%;
+            opacity: 0.05;
+            z-index: 0;
+        }
+
         .login-container {
             background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 52px 48px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            position: relative;
+            z-index: 2;
         }
-        .login-header {
+
+        .logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 36px;
         }
-        .login-header h1 {
-            color: #2d3748;
-            font-size: 24px;
-            margin-bottom: 8px;
+
+        .logo h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: #111827;
+            letter-spacing: -1px;
         }
-        .login-header p {
-            color: #718096;
-            font-size: 14px;
+
+        .logo p {
+            color: #64748b;
+            font-size: 15px;
+            margin-top: 8px;
         }
+
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
+
         .form-group label {
             display: block;
-            margin-bottom: 6px;
-            color: #4a5568;
+            margin-bottom: 8px;
+            color: #374151;
             font-weight: 500;
             font-size: 14px;
         }
+
         .form-group input {
             width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            font-size: 14px;
+            padding: 14px 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 15px;
             transition: border-color 0.3s;
         }
+
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
+
         .form-options {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 36px;
         }
+
         .form-options label {
             font-size: 14px;
-            color: #4a5568;
+            color: #4b5563;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-options input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
             cursor: pointer;
         }
-        .form-options input[type="checkbox"] {
-            margin-right: 6px;
-        }
+
         .btn-login {
             width: 100%;
-            padding: 12px;
-            background: #667eea;
+            padding: 14px;
+            background: #2563eb;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
         }
+
         .btn-login:hover {
-            background: #5a67d8;
+            background: #1d4ed8;
         }
+
         .error-message {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
             display: none;
             font-size: 14px;
         }
+
         .error-message.show {
             display: block;
         }
+
         .test-account {
-            margin-top: 20px;
+            margin-top: 32px;
             text-align: center;
-            color: #718096;
-            font-size: 13px;
-            padding: 12px;
-            background: #f7fafc;
-            border-radius: 6px;
+            color: #64748b;
+            font-size: 13.5px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
         }
+
         .test-account strong {
-            color: #2d3748;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 28px 0;
+            color: #64748b;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            padding: 0 16px;
+            font-size: 12px;
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="login-header">
-            <h1>📋 CCHC Admin</h1>
+        <div class="logo">
+            <h1>CCHC Admin</h1>
             <p>Hệ thống quản lý khảo sát CCHC</p>
         </div>
         
@@ -179,7 +248,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // SỬA: Chuyển đến dashboard
                     window.location.href = data.redirect_url || '/analytics/';
                 } else {
                     errorDiv.textContent = data.message;
