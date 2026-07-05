@@ -1,0 +1,957 @@
+<!-- apps/analytics/templates/analytics/organization_manage.html -->
+{% extends "analytics/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Quản lý đơn vị{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --bg: #F8FAFC;
+    --card: #FFFFFF;
+    --primary: #2563EB;
+    --success: #16A34A;
+    --warning: #F59E0B;
+    --danger: #DC2626;
+    --text: #111827;
+    --muted: #6B7280;
+    --border: #E5E7EB;
+}
+
+.list-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+    overflow: hidden;
+}
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+    flex-wrap: wrap;
+}
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+.search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--muted);
+}
+.search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 38px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 15px;
+    background: #fff;
+    color: var(--text);
+}
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.filter-select {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 15px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    min-width: 160px;
+}
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+.tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: none;
+    background: var(--primary);
+    border-radius: 9px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.tool-btn:hover {
+    background: #1D4ED8;
+}
+.tool-btn i {
+    width: 16px;
+    height: 16px;
+}
+.tbl-wrap {
+    overflow-x: auto;
+}
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 820px;
+}
+table.data th {
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    padding: 12px 24px;
+    background: #F8FAFC;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+table.data td {
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+    vertical-align: middle;
+}
+table.data tbody tr:hover {
+    background: #F8FAFC;
+}
+table.data tbody tr:last-child td {
+    border-bottom: none;
+}
+.unit-name {
+    font-weight: 500;
+    color: var(--text);
+}
+.unit-code {
+    font-family: monospace;
+    color: var(--muted);
+    font-size: 14px;
+}
+.col-stt {
+    color: var(--muted);
+    width: 56px;
+}
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.badge-pill .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+.lv-city { background: #EDE9FE; color: #6D28D9; }
+.lv-dept { background: #DBEAFE; color: #1D4ED8; }
+.lv-district { background: #CFFAFE; color: #0E7490; }
+.lv-ward { background: #DCFCE7; color: #15803D; }
+.lv-unit { background: #FEF3C7; color: #B45309; }
+.st-active { background: #DCFCE7; color: #15803D; }
+.st-active .dot { background: var(--success); }
+.st-inactive { background: #F1F5F9; color: #64748B; }
+.st-inactive .dot { background: #94A3B8; }
+.icon-btn {
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text);
+    margin-right: 6px;
+}
+.icon-btn:hover { background: #F1F5F9; }
+.icon-btn.danger { color: var(--danger); }
+.icon-btn.danger:hover { background: #FEF2F2; }
+.icon-btn i { width: 16px; height: 16px; }
+.empty-row td { text-align: center; color: var(--muted); padding: 44px 24px; font-size: 15px; }
+
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+.pager-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+}
+.pager-left select {
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    background: #fff;
+}
+.pager-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.pager-info {
+    font-size: 13px;
+    color: var(--muted);
+}
+.pager-btns {
+    display: flex;
+    gap: 4px;
+}
+.pg {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.pg:hover:not(:disabled) { background: #F1F5F9; }
+.pg.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.pg:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Modal */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.45);
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.modal-backdrop.show { display: flex; }
+.modal-box {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(16,24,40,.25);
+}
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+}
+.modal-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.modal-close {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+.modal-close:hover { background: #F1F5F9; }
+.modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+.field .req { color: var(--danger); }
+.field input[type=text], .field select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 15px;
+    background: #fff;
+    color: var(--text);
+}
+.field input[type=text]:focus, .field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.field input.invalid { border-color: var(--danger); }
+.field-err {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 5px;
+    display: none;
+}
+.field-err.show { display: block; }
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.checkbox-row input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+.checkbox-row label {
+    margin: 0;
+    font-weight: 500;
+    font-size: 15px;
+}
+.modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 18px 24px;
+    border-top: 1px solid var(--border);
+}
+.btn-ghost {
+    padding: 9px 16px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 9px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn-ghost:hover { background: #F1F5F9; }
+.btn-fill {
+    padding: 9px 18px;
+    border: none;
+    background: var(--primary);
+    border-radius: 9px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-fill:hover { background: #1D4ED8; }
+.btn-danger {
+    padding: 9px 18px;
+    border: none;
+    background: var(--danger);
+    border-radius: 9px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.btn-danger:hover { background: #B91C1C; }
+
+/* Toast */
+.toast-note {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(16,24,40,.18);
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .25s, transform .25s;
+    pointer-events: none;
+}
+.toast-note.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.toast-note.error { background: #7F1D1D; }
+.toast-note i { width: 18px; height: 18px; color: #4ADE80; }
+.toast-note.error i { color: #FCA5A5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h4 class="mb-1 fw-bold text-dark">Quản lý đơn vị</h4>
+        <p class="text-muted mb-0" style="font-size:14px;">Quản lý tổ chức, cơ quan, đơn vị trong hệ thống</p>
+    </div>
+</div>
+
+<!-- Danh sách đơn vị -->
+<div class="list-card">
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" id="searchInput" placeholder="Tìm kiếm đơn vị...">
+        </div>
+        <select class="filter-select" id="levelFilter">
+            <option value="all">Tất cả cấp độ</option>
+            <option value="city">Thành phố</option>
+            <option value="department">Sở / Ngành</option>
+            <option value="district">Quận / Huyện</option>
+            <option value="ward">Xã / Phường</option>
+            <option value="unit">Đơn vị sự nghiệp</option>
+        </select>
+        <select class="filter-select" id="statusFilter">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Hoạt động</option>
+            <option value="inactive">Tạm dừng</option>
+        </select>
+        <button class="tool-btn" id="addBtn">
+            <i class="bi bi-plus-lg"></i> Thêm đơn vị
+        </button>
+    </div>
+
+    <!-- Bảng -->
+    <div class="tbl-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th class="col-stt">STT</th>
+                    <th>Mã</th>
+                    <th>Tên đơn vị</th>
+                    <th>Cấp độ</th>
+                    <th>Đơn vị cha</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr class="empty-row">
+                    <td colspan="7" class="text-center py-4 text-muted">Đang tải dữ liệu...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Phân trang -->
+    <div class="pager">
+        <div class="pager-left">
+            <label>Số dòng mỗi trang:</label>
+            <select id="perPage">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="pager-right">
+            <span class="pager-info" id="pagerInfo">0 kết quả</span>
+            <div class="pager-btns" id="pagerBtns"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL THÊM/SỬA ĐƠN VỊ -->
+<!-- ============================================ -->
+<div class="modal-backdrop" id="formModal">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2 id="formTitle">Thêm đơn vị mới</h2>
+            <button type="button" class="modal-close" id="formClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <form id="unitForm" novalidate>
+            <div class="modal-body">
+                <div class="field">
+                    <label>Mã đơn vị <span class="req">*</span></label>
+                    <input type="text" id="fCode" placeholder="VD: DEPT-001">
+                    <div class="field-err" id="errCode">Vui lòng nhập mã đơn vị.</div>
+                </div>
+                <div class="field">
+                    <label>Tên đơn vị <span class="req">*</span></label>
+                    <input type="text" id="fName" placeholder="VD: Sở Nội vụ">
+                    <div class="field-err" id="errName">Vui lòng nhập tên đơn vị.</div>
+                </div>
+                <div class="field">
+                    <label>Cấp độ <span class="req">*</span></label>
+                    <select id="fLevel">
+                        <option value="city">Thành phố</option>
+                        <option value="department">Sở / Ngành</option>
+                        <option value="district">Quận / Huyện</option>
+                        <option value="ward">Xã / Phường</option>
+                        <option value="unit">Đơn vị sự nghiệp</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Đơn vị cha</label>
+                    <select id="fParent">
+                        <option value="">-- Không có --</option>
+                    </select>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="fActive" checked>
+                    <label for="fActive">Hoạt động</label>
+                </div>
+            </div>
+            <div class="modal-foot">
+                <button type="button" class="btn-ghost" id="formCancel">Hủy</button>
+                <button type="submit" class="btn-fill">
+                    <i class="bi bi-check-lg"></i> Lưu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MODAL XÓA ĐƠN VỊ -->
+<!-- ============================================ -->
+<div class="modal-backdrop" id="deleteModal">
+    <div class="modal-box" style="max-width:400px;">
+        <div class="modal-head">
+            <h2>Xóa đơn vị</h2>
+            <button type="button" class="modal-close" id="deleteClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p style="margin:0; color:var(--muted);">Bạn có chắc muốn xóa đơn vị này? Hành động không thể hoàn tác.</p>
+            <p id="deleteTarget" style="margin:8px 0 0; font-weight:600;"></p>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn-ghost" id="deleteCancel">Hủy</button>
+            <button type="button" class="btn-danger" id="deleteConfirm">
+                <i class="bi bi-trash3"></i> Xóa
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-note" id="toast">
+    <i class="bi bi-check-circle-fill"></i>
+    <span id="toastMsg"></span>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadOrganizations();
+    loadParentOptions();
+});
+
+// ============================================
+// CSRF TOKEN
+// ============================================
+function getCSRFToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 10) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ============================================
+// STATE
+// ============================================
+let allOrgs = [];
+let editingId = null;
+let deleteTargetId = null;
+let state = {
+    search: '',
+    level: 'all',
+    status: 'all',
+    page: 1,
+    perPage: 25
+};
+
+// ============================================
+// TOAST
+// ============================================
+let toastTimer;
+
+function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    toastMsg.textContent = message;
+    toast.className = 'toast-note' + (isError ? ' error' : '');
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ============================================
+// LOAD DATA
+// ============================================
+function loadOrganizations() {
+    const params = new URLSearchParams();
+    if (state.search) params.append('search', state.search);
+    if (state.level !== 'all') params.append('level', state.level);
+    if (state.status !== 'all') params.append('status', state.status);
+    params.append('page', state.page);
+    params.append('per_page', state.perPage);
+
+    fetch(`/analytics/api/organizations/?${params.toString()}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            allOrgs = data.data;
+            renderTable(data);
+        } else {
+            showToast('Lỗi: ' + data.error, true);
+        }
+    })
+    .catch(error => {
+        showToast('Lỗi kết nối', true);
+    });
+}
+
+function loadParentOptions(excludeId = null) {
+    fetch('/analytics/api/organizations/options/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('fParent');
+            select.innerHTML = '<option value="">-- Không có --</option>';
+            data.data.forEach(org => {
+                if (org.id !== excludeId) {
+                    select.innerHTML += `<option value="${org.id}">${org.code} - ${org.name}</option>`;
+                }
+            });
+        }
+    })
+    .catch(error => console.error('Error loading parent options:', error));
+}
+
+// ============================================
+// RENDER TABLE
+// ============================================
+function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    const items = data.data || [];
+
+    if (items.length === 0) {
+        tbody.innerHTML = `
+            <tr class="empty-row">
+                <td colspan="7">Chưa có đơn vị nào. Nhấn "Thêm đơn vị" để bắt đầu.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    const levelLabels = {
+        city: '<span class="badge-pill lv-city">Thành phố</span>',
+        department: '<span class="badge-pill lv-dept">Sở / Ngành</span>',
+        district: '<span class="badge-pill lv-district">Quận / Huyện</span>',
+        ward: '<span class="badge-pill lv-ward">Xã / Phường</span>',
+        unit: '<span class="badge-pill lv-unit">Đơn vị sự nghiệp</span>',
+    };
+
+    tbody.innerHTML = items.map((org, idx) => {
+        const statusHtml = org.is_active
+            ? '<span class="badge-pill st-active"><span class="dot"></span>Hoạt động</span>'
+            : '<span class="badge-pill st-inactive"><span class="dot"></span>Tạm dừng</span>';
+
+        return `
+            <tr>
+                <td class="col-stt">${(data.page - 1) * data.per_page + idx + 1}</td>
+                <td class="unit-code">${org.code || '—'}</td>
+                <td class="unit-name">${org.name}</td>
+                <td>${levelLabels[org.level] || org.level}</td>
+                <td>${org.parent || '—'}</td>
+                <td>${statusHtml}</td>
+                <td>
+                    <button type="button" class="icon-btn" onclick="openEdit(${org.id})" title="Sửa">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="icon-btn danger" onclick="openDelete(${org.id})" title="Xóa">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    renderPagination(data);
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+function renderPagination(data) {
+    const info = document.getElementById('pagerInfo');
+    const total = data.total || 0;
+    const startIdx = (data.page - 1) * data.per_page + 1;
+    const endIdx = Math.min(data.page * data.per_page, total);
+    info.textContent = total > 0 ? `${startIdx}–${endIdx} trên ${total}` : '0 kết quả';
+
+    const box = document.getElementById('pagerBtns');
+    box.innerHTML = '';
+    const totalPages = data.total_pages || 1;
+
+    const mkBtn = (label, pg, opts = {}) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pg' + (opts.active ? ' active' : '');
+        if (opts.disabled) b.disabled = true;
+        if (opts.icon) {
+            b.innerHTML = `<i class="bi bi-${label}"></i>`;
+        } else {
+            b.textContent = label;
+        }
+        if (!opts.disabled && !opts.active) {
+            b.addEventListener('click', () => {
+                state.page = pg;
+                loadOrganizations();
+            });
+        }
+        box.appendChild(b);
+    };
+
+    mkBtn('chevron-left', state.page - 1, { disabled: state.page <= 1, icon: true });
+
+    for (let p = 1; p <= totalPages; p++) {
+        mkBtn(String(p), p, { active: p === state.page });
+    }
+
+    mkBtn('chevron-right', state.page + 1, { disabled: state.page >= totalPages, icon: true });
+}
+
+// ============================================
+// MODAL - ADD
+// ============================================
+function openAdd() {
+    editingId = null;
+    document.getElementById('unitForm').reset();
+    document.getElementById('fActive').checked = true;
+    document.getElementById('fLevel').value = 'city';
+    document.getElementById('formTitle').textContent = 'Thêm đơn vị mới';
+    clearErrors();
+    loadParentOptions();
+    document.getElementById('formModal').classList.add('show');
+    setTimeout(() => document.getElementById('fCode').focus(), 100);
+}
+
+// ============================================
+// MODAL - EDIT
+// ============================================
+function openEdit(id) {
+    editingId = id;
+    fetch(`/analytics/api/organizations/${id}/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const org = data.data;
+            document.getElementById('fCode').value = org.code;
+            document.getElementById('fName').value = org.name;
+            document.getElementById('fLevel').value = org.level;
+            document.getElementById('fActive').checked = org.is_active;
+            document.getElementById('formTitle').textContent = 'Sửa đơn vị';
+            clearErrors();
+            loadParentOptions(id);
+            document.getElementById('fParent').value = org.parent_id || '';
+            document.getElementById('formModal').classList.add('show');
+            setTimeout(() => document.getElementById('fName').focus(), 100);
+        }
+    })
+    .catch(error => {
+        showToast('Không thể tải thông tin đơn vị', true);
+    });
+}
+
+// ============================================
+// MODAL - DELETE
+// ============================================
+function openDelete(id) {
+    deleteTargetId = id;
+    const org = allOrgs.find(o => o.id === id);
+    document.getElementById('deleteTarget').textContent = org ? `${org.name} (${org.code})` : '';
+    document.getElementById('deleteModal').classList.add('show');
+}
+
+// ============================================
+// SAVE
+// ============================================
+document.getElementById('unitForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    clearErrors();
+
+    const code = document.getElementById('fCode').value.trim();
+    const name = document.getElementById('fName').value.trim();
+    const level = document.getElementById('fLevel').value;
+    const parentId = document.getElementById('fParent').value;
+    const isActive = document.getElementById('fActive').checked;
+
+    let valid = true;
+    if (!code) {
+        document.getElementById('errCode').classList.add('show');
+        document.getElementById('fCode').classList.add('invalid');
+        valid = false;
+    }
+    if (!name) {
+        document.getElementById('errName').classList.add('show');
+        document.getElementById('fName').classList.add('invalid');
+        valid = false;
+    }
+    if (!valid) return;
+
+    const data = { code, name, level, is_active: isActive };
+    if (parentId) data.parent_id = parseInt(parentId);
+
+    const url = editingId
+        ? `/analytics/api/organizations/${editingId}/update/`
+        : '/analytics/api/organizations/create/';
+    const method = editingId ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('formModal').classList.remove('show');
+            showToast(data.message);
+            loadOrganizations();
+        } else {
+            showToast(data.error || 'Có lỗi xảy ra', true);
+        }
+    })
+    .catch(error => {
+        showToast('Lỗi kết nối', true);
+    });
+});
+
+// ============================================
+// DELETE CONFIRM
+// ============================================
+document.getElementById('deleteConfirm').addEventListener('click', function() {
+    if (!deleteTargetId) return;
+
+    fetch(`/analytics/api/organizations/${deleteTargetId}/delete/`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('deleteModal').classList.remove('show');
+        if (data.success) {
+            showToast(data.message);
+            loadOrganizations();
+        } else {
+            showToast(data.error || 'Có lỗi xảy ra', true);
+        }
+        deleteTargetId = null;
+    })
+    .catch(error => {
+        showToast('Lỗi kết nối', true);
+        deleteTargetId = null;
+    });
+});
+
+// ============================================
+// HELPERS
+// ============================================
+function clearErrors() {
+    ['errCode', 'errName'].forEach(id => document.getElementById(id).classList.remove('show'));
+    ['fCode', 'fName'].forEach(id => document.getElementById(id).classList.remove('invalid'));
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
+// ============================================
+// EVENT BINDING
+// ============================================
+document.getElementById('addBtn').addEventListener('click', openAdd);
+document.getElementById('formClose').addEventListener('click', () => closeModal('formModal'));
+document.getElementById('formCancel').addEventListener('click', () => closeModal('formModal'));
+document.getElementById('deleteClose').addEventListener('click', () => closeModal('deleteModal'));
+document.getElementById('deleteCancel').addEventListener('click', () => closeModal('deleteModal'));
+
+// Close on backdrop click
+document.getElementById('formModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('formModal');
+});
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal('deleteModal');
+});
+
+// Search & Filter
+document.getElementById('searchInput').addEventListener('input', function() {
+    state.search = this.value;
+    state.page = 1;
+    loadOrganizations();
+});
+
+document.getElementById('levelFilter').addEventListener('change', function() {
+    state.level = this.value;
+    state.page = 1;
+    loadOrganizations();
+});
+
+document.getElementById('statusFilter').addEventListener('change', function() {
+    state.status = this.value;
+    state.page = 1;
+    loadOrganizations();
+});
+
+document.getElementById('perPage').addEventListener('change', function() {
+    state.perPage = parseInt(this.value);
+    state.page = 1;
+    loadOrganizations();
+});
+</script>
+{% endblock %}

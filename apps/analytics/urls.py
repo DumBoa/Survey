@@ -9,12 +9,16 @@ urlpatterns = [
     path('', views.dashboard_home, name='dashboard'),
     
     # === CÁC TRANG QUẢN LÝ (UI) ===
-    path('surveys/', views.survey_list_view, name='survey_list'),
     path('target-groups/', views.target_groups_view, name='target_groups'),
     path('survey-forms/', views.survey_forms_view, name='survey_forms'),
     path('assignments/', views.assignments_view, name='assignments'),
     path('account-manage/', views.account_manage, name='account_manage'),
     
+    # === BÁO CÁO TỔNG HỢP ĐƠN VỊ ===
+    path('survey-dashboard/', views.tongquankhaosat_view, name='survey_dashboard'),
+    path('api/survey-dashboard/<int:survey_id>/', views.survey_unit_dashboard_api, name='api_survey_unit_dashboard'),
+    
+    path('api/organizations/with-status/', views.organization_with_status_api, name='api_organizations_with_status'),
     # === API TARGET GROUPS ===
     path('api/target-groups/', views.target_group_list_api, name='api_target_group_list'),
     path('api/target-groups/<int:group_id>/', views.target_group_detail_api, name='api_target_group_detail'),
@@ -30,7 +34,6 @@ urlpatterns = [
     path('api/assignments/<int:group_id>/update/', views.assignment_update_api, name='api_assignment_update'),
     path('api/assignments/<int:group_id>/delete/', views.assignment_delete_api, name='api_assignment_delete'),
     path('api/assignments/<int:group_id>/remove-form/', views.assignment_remove_form_api, name='api_assignment_remove_form'),
-    path('api/assignments/surveys/', views.assignment_surveys_api, name='api_assignment_surveys'),
     
     # === API SURVEY FORMS ===
     path('api/survey-forms/', views.survey_forms_list_api, name='api_survey_forms_list'),
@@ -39,6 +42,7 @@ urlpatterns = [
     path('api/survey-forms/<int:survey_id>/update/', views.survey_form_update_api, name='api_survey_form_update'),
     path('api/survey-forms/<int:survey_id>/delete/', views.survey_form_delete_api, name='api_survey_form_delete'),
     path('api/survey-forms/categories/', views.survey_form_categories_api, name='api_survey_form_categories'),
+    
     # === API QUẢN LÝ TÀI KHOẢN ===
     path('api/accounts/', views.account_list_api, name='api_account_list'),
     path('api/accounts/<int:user_id>/', views.account_detail_api, name='api_account_detail'),
@@ -47,4 +51,12 @@ urlpatterns = [
     path('api/accounts/<int:user_id>/delete/', views.account_delete_api, name='api_account_delete'),
     path('api/accounts/organizations/', views.account_organizations_api, name='api_account_organizations'),
     path('api/accounts/bulk-action/', views.account_bulk_action_api, name='api_account_bulk_action'),
+    # === QUẢN LÝ ĐƠN VỊ (ORGANIZATION) ===
+    path('organizations/', views.organization_manage_view, name='organization_manage'),
+    path('api/organizations/', views.organization_list_api, name='api_organization_list'),
+    path('api/organizations/<int:org_id>/', views.organization_detail_api, name='api_organization_detail'),
+    path('api/organizations/create/', views.organization_create_api, name='api_organization_create'),
+    path('api/organizations/<int:org_id>/update/', views.organization_update_api, name='api_organization_update'),
+    path('api/organizations/<int:org_id>/delete/', views.organization_delete_api, name='api_organization_delete'),
+    path('api/organizations/options/', views.organization_options_api, name='api_organization_options'),
 ]

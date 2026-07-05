@@ -49,6 +49,7 @@
                     <option value="">Tất cả</option>
                     <option value="active">Hoạt động</option>
                     <option value="inactive">Đã khóa</option>
+                    <option value="pending">Chờ kích hoạt</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -101,6 +102,7 @@
                         <th>Chức vụ</th>
                         <th>Email</th>
                         <th>Số điện thoại</th>
+                        <th>Nhóm đối tượng</th>
                         <th style="width:110px;">Trạng thái</th>
                         <th style="width:140px;">Lần đăng nhập cuối</th>
                         <th style="width:170px;">Thao tác</th>
@@ -108,7 +110,7 @@
                 </thead>
                 <tbody id="accountTableBody">
                     <tr>
-                        <td colspan="11" class="text-center py-4">
+                        <td colspan="12" class="text-center py-4">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Đang tải...</span>
                             </div>
@@ -207,6 +209,16 @@
                             </div>
                             <div class="form-text">Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường và số</div>
                         </div>
+                        <!-- ============================================================ -->
+                        <!-- NHÓM ĐỐI TƯỢNG - THÊM VÀO MODAL -->
+                        <!-- ============================================================ -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Nhóm đối tượng</label>
+                            <select class="form-select" id="accTargetGroups" multiple style="height:120px;">
+                                <!-- Sẽ được load từ API -->
+                            </select>
+                            <div class="form-text">Giữ Ctrl/Cmd để chọn nhiều nhóm. User sẽ được gán các biểu mẫu từ nhóm này.</div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -271,6 +283,8 @@
                     <div class="col-8" id="viewPosition">Quản trị hệ thống</div>
                     <div class="col-4 text-muted">Vai trò</div>
                     <div class="col-8" id="viewRole">Quản trị viên</div>
+                    <div class="col-4 text-muted">Nhóm đối tượng</div>
+                    <div class="col-8" id="viewTargetGroups">-</div>
                     <div class="col-4 text-muted">Lần đăng nhập cuối</div>
                     <div class="col-8" id="viewLastLogin">2024-12-20 14:30</div>
                     <div class="col-4 text-muted">Ngày tạo</div>
@@ -409,6 +423,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
+    // LOAD TARGET GROUPS
+    // ============================================
+    function loadTargetGroups() {
+        fetch('/analytics/api/target-groups/options/', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const select = document.getElementById('accTargetGroups');
+                select.innerHTML = data.data.map(g => 
+                    `<option value="${g.id}">${g.code} - ${g.name}</option>`
+                ).join('');
+            }
+        })
+        .catch(error => console.error('Error loading target groups:', error));
+    }
+
+    // ============================================
     // LOAD ORGANIZATIONS
     // ============================================
     function loadOrganizations() {
@@ -476,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const items = data.data || [];
 
         if (items.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="11" class="text-center py-4 text-muted">Không tìm thấy tài khoản nào</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" class="text-center py-4 text-muted">Không tìm thấy tài khoản nào</td></tr>`;
         } else {
             tbody.innerHTML = items.map((user, idx) => {
                 const statusClass = user.status_class || (user.is_active ? 'success' : 'danger');
@@ -485,8 +518,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 const bgColors = ['primary', 'success', 'danger', 'warning', 'info', 'secondary'];
                 const bgColor = bgColors[idx % bgColors.length];
                 
-                // Kiểm tra nếu là user hiện tại thì disable nút xóa và toggle
                 const isCurrentUser = user.id === {{ request.user.id }};
+                
+                // Hiển thị nhóm đối tượng
+                let targetGroupsHtml = '-';
+                if (user.target_groups && user.target_groups.length > 0) {
+                    targetGroupsHtml = user.target_groups.map(g => 
+                        `<span class="badge bg-secondary bg-opacity-10 text-secondary me-1">${g.name}</span>`
+                    ).join('');
+                }
                 
                 return `
                 <tr>
@@ -505,6 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${user.position || '-'}</td>
                     <td>${user.email || '-'}</td>
                     <td>${user.phone || '-'}</td>
+                    <td>${targetGroupsHtml}</td>
                     <td>
                         <span class="badge bg-${statusClass}">${statusText}</span>
                     </td>
@@ -543,7 +584,6 @@ document.addEventListener('DOMContentLoaded', function() {
         totalPages = data.total_pages || 1;
         renderPagination(data);
         
-        // Reset selected
         selectedIds = [];
         document.getElementById('selectAll').checked = false;
     }
@@ -616,6 +656,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const role = document.getElementById('accRole').value;
         const isActive = document.getElementById('accStatus').value === 'true';
         const password = document.getElementById('accPassword').value;
+        
+        // Lấy danh sách nhóm đối tượng được chọn
+        const targetGroupsSelect = document.getElementById('accTargetGroups');
+        const selectedTargetGroups = Array.from(targetGroupsSelect.selectedOptions).map(opt => parseInt(opt.value));
 
         if (!fullName) {
             showToast('Vui lòng nhập họ và tên', 'warning');
@@ -642,6 +686,7 @@ document.addEventListener('DOMContentLoaded', function() {
             position: position,
             role: role,
             is_active: isActive,
+            target_groups: selectedTargetGroups,  // THÊM DÒNG NÀY
         };
 
         if (orgId) data.organization_id = parseInt(orgId);
@@ -687,6 +732,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('accStatus').value = 'true';
         document.getElementById('passwordRequired').textContent = '*';
         document.getElementById('accPassword').disabled = false;
+        document.getElementById('accPassword').value = '';
+        // Reset target groups selection
+        const targetGroupsSelect = document.getElementById('accTargetGroups');
+        if (targetGroupsSelect) {
+            Array.from(targetGroupsSelect.options).forEach(opt => opt.selected = false);
+        }
     }
 
     // ============================================
@@ -798,6 +849,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('accPassword').disabled = false;
                     document.getElementById('accPassword').value = '';
                     
+                    // Set target groups
+                    const targetGroupsSelect = document.getElementById('accTargetGroups');
+                    if (user.target_groups) {
+                        const targetGroupIds = user.target_groups.map(g => g.id);
+                        Array.from(targetGroupsSelect.options).forEach(opt => {
+                            opt.selected = targetGroupIds.includes(parseInt(opt.value));
+                        });
+                    }
+                    
                     const modal = new bootstrap.Modal(document.getElementById('accountModal'));
                     modal.show();
                 }
@@ -828,6 +888,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('viewRole').textContent = user.role_display || 'Nhân viên';
                     document.getElementById('viewStatus').textContent = user.status || 'Hoạt động';
                     document.getElementById('viewStatus').className = `badge bg-${user.status_class || 'success'}`;
+                    
+                    // Hiển thị nhóm đối tượng
+                    if (user.target_groups && user.target_groups.length > 0) {
+                        document.getElementById('viewTargetGroups').innerHTML = user.target_groups.map(g => 
+                            `<span class="badge bg-secondary bg-opacity-10 text-secondary me-1">${g.name}</span>`
+                        ).join('');
+                    } else {
+                        document.getElementById('viewTargetGroups').textContent = '-';
+                    }
+                    
                     document.getElementById('viewLastLogin').textContent = user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : '-';
                     document.getElementById('viewDateJoined').textContent = user.date_joined ? new Date(user.date_joined).toLocaleString('vi-VN') : '-';
                     
@@ -1013,6 +1083,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // INIT
     // ============================================
     loadOrganizations();
+    loadTargetGroups();
     loadAccounts();
 });
 </script>

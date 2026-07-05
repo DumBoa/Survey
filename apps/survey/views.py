@@ -578,14 +578,21 @@ def survey_public_response(request, survey_id):
 
 # apps/survey/views.py - Hàm survey_submit_response
 
+# apps/survey/views.py - Hàm survey_submit_response hoàn chỉnh
+
 @csrf_exempt
 def survey_submit_response(request):
+    """
+    API submit hoặc lưu nháp response
+    Tự động cập nhật trạng thái đơn vị khi hoàn thành
+    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     try:
         data = json.loads(request.body) if request.body else {}
         
+        # Validate dữ liệu
         serializer = ResponseSubmitSerializer(data=data)
         if not serializer.is_valid():
             return JsonResponse({'error': serializer.errors}, status=400)
@@ -594,7 +601,7 @@ def survey_submit_response(request):
         survey_id = validated['survey_id']
         survey = get_object_or_404(SurveyModel, id=survey_id)
         
-        # Lấy progress_id
+        # Lấy progress_id nếu có
         progress_id = validated.get('progress_id')
         progress = None
         if progress_id:
@@ -616,25 +623,47 @@ def survey_submit_response(request):
             except ResponseModel.DoesNotExist:
                 response = None
 
+        # Tạo mới response nếu chưa có
         if not response:
             response = ResponseModel(
                 survey=survey,
                 status='draft',
                 answers={},
-                section_progress={}
+                section_progress={},
+                respondent_ip=request.META.get('REMOTE_ADDR'),
+                respondent_device_id=validated.get('device_id', ''),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
             )
-            # ... set thông tin ...
+            
+            # Gán user nếu đã đăng nhập
             if request.user.is_authenticated:
                 response.user = request.user
                 response.respondent_email = request.user.email
-            response.respondent_ip = request.META.get('REMOTE_ADDR')
-            response.respondent_device_id = validated.get('device_id', '')
-            response.user_agent = request.META.get('HTTP_USER_AGENT', '')       
+                
+                # Tự động điền thông tin user vào answers lần đầu
+                user = request.user
+                user_info = {
+                    'full_name': user.get_full_name() or user.username,
+                    'email': user.email or '',
+                    'phone': user.phone_number or '',
+                    'position': user.position or '',
+                    'department': user.organization.name if user.organization else '',
+                    'agency': user.organization.name if user.organization else '',
+                    'organization': user.organization.name if user.organization else '',
+                }
+                response.answers = user_info
+        
         # Cập nhật answers
         if 'answers' in validated:
             current_answers = response.answers or {}
             for key, value in validated['answers'].items():
-                current_answers[str(key)] = value
+                # Nếu key là '_user_info' thì merge đặc biệt
+                if key == '_user_info' and isinstance(value, dict):
+                    for k, v in value.items():
+                        if v:
+                            current_answers[k] = v
+                else:
+                    current_answers[str(key)] = value
             response.answers = current_answers
         
         # Cập nhật section_progress
@@ -647,8 +676,11 @@ def survey_submit_response(request):
         if 'time_taken' in validated:
             response.time_taken = validated['time_taken']
         
+        # Xác định trạng thái mới
         new_status = validated.get('status', 'draft')
-        if new_status == 'submitted' and response.status != 'submitted':
+        was_submitted = response.status == 'submitted'
+        
+        if new_status == 'submitted' and not was_submitted:
             response.submitted_at = timezone.now()
             response.status = 'submitted'
         elif new_status == 'draft':
@@ -676,7 +708,7 @@ def survey_submit_response(request):
             else:
                 progress.progress_percent = 0
             
-            # Cập nhật trạng thái
+            # Cập nhật trạng thái progress
             if new_status == 'submitted':
                 progress.status = 'completed'
                 progress.completed_at = timezone.now()
@@ -690,19 +722,77 @@ def survey_submit_response(request):
             
             progress.save()
         
+        # ============================================================
+        # CẬP NHẬT SURVEY PARTICIPANT (nếu có)
+        # ============================================================
+        if request.user.is_authenticated:
+            try:
+                participant = SurveyParticipant.objects.filter(
+                    user=request.user,
+                    survey=survey,
+                    status='draft'
+                ).first()
+                
+                if participant:
+                    # Cập nhật thông tin participant từ response
+                    if not participant.full_name and response.answers.get('full_name'):
+                        participant.full_name = response.answers.get('full_name')
+                    if not participant.email and response.answers.get('email'):
+                        participant.email = response.answers.get('email')
+                    if not participant.phone and response.answers.get('phone'):
+                        participant.phone = response.answers.get('phone')
+                    if not participant.position and response.answers.get('position'):
+                        participant.position = response.answers.get('position')
+                    if not participant.department and response.answers.get('department'):
+                        participant.department = response.answers.get('department')
+                    if not participant.agency and response.answers.get('agency'):
+                        participant.agency = response.answers.get('agency')
+                    
+                    if new_status == 'submitted':
+                        participant.status = 'submitted'
+                        participant.submitted_at = timezone.now()
+                    
+                    participant.response = response
+                    participant.save()
+            except Exception as e:
+                print(f"Error updating participant: {e}")
+        
+        # ============================================================
+        # CẬP NHẬT TRẠNG THÁI ĐƠN VỊ (QUAN TRỌNG)
+        # ============================================================
+        if new_status == 'submitted':
+            try:
+                from apps.survey.utils import update_survey_unit_status
+                update_survey_unit_status(survey_id)
+            except Exception as e:
+                print(f"Error updating unit status: {e}")
+                # Không fail response nếu lỗi update status
+        
+        # Lưu response ID vào session
         request.session[f'survey_response_{survey_id}'] = response.id
         
+        # ============================================================
+        # TRẢ VỀ KẾT QUẢ
+        # ============================================================
         return JsonResponse({
             'success': True,
             'response_id': response.id,
             'status': response.status,
-            'submitted_at': response.submitted_at,
+            'submitted_at': response.submitted_at.isoformat() if response.submitted_at else None,
             'progress_id': progress.id if progress else None,
             'progress_percent': progress.progress_percent if progress else 0,
+            'message': 'Đã lưu thành công!' if new_status == 'draft' else 'Nộp khảo sát thành công!',
         })
         
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Dữ liệu JSON không hợp lệ'}, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        import traceback
+        print(f"Error in survey_submit_response: {traceback.format_exc()}")
+        return JsonResponse({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }, status=500)
 
 
 def survey_public_embed(request, survey_id):
@@ -781,6 +871,8 @@ class SurveyPublicDetailView(APIView):
             return Response({'error': 'Không tìm thấy khảo sát'}, status=404)
 
 
+# apps/survey/views.py - Sửa hàm PublicResponseView (GET)
+
 class PublicResponseView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -796,15 +888,13 @@ class PublicResponseView(APIView):
             if response_id:
                 try:
                     response = ResponseModel.objects.get(id=response_id, survey=survey)
-                    # Nếu đã submitted, trả về để hiển thị trạng thái
                     if response.status == 'submitted':
                         serializer = ResponseSerializer(response)
                         return Response(serializer.data)
                 except ResponseModel.DoesNotExist:
                     pass
             
-            # Nếu không tìm thấy theo session (vd: đóng trình duyệt mở lại),
-            # thử tìm response draft cũ theo địa chỉ IP để khôi phục dữ liệu
+            # Nếu không tìm thấy theo session, thử tìm theo IP
             if not response:
                 ip = request.META.get('REMOTE_ADDR')
                 if ip:
@@ -827,9 +917,26 @@ class PublicResponseView(APIView):
                     respondent_ip=request.META.get('REMOTE_ADDR'),
                     user_agent=request.META.get('HTTP_USER_AGENT', '')
                 )
-                request.session[f'survey_response_{survey_id}'] = response.id
-            else:
-                # Cập nhật session với response tìm thấy
+                
+                # ============================================================
+                # TỰ ĐỘNG ĐIỀN THÔNG TIN USER VÀO ANSWERS
+                # ============================================================
+                if request.user.is_authenticated:
+                    user = request.user
+                    user_info = {
+                        'full_name': user.get_full_name() or user.username,
+                        'email': user.email or '',
+                        'phone': user.phone_number or '',
+                        'position': user.position or '',
+                        'department': user.organization.name if user.organization else '',
+                        'agency': user.organization.name if user.organization else '',
+                        'organization': user.organization.name if user.organization else '',
+                    }
+                    response.answers = user_info
+                    response.respondent_email = user.email
+                    response.user = user
+                    response.save()
+                
                 request.session[f'survey_response_{survey_id}'] = response.id
             
             serializer = ResponseSerializer(response)
@@ -852,7 +959,6 @@ class PublicResponseView(APIView):
             
             if response_id:
                 try:
-                    # SỬA: ResponseModel thay vì Response
                     response = ResponseModel.objects.get(id=response_id, survey=survey)
                 except ResponseModel.DoesNotExist:
                     response = ResponseModel.objects.create(
@@ -871,10 +977,29 @@ class PublicResponseView(APIView):
             
             request.session[f'survey_response_{survey_id}'] = response.id
             
+            # ============================================================
+            # TỰ ĐỘNG ĐIỀN THÔNG TIN USER KHI LƯU LẦN ĐẦU
+            # ============================================================
+            if request.user.is_authenticated and not response.answers:
+                user = request.user
+                user_info = {
+                    'full_name': user.get_full_name() or user.username,
+                    'email': user.email or '',
+                    'phone': user.phone_number or '',
+                    'position': user.position or '',
+                    'department': user.organization.name if user.organization else '',
+                    'agency': user.organization.name if user.organization else '',
+                    'organization': user.organization.name if user.organization else '',
+                }
+                response.answers = user_info
+                response.respondent_email = user.email
+                response.user = user
+            
             if 'answers' in data:
                 current_answers = response.answers or {}
                 for key, value in data['answers'].items():
-                    current_answers[str(key)] = value
+                    if value is not None:
+                        current_answers[str(key)] = value
                 response.answers = current_answers
             
             if 'section_progress' in data:
@@ -901,14 +1026,14 @@ class PublicResponseView(APIView):
             return Response({
                 'success': True,
                 'response_id': response.id,
-                'status': response.status
+                'status': response.status,
+                'answers': response.answers,
             })
             
         except SurveyModel.DoesNotExist:
             return Response({'error': 'Không tìm thấy khảo sát'}, status=404)
         except Exception as e:
             return Response({'error': str(e)}, status=400)
-# apps/survey/views.py - Thêm vào cuối file
 
 from .models import SurveyAssignment, SurveyParticipant
 

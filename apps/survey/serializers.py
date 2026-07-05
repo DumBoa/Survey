@@ -159,3 +159,5 @@ class ResponseSubmitSerializer(serializers.Serializer):
     section_progress = serializers.DictField(required=False, default=dict)
     status = serializers.ChoiceField(choices=['draft', 'submitted'])
     time_taken = serializers.IntegerField(required=False, default=0)
+    device_id = serializers.CharField(required=False, default='')
+    user_agent = serializers.CharField(required=False, default='')

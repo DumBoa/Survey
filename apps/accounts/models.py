@@ -1,3 +1,4 @@
+# apps/accounts/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -29,7 +30,14 @@ class User(AbstractUser):
     position = models.CharField(max_length=100, blank=True, null=True, verbose_name="Chức vụ")
     is_surveyor = models.BooleanField(default=False, verbose_name="Là điều tra viên")
     last_active_at = models.DateTimeField(auto_now=True, verbose_name="Lần hoạt động cuối")
-
+    
+    # THÊM TRƯỜNG NÀY - Liên kết user với nhóm đối tượng
+    target_groups = models.ManyToManyField(
+        'analytics.TargetGroup',
+        blank=True,
+        related_name='users',
+        verbose_name="Nhóm đối tượng"
+    )
 
     groups = models.ManyToManyField(
         'auth.Group',

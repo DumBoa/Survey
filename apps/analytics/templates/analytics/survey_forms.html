@@ -64,7 +64,7 @@
                         <th>Danh mục</th>
                         <th>Nhóm đã gán</th>
                         <th style="width:120px;">Trạng thái</th>
-                        <th style="width:140px;">Thao tác</th>
+                        <th style="width:200px;">Thao tác</th>  <!-- Tăng width -->
                     </tr>
                 </thead>
                 <tbody id="formTableBody">
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 renderTable(data);
             } else {
-                showError('Không thể tải dữ liệu: ' + data.error);
+                alert('Không thể tải dữ liệu: ' + data.error);
             }
         })
         .catch(error => {
@@ -289,18 +289,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         </span>
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${f.id}" title="Sửa">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${f.id}" data-name="${f.name}" title="Xóa">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <!-- ======================================== -->
+                        <!-- THÊM NÚT VÀO BUILDER                     -->
+                        <!-- ======================================== -->
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="/survey/survey-edit/?survey_id=${f.id}" class="btn btn-outline-success" title="Vào builder">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button class="btn btn-outline-primary btn-edit" data-id="${f.id}" title="Sửa thông tin">
+                                <i class="bi bi-gear"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-delete" data-id="${f.id}" data-name="${f.name}" title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
         }
         
-        // Cập nhật thông tin phân trang
         const start = (data.page - 1) * data.per_page + 1;
         const end = Math.min(data.page * data.per_page, data.total);
         document.getElementById('tableInfo').textContent = 
@@ -373,130 +380,129 @@ document.addEventListener('DOMContentLoaded', function() {
     // LƯU BIỂU MẪU (Tạo/Sửa)
     // ============================================
     document.getElementById('btnSaveForm').addEventListener('click', function() {
-    const id = document.getElementById('editFormId').value;
-    const code = document.getElementById('formCode').value.trim();  // THÊM DÒNG NÀY
-    const name = document.getElementById('formName').value.trim();
-    const description = document.getElementById('formDescription').value.trim();
-    const categoryId = document.getElementById('formCategory').value;
-    const status = document.getElementById('formStatus').value;
-    const startDate = document.getElementById('formStartDate').value;
-    const endDate = document.getElementById('formEndDate').value;
-    const allowAfterDeadline = document.getElementById('formAllowAfterDeadline').checked;
+        const id = document.getElementById('editFormId').value;
+        const code = document.getElementById('formCode').value.trim();
+        const name = document.getElementById('formName').value.trim();
+        const description = document.getElementById('formDescription').value.trim();
+        const categoryId = document.getElementById('formCategory').value;
+        const status = document.getElementById('formStatus').value;
+        const startDate = document.getElementById('formStartDate').value;
+        const endDate = document.getElementById('formEndDate').value;
+        const allowAfterDeadline = document.getElementById('formAllowAfterDeadline').checked;
 
-    if (!name) {
-        alert('Vui lòng nhập tên biểu mẫu');
-        return;
-    }
-
-    const data = {
-        title: name,
-        description: description,
-        status: status,
-        allow_after_deadline: allowAfterDeadline,
-    };
-
-    // THÊM CODE VÀO DATA NẾU CÓ
-    if (code) {
-        data.code = code;
-    }
-
-    if (categoryId) data.category_id = parseInt(categoryId);
-    if (startDate) data.start_date = startDate;
-    if (endDate) data.end_date = endDate;
-
-    const url = id ? 
-        `/analytics/api/survey-forms/${id}/update/` : 
-        '/analytics/api/survey-forms/create/';
-    const method = id ? 'PUT' : 'POST';
-
-    fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken(),
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('formModal')).hide();
-            loadForms();
-            resetModal();
-        } else {
-            alert('Lỗi: ' + data.error);
+        if (!name) {
+            alert('Vui lòng nhập tên biểu mẫu');
+            return;
         }
-    })
-    .catch(error => {
-        alert('Có lỗi xảy ra: ' + error);
-    });
-});
 
-    // ============================================
-    // RESET MODAL
-    // ============================================
-function resetModal() {
-    document.getElementById('formModalForm').reset();
-    document.getElementById('editFormId').value = '';
-    document.getElementById('formCode').value = '';  // THÊM DÒNG NÀY
-    document.getElementById('formCode').readOnly = false;  // THÊM DÒNG NÀY
-    document.getElementById('formModalTitle').textContent = 'Thêm biểu mẫu mới';
-    document.getElementById('formStatus').value = 'draft';
-    document.getElementById('formAllowAfterDeadline').checked = false;
-}
+        const data = {
+            title: name,
+            description: description,
+            status: status,
+            allow_after_deadline: allowAfterDeadline,
+        };
 
-    // ============================================
-    // SỬA BIỂU MẪU
-    // ============================================
-    document.getElementById('formTableBody').addEventListener('click', function(e) {
-    // Nút Edit
-    const editBtn = e.target.closest('.btn-edit');
-    if (editBtn) {
-        const id = editBtn.dataset.id;
-        fetch(`/analytics/api/survey-forms/${id}/`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        if (code) {
+            data.code = code;
+        }
+
+        if (categoryId) data.category_id = parseInt(categoryId);
+        if (startDate) data.start_date = startDate;
+        if (endDate) data.end_date = endDate;
+
+        const url = id ? 
+            `/analytics/api/survey-forms/${id}/update/` : 
+            '/analytics/api/survey-forms/create/';
+        const method = id ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const form = data.data;
-                document.getElementById('editFormId').value = form.id;
-                document.getElementById('formCode').value = form.code || '';  // THÊM DÒNG NÀY
-                document.getElementById('formCode').readOnly = true;  // THÊM DÒNG NÀY - KHÔNG CHO SỬA CODE
-                document.getElementById('formName').value = form.title;
-                document.getElementById('formDescription').value = form.description || '';
-                document.getElementById('formCategory').value = form.category_id || '';
-                document.getElementById('formStatus').value = form.status;
-                document.getElementById('formAllowAfterDeadline').checked = form.allow_after_deadline || false;
-                
-                if (form.start_date) {
-                    document.getElementById('formStartDate').value = form.start_date.substring(0, 16);
-                }
-                if (form.end_date) {
-                    document.getElementById('formEndDate').value = form.end_date.substring(0, 16);
-                }
-                
-                document.getElementById('formModalTitle').textContent = 'Sửa biểu mẫu';
-                const modal = new bootstrap.Modal(document.getElementById('formModal'));
-                modal.show();
+                bootstrap.Modal.getInstance(document.getElementById('formModal')).hide();
+                loadForms();
+                resetModal();
+            } else {
+                alert('Lỗi: ' + data.error);
             }
         })
         .catch(error => {
-            alert('Không thể tải thông tin biểu mẫu');
+            alert('Có lỗi xảy ra: ' + error);
         });
-        return;
+    });
+
+    // ============================================
+    // RESET MODAL
+    // ============================================
+    function resetModal() {
+        document.getElementById('formModalForm').reset();
+        document.getElementById('editFormId').value = '';
+        document.getElementById('formCode').value = '';
+        document.getElementById('formCode').readOnly = false;
+        document.getElementById('formModalTitle').textContent = 'Thêm biểu mẫu mới';
+        document.getElementById('formStatus').value = 'draft';
+        document.getElementById('formAllowAfterDeadline').checked = false;
     }
 
-    // Nút Delete (giữ nguyên)
-    const delBtn = e.target.closest('.btn-delete');
-    if (delBtn) {
-        deleteTargetId = parseInt(delBtn.dataset.id);
-        document.getElementById('deleteFormName').textContent = delBtn.dataset.name;
-        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        modal.show();
-    }
-});
+    // ============================================
+    // SỬA BIỂU MẪU (Modal)
+    // ============================================
+    document.getElementById('formTableBody').addEventListener('click', function(e) {
+        // Nút Edit (sửa thông tin)
+        const editBtn = e.target.closest('.btn-edit');
+        if (editBtn) {
+            const id = editBtn.dataset.id;
+            fetch(`/analytics/api/survey-forms/${id}/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const form = data.data;
+                    document.getElementById('editFormId').value = form.id;
+                    document.getElementById('formCode').value = form.code || '';
+                    document.getElementById('formCode').readOnly = true;
+                    document.getElementById('formName').value = form.title;
+                    document.getElementById('formDescription').value = form.description || '';
+                    document.getElementById('formCategory').value = form.category_id || '';
+                    document.getElementById('formStatus').value = form.status;
+                    document.getElementById('formAllowAfterDeadline').checked = form.allow_after_deadline || false;
+                    
+                    if (form.start_date) {
+                        document.getElementById('formStartDate').value = form.start_date.substring(0, 16);
+                    }
+                    if (form.end_date) {
+                        document.getElementById('formEndDate').value = form.end_date.substring(0, 16);
+                    }
+                    
+                    document.getElementById('formModalTitle').textContent = 'Sửa biểu mẫu';
+                    const modal = new bootstrap.Modal(document.getElementById('formModal'));
+                    modal.show();
+                }
+            })
+            .catch(error => {
+                alert('Không thể tải thông tin biểu mẫu');
+            });
+            return;
+        }
+
+        // Nút Delete
+        const delBtn = e.target.closest('.btn-delete');
+        if (delBtn) {
+            deleteTargetId = parseInt(delBtn.dataset.id);
+            document.getElementById('deleteFormName').textContent = delBtn.dataset.name;
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+    });
 
     // ============================================
     // XÓA BIỂU MẪU

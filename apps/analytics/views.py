@@ -1,5 +1,5 @@
 # apps/analytics/views.py
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -13,65 +13,96 @@ from .models import TargetGroup
 
 # Import models từ survey
 from apps.survey.models import Survey as SurveyModel, SurveyCategory as SurveyCategoryModel
+from apps.survey.models import SurveyUnitStatus
+
+# Import từ accounts để kiểm tra role
+from apps.accounts.views import is_admin_user
+from apps.accounts.models import User, Organization
+
+
+# ============================================
+# DECORATOR KIỂM TRA ADMIN
+# ============================================
+
+def admin_required(view_func):
+    """Decorator yêu cầu user phải là admin/staff"""
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/accounts/login/')
+        if not is_admin_user(request.user):
+            return redirect('/accounts/survey-dashboard/')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 
 # ============================================
 # TRANG DASHBOARD
 # ============================================
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def dashboard_home(request):
     """Trang dashboard tổng quan"""
     return render(request, 'analytics/dashboard.html', {'active_menu': 'dashboard'})
 
 
 @login_required(login_url='/accounts/login/')
-def survey_list_view(request):
-    """Danh sách đợt khảo sát"""
-    return render(request, 'analytics/surveys.html', {'active_menu': 'surveys'})
-
-
-@login_required(login_url='/accounts/login/')
+@admin_required
 def target_groups_view(request):
     """Quản lý nhóm đối tượng"""
     return render(request, 'analytics/target_groups.html', {'active_menu': 'target_groups'})
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def survey_forms_view(request):
     """Quản lý biểu mẫu"""
     return render(request, 'analytics/survey_forms.html', {'active_menu': 'survey_forms'})
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def assignments_view(request):
     """Gán biểu mẫu cho nhóm"""
     return render(request, 'analytics/assignments.html', {'active_menu': 'assignments'})
 
+
 @login_required(login_url='/accounts/login/')
+@admin_required
 def account_manage(request):
     context = {
         'active_menu': 'account_manage',
     }
     return render(request, 'analytics/account_manage.html', context)
+
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def tongquankhaosat_view(request):
+    """Trang tổng hợp đơn vị khảo sát"""
+    return render(request, 'analytics/tongquankhaosat.html', {'active_menu': 'survey_dashboard'})
+
+
 # ============================================
 # API TARGET GROUPS
 # ============================================
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def target_group_list_api(request):
     """
     API lấy danh sách nhóm đối tượng
     """
     try:
         queryset = TargetGroup.objects.all().order_by('-created_at')
-        
+
         # Filter theo status
         status = request.GET.get('status')
         if status == 'active':
             queryset = queryset.filter(is_active=True)
         elif status == 'inactive':
             queryset = queryset.filter(is_active=False)
-        
+
         # Filter theo search
         search = request.GET.get('search', '')
         if search:
@@ -80,14 +111,14 @@ def target_group_list_api(request):
                 models.Q(name__icontains=search) |
                 models.Q(description__icontains=search)
             )
-        
+
         # Pagination
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 10))
-        
+
         paginator = Paginator(queryset, per_page)
         page_obj = paginator.get_page(page)
-        
+
         data = []
         for group in page_obj:
             data.append({
@@ -102,7 +133,7 @@ def target_group_list_api(request):
                 'created_at': group.created_at.isoformat(),
                 'updated_at': group.updated_at.isoformat(),
             })
-        
+
         return JsonResponse({
             'success': True,
             'data': data,
@@ -111,7 +142,7 @@ def target_group_list_api(request):
             'per_page': per_page,
             'total_pages': paginator.num_pages,
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -120,13 +151,14 @@ def target_group_list_api(request):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def target_group_detail_api(request, group_id):
     """
     API lấy chi tiết một nhóm đối tượng
     """
     try:
         group = get_object_or_404(TargetGroup, id=group_id)
-        
+
         data = {
             'id': group.id,
             'code': group.code,
@@ -138,12 +170,12 @@ def target_group_detail_api(request, group_id):
             'created_at': group.created_at.isoformat(),
             'updated_at': group.updated_at.isoformat(),
         }
-        
+
         return JsonResponse({
             'success': True,
             'data': data
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -152,6 +184,7 @@ def target_group_detail_api(request, group_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def target_group_create_api(request):
@@ -160,25 +193,25 @@ def target_group_create_api(request):
     """
     try:
         data = json.loads(request.body) if request.body else {}
-        
+
         if not data.get('code'):
             return JsonResponse({
                 'success': False,
                 'error': 'Mã nhóm là bắt buộc'
             }, status=400)
-        
+
         if not data.get('name'):
             return JsonResponse({
                 'success': False,
                 'error': 'Tên nhóm là bắt buộc'
             }, status=400)
-        
+
         if TargetGroup.objects.filter(code=data['code']).exists():
             return JsonResponse({
                 'success': False,
                 'error': f'Mã nhóm "{data["code"]}" đã tồn tại'
             }, status=400)
-        
+
         group = TargetGroup.objects.create(
             code=data['code'].strip().upper(),
             name=data['name'].strip(),
@@ -187,7 +220,7 @@ def target_group_create_api(request):
             is_active=data.get('is_active', True),
             forms=data.get('forms', [])
         )
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Tạo nhóm thành công!',
@@ -198,7 +231,7 @@ def target_group_create_api(request):
                 'is_active': group.is_active,
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -207,6 +240,7 @@ def target_group_create_api(request):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["PUT", "PATCH"])
 def target_group_update_api(request, group_id):
@@ -216,7 +250,7 @@ def target_group_update_api(request, group_id):
     try:
         group = get_object_or_404(TargetGroup, id=group_id)
         data = json.loads(request.body) if request.body else {}
-        
+
         if 'code' in data and data['code'] != group.code:
             if TargetGroup.objects.filter(code=data['code']).exists():
                 return JsonResponse({
@@ -224,7 +258,7 @@ def target_group_update_api(request, group_id):
                     'error': f'Mã nhóm "{data["code"]}" đã tồn tại'
                 }, status=400)
             group.code = data['code'].strip().upper()
-        
+
         if 'name' in data:
             group.name = data['name'].strip()
         if 'description' in data:
@@ -235,9 +269,9 @@ def target_group_update_api(request, group_id):
             group.is_active = data['is_active']
         if 'forms' in data:
             group.forms = data['forms']
-        
+
         group.save()
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Cập nhật nhóm thành công!',
@@ -248,7 +282,7 @@ def target_group_update_api(request, group_id):
                 'is_active': group.is_active,
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -257,6 +291,7 @@ def target_group_update_api(request, group_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def target_group_delete_api(request, group_id):
@@ -266,12 +301,12 @@ def target_group_delete_api(request, group_id):
     try:
         group = get_object_or_404(TargetGroup, id=group_id)
         group.delete()
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Xóa nhóm thành công!'
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -280,6 +315,7 @@ def target_group_delete_api(request, group_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def target_group_options_api(request):
     """
     API lấy danh sách nhóm để dùng trong select
@@ -287,12 +323,12 @@ def target_group_options_api(request):
     try:
         groups = TargetGroup.objects.filter(is_active=True).order_by('name')
         data = [{'id': g.id, 'code': g.code, 'name': g.name} for g in groups]
-        
+
         return JsonResponse({
             'success': True,
             'data': data
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -305,68 +341,41 @@ def target_group_options_api(request):
 # ============================================
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def assignment_list_api(request):
     """
     API lấy danh sách gán biểu mẫu cho nhóm
     """
     try:
-        print("="*60)
-        print("ASSIGNMENT_LIST_API - START")
-        print("="*60)
-        
-        # Kiểm tra user đã login chưa
-        print(f"User: {request.user}")
-        print(f"User authenticated: {request.user.is_authenticated}")
-        
-        # Lấy tất cả nhóm
         queryset = TargetGroup.objects.all().order_by('-created_at')
-        print(f"Total groups in database: {queryset.count()}")
-        
-        # In chi tiết từng group
-        for idx, group in enumerate(queryset, 1):
-            print(f"  {idx}. ID: {group.id}, Code: {group.code}, Name: {group.name}, Forms: {group.forms}")
-        
-        # Lọc theo nhóm
+
         group_id = request.GET.get('group')
         if group_id:
             queryset = queryset.filter(id=group_id)
-            print(f"Filtered by group_id: {group_id}")
-        
-        # Lọc theo trạng thái
+
         status = request.GET.get('status')
         if status == 'active':
             queryset = queryset.filter(is_active=True)
-            print("Filtered by status: active")
         elif status == 'inactive':
             queryset = queryset.filter(is_active=False)
-            print("Filtered by status: inactive")
-        
-        # Lọc theo biểu mẫu
+
         form_code = request.GET.get('form')
         if form_code:
-            # Lọc các nhóm có chứa form_code trong danh sách forms
             queryset = queryset.filter(forms__contains=[form_code])
-            print(f"Filtered by form_code: {form_code}")
-        
-        # Tìm kiếm
+
         search = request.GET.get('search', '')
         if search:
             queryset = queryset.filter(
                 models.Q(code__icontains=search) |
                 models.Q(name__icontains=search)
             )
-            print(f"Search keyword: {search}")
-        
-        print(f"Final queryset count after all filters: {queryset.count()}")
-        
-        # Pagination
+
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 10))
-        print(f"Page: {page}, Per page: {per_page}")
-        
+
         paginator = Paginator(queryset, per_page)
         page_obj = paginator.get_page(page)
-        
+
         data = []
         for group in page_obj:
             forms = group.forms if group.forms else []
@@ -379,10 +388,7 @@ def assignment_list_api(request):
                 'is_active': group.is_active,
                 'form_count': len(forms),
             })
-        
-        print(f"Data to return: {len(data)} items")
-        print("="*60)
-        
+
         return JsonResponse({
             'success': True,
             'data': data,
@@ -391,26 +397,23 @@ def assignment_list_api(request):
             'per_page': per_page,
             'total_pages': paginator.num_pages,
         })
-        
+
     except Exception as e:
-        import traceback
-        error_detail = traceback.format_exc()
-        print(f"ERROR in assignment_list_api: {error_detail}")
         return JsonResponse({
             'success': False,
-            'error': str(e),
-            'detail': error_detail
+            'error': str(e)
         }, status=500)
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def assignment_detail_api(request, group_id):
     """
     API lấy chi tiết gán của một nhóm
     """
     try:
         group = get_object_or_404(TargetGroup, id=group_id)
-        
+
         data = {
             'group_id': group.id,
             'group_code': group.code,
@@ -422,12 +425,12 @@ def assignment_detail_api(request, group_id):
             'created_at': group.created_at.isoformat(),
             'updated_at': group.updated_at.isoformat(),
         }
-        
+
         return JsonResponse({
             'success': True,
             'data': data
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -436,6 +439,7 @@ def assignment_detail_api(request, group_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def assignment_create_api(request):
@@ -444,28 +448,28 @@ def assignment_create_api(request):
     """
     try:
         data = json.loads(request.body) if request.body else {}
-        
+
         group_id = data.get('group_id')
         forms = data.get('forms', [])
         is_active = data.get('is_active', True)
-        
+
         if not group_id:
             return JsonResponse({
                 'success': False,
                 'error': 'Vui lòng chọn nhóm đối tượng'
             }, status=400)
-        
+
         if not forms:
             return JsonResponse({
                 'success': False,
                 'error': 'Vui lòng chọn ít nhất một biểu mẫu'
             }, status=400)
-        
+
         group = get_object_or_404(TargetGroup, id=group_id)
         group.forms = forms
         group.is_active = is_active
         group.save()
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Gán biểu mẫu thành công!',
@@ -477,7 +481,7 @@ def assignment_create_api(request):
                 'is_active': group.is_active,
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -486,6 +490,7 @@ def assignment_create_api(request):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["PUT", "PATCH"])
 def assignment_update_api(request, group_id):
@@ -495,14 +500,14 @@ def assignment_update_api(request, group_id):
     try:
         group = get_object_or_404(TargetGroup, id=group_id)
         data = json.loads(request.body) if request.body else {}
-        
+
         if 'forms' in data:
             group.forms = data['forms']
         if 'is_active' in data:
             group.is_active = data['is_active']
-        
+
         group.save()
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Cập nhật gán biểu mẫu thành công!',
@@ -514,7 +519,7 @@ def assignment_update_api(request, group_id):
                 'is_active': group.is_active,
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -523,6 +528,7 @@ def assignment_update_api(request, group_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def assignment_delete_api(request, group_id):
@@ -531,23 +537,24 @@ def assignment_delete_api(request, group_id):
     """
     try:
         group = get_object_or_404(TargetGroup, id=group_id)
-        
-        # Xóa tất cả forms được gán
+
         group.forms = []
         group.save()
-        
+
         return JsonResponse({
             'success': True,
             'message': f'Đã xóa tất cả biểu mẫu được gán cho nhóm "{group.name}"!'
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
             'error': str(e)
         }, status=500)
 
+
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def assignment_remove_form_api(request, group_id):
@@ -557,16 +564,15 @@ def assignment_remove_form_api(request, group_id):
     try:
         data = json.loads(request.body) if request.body else {}
         form_code = data.get('form_code')
-        
+
         if not form_code:
             return JsonResponse({
                 'success': False,
                 'error': 'Vui lòng cung cấp mã biểu mẫu cần gỡ'
             }, status=400)
-        
+
         group = get_object_or_404(TargetGroup, id=group_id)
-        
-        # Kiểm tra và gỡ form_code khỏi danh sách
+
         if group.forms and form_code in group.forms:
             group.forms = [f for f in group.forms if f != form_code]
             group.save()
@@ -584,69 +590,7 @@ def assignment_remove_form_api(request, group_id):
                 'success': False,
                 'error': f'Biểu mẫu "{form_code}" không được gán cho nhóm này'
             }, status=400)
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
-    
-@login_required(login_url='/accounts/login/')
-def assignment_surveys_api(request):
-    """
-    API lấy danh sách survey để chọn trong dropdown
-    """
-    try:
-        surveys = SurveyModel.objects.filter(
-            status__in=['active', 'draft']
-        ).order_by('-created_at')
-        
-        data = [{
-            'id': s.id,
-            'title': s.title,
-            'status': s.status,
-        } for s in surveys]
-        
-        return JsonResponse({
-            'success': True,
-            'data': data
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
 
-
-@login_required(login_url='/accounts/login/')
-def assignment_forms_options_api(request):
-    """
-    API lấy danh sách biểu mẫu (survey) để chọn
-    """
-    try:
-        surveys = SurveyModel.objects.filter(
-            status__in=['active', 'draft']
-        ).order_by('id')
-        
-        data = []
-        for survey in surveys:
-            # SỬA: DÙNG CODE TỪ DATABASE
-            code = survey.code if survey.code else f"BM-{str(survey.id).zfill(3)}"
-            data.append({
-                'id': survey.id,
-                'code': code,  # ĐÃ CÓ ĐỊNH DẠNG BM-XXX
-                'name': f"{survey.title} - {code}",  # HIỂN THỊ TITLE + CODE
-                'title': survey.title,
-                'description': survey.description or '',
-                'section': survey.category.name if survey.category else '',
-            })
-        
-        return JsonResponse({
-            'success': True,
-            'data': data
-        })
-        
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -659,57 +603,52 @@ def assignment_forms_options_api(request):
 # ============================================
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def survey_forms_list_api(request):
     """
     API lấy danh sách biểu mẫu (Survey) để quản lý
     """
     try:
         surveys = SurveyModel.objects.all().order_by('-created_at')
-        
-        # Filter theo status
+
         status = request.GET.get('status')
         if status:
             surveys = surveys.filter(status=status)
-        
-        # Tìm kiếm
+
         search = request.GET.get('search', '')
         if search:
             surveys = surveys.filter(
                 models.Q(title__icontains=search) |
                 models.Q(slug__icontains=search) |
-                models.Q(code__icontains=search)  # THÊM TÌM KIẾM THEO CODE
+                models.Q(code__icontains=search)
             )
-        
-        # Pagination
+
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 10))
-        
+
         paginator = Paginator(surveys, per_page)
         page_obj = paginator.get_page(page)
-        
+
         data = []
         for survey in page_obj:
             try:
-                # Đếm số câu hỏi
                 question_count = 0
                 for section in survey.sections.all():
                     question_count += section.questions.count()
-                
-                # SỬA: DÙNG CODE TỪ DATABASE
+
                 form_code = survey.code if survey.code else f"BM-{str(survey.id).zfill(3)}"
-                
-                # Tìm các nhóm đã gán biểu mẫu này
+
                 try:
                     assigned_groups = TargetGroup.objects.filter(forms__contains=[form_code])
                     group_names = [g.name for g in assigned_groups]
                 except:
                     group_names = []
-                
+
                 data.append({
                     'id': survey.id,
-                    'code': form_code,  # ĐÃ CÓ ĐỊNH DẠNG BM-XXX
-                    'name': f"{survey.title} - {form_code}",  # HIỂN THỊ TITLE + CODE
-                    'title': survey.title,  # GIỮ TITLE RIÊNG
+                    'code': form_code,
+                    'name': f"{survey.title} - {form_code}",
+                    'title': survey.title,
                     'description': survey.description or '',
                     'section': survey.category.name if survey.category else '',
                     'groups': group_names,
@@ -725,7 +664,7 @@ def survey_forms_list_api(request):
             except Exception as e:
                 print(f"Error processing survey {survey.id}: {e}")
                 continue
-        
+
         return JsonResponse({
             'success': True,
             'data': data,
@@ -734,29 +673,23 @@ def survey_forms_list_api(request):
             'per_page': per_page,
             'total_pages': paginator.num_pages,
         })
-        
+
     except Exception as e:
-        import traceback
-        print(f"Error in survey_forms_list_api: {traceback.format_exc()}")
         return JsonResponse({
             'success': False,
             'error': str(e)
         }, status=500)
 
 
-# ============================================
-# API SURVEY FORMS - Chi tiết
-# ============================================
-
 @login_required(login_url='/accounts/login/')
+@admin_required
 def survey_form_detail_api(request, survey_id):
     """API lấy chi tiết một biểu mẫu (Survey)"""
     try:
         survey = get_object_or_404(SurveyModel, id=survey_id)
-        
-        # SỬA: DÙNG CODE TỪ DATABASE
+
         form_code = survey.code if survey.code else f"BM-{str(survey.id).zfill(3)}"
-        
+
         sections_data = []
         for section in survey.sections.all().order_by('order'):
             questions_data = []
@@ -772,7 +705,7 @@ def survey_form_detail_api(request, survey_id):
                     'options': question.options,
                     'component_type': question.component_type,
                 })
-            
+
             sections_data.append({
                 'id': section.id,
                 'code': section.code,
@@ -783,13 +716,13 @@ def survey_form_detail_api(request, survey_id):
                 'questions': questions_data,
                 'total_questions': len(questions_data)
             })
-        
+
         return JsonResponse({
             'success': True,
             'data': {
                 'id': survey.id,
-                'code': form_code,  # ĐÃ CÓ ĐỊNH DẠNG BM-XXX
-                'name': f"{survey.title} - {form_code}",  # HIỂN THỊ TITLE + CODE
+                'code': form_code,
+                'name': f"{survey.title} - {form_code}",
                 'title': survey.title,
                 'slug': survey.slug,
                 'description': survey.description,
@@ -810,7 +743,7 @@ def survey_form_detail_api(request, survey_id):
                 'response_count': survey.responses.filter(status='submitted').count(),
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -819,6 +752,7 @@ def survey_form_detail_api(request, survey_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def survey_form_create_api(request):
@@ -828,25 +762,23 @@ def survey_form_create_api(request):
     try:
         from django.utils.text import slugify
         from django.utils import timezone
-        
+
         data = json.loads(request.body) if request.body else {}
-        
+
         title = data.get('title', '').strip()
         if not title:
             return JsonResponse({
                 'success': False,
                 'error': 'Vui lòng nhập tên biểu mẫu'
             }, status=400)
-        
-        # Tạo slug
+
         base_slug = slugify(title)
         slug = base_slug
         counter = 1
         while SurveyModel.objects.filter(slug=slug).exists():
             slug = f"{base_slug}-{counter}"
             counter += 1
-        
-        # Xử lý category
+
         category = None
         category_id = data.get('category_id')
         if category_id:
@@ -854,8 +786,7 @@ def survey_form_create_api(request):
                 category = SurveyCategoryModel.objects.get(id=category_id)
             except SurveyCategoryModel.DoesNotExist:
                 pass
-        
-        # Xử lý dates
+
         start_date = data.get('start_date')
         if start_date:
             try:
@@ -864,7 +795,7 @@ def survey_form_create_api(request):
                 start_date = timezone.now()
         else:
             start_date = timezone.now()
-        
+
         end_date = data.get('end_date')
         if end_date:
             try:
@@ -873,19 +804,15 @@ def survey_form_create_api(request):
                 end_date = timezone.now() + timezone.timedelta(days=30)
         else:
             end_date = timezone.now() + timezone.timedelta(days=30)
-        
-        # THÊM XỬ LÝ CODE
+
         code = data.get('code', '').strip()
         if code:
-            # Kiểm tra code đã tồn tại chưa
             if SurveyModel.objects.filter(code=code).exists():
                 return JsonResponse({
                     'success': False,
                     'error': f'Mã biểu mẫu "{code}" đã tồn tại'
                 }, status=400)
-        # Nếu không có code, để model tự tạo
-        
-        # Tạo survey
+
         survey = SurveyModel.objects.create(
             title=title,
             slug=slug,
@@ -896,9 +823,9 @@ def survey_form_create_api(request):
             status=data.get('status', 'draft'),
             target_groups=data.get('target_groups', []),
             settings=data.get('settings', {}),
-            code=code if code else None,  # THÊM DÒNG NÀY
+            code=code if code else None,
         )
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Tạo biểu mẫu thành công!',
@@ -910,7 +837,7 @@ def survey_form_create_api(request):
                 'status': survey.status,
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -919,6 +846,7 @@ def survey_form_create_api(request):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["PUT", "PATCH"])
 def survey_form_update_api(request, survey_id):
@@ -928,22 +856,19 @@ def survey_form_update_api(request, survey_id):
     try:
         from django.utils.text import slugify
         from django.utils import timezone
-        
+
         survey = get_object_or_404(SurveyModel, id=survey_id)
         data = json.loads(request.body) if request.body else {}
-        
-        # THÊM XỬ LÝ CODE
+
         if 'code' in data and data['code']:
             code = data['code'].strip()
-            # Kiểm tra code đã tồn tại chưa (trừ chính nó)
             if SurveyModel.objects.filter(code=code).exclude(id=survey.id).exists():
                 return JsonResponse({
                     'success': False,
                     'error': f'Mã biểu mẫu "{code}" đã tồn tại'
                 }, status=400)
             survey.code = code
-        
-        # Cập nhật các field khác
+
         if 'title' in data and data['title']:
             survey.title = data['title'].strip()
             base_slug = slugify(data['title'])
@@ -953,22 +878,22 @@ def survey_form_update_api(request, survey_id):
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             survey.slug = slug
-        
+
         if 'description' in data:
             survey.description = data['description']
-        
+
         if 'status' in data:
             survey.status = data['status']
-        
+
         if 'target_groups' in data:
             survey.target_groups = data['target_groups']
-        
+
         if 'settings' in data:
             survey.settings = data['settings']
-        
+
         if 'allow_after_deadline' in data:
             survey.allow_after_deadline = data['allow_after_deadline']
-        
+
         if 'category_id' in data:
             if data['category_id']:
                 try:
@@ -977,21 +902,21 @@ def survey_form_update_api(request, survey_id):
                     pass
             else:
                 survey.category = None
-        
+
         if 'start_date' in data and data['start_date']:
             try:
                 survey.start_date = timezone.datetime.fromisoformat(data['start_date'].replace('Z', '+00:00'))
             except:
                 pass
-        
+
         if 'end_date' in data and data['end_date']:
             try:
                 survey.end_date = timezone.datetime.fromisoformat(data['end_date'].replace('Z', '+00:00'))
             except:
                 pass
-        
+
         survey.save()
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Cập nhật biểu mẫu thành công!',
@@ -1003,7 +928,7 @@ def survey_form_update_api(request, survey_id):
                 'status': survey.status,
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -1012,6 +937,7 @@ def survey_form_update_api(request, survey_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def survey_form_delete_api(request, survey_id):
@@ -1019,15 +945,11 @@ def survey_form_delete_api(request, survey_id):
     API xóa biểu mẫu (Survey) - Chuyển sang archived nếu đã có response
     """
     try:
-        from apps.survey.models import Survey as SurveyModel
-        
         survey = get_object_or_404(SurveyModel, id=survey_id)
-        
-        # Kiểm tra xem có response không
+
         has_responses = survey.responses.filter(status='submitted').exists()
-        
+
         if has_responses:
-            # Nếu đã có response, chuyển sang archived thay vì xóa
             survey.status = 'archived'
             survey.save()
             return JsonResponse({
@@ -1038,7 +960,6 @@ def survey_form_delete_api(request, survey_id):
                 'new_status': survey.status
             })
         else:
-            # Nếu chưa có response, xóa hoàn toàn
             survey.delete()
             return JsonResponse({
                 'success': True,
@@ -1046,7 +967,7 @@ def survey_form_delete_api(request, survey_id):
                 'action': 'deleted',
                 'survey_id': survey_id
             })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -1055,6 +976,7 @@ def survey_form_delete_api(request, survey_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def survey_form_categories_api(request):
     """
     API lấy danh sách danh mục khảo sát
@@ -1066,39 +988,36 @@ def survey_form_categories_api(request):
             'name': cat.name,
             'description': cat.description,
         } for cat in categories]
-        
+
         return JsonResponse({
             'success': True,
             'data': data
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
             'error': str(e)
         }, status=500)
-# apps/analytics/views.py - Thêm vào cuối file
+
 
 # ============================================
 # API QUẢN LÝ TÀI KHOẢN (ACCOUNTS)
 # ============================================
 
-from apps.accounts.models import User, Organization
-
 @login_required(login_url='/accounts/login/')
+@admin_required
 def account_list_api(request):
     """
     API lấy danh sách tài khoản người dùng
     """
     try:
         queryset = User.objects.all().order_by('-date_joined')
-        
-        # Filter theo đơn vị
+
         department = request.GET.get('department')
         if department:
             queryset = queryset.filter(organization__name__icontains=department)
-        
-        # Filter theo vai trò
+
         role = request.GET.get('role')
         if role == 'admin':
             queryset = queryset.filter(is_superuser=True)
@@ -1108,8 +1027,7 @@ def account_list_api(request):
             queryset = queryset.filter(is_staff=False, is_superuser=False, is_active=True)
         elif role == 'viewer':
             queryset = queryset.filter(is_staff=False, is_superuser=False)
-        
-        # Filter theo trạng thái
+
         status = request.GET.get('status')
         if status == 'active':
             queryset = queryset.filter(is_active=True)
@@ -1117,8 +1035,7 @@ def account_list_api(request):
             queryset = queryset.filter(is_active=False)
         elif status == 'pending':
             queryset = queryset.filter(is_active=False, last_login__isnull=True)
-        
-        # Tìm kiếm
+
         search = request.GET.get('search', '')
         if search:
             queryset = queryset.filter(
@@ -1128,18 +1045,17 @@ def account_list_api(request):
                 models.Q(email__icontains=search) |
                 models.Q(phone_number__icontains=search)
             )
-        
-        # Pagination
+
         page = int(request.GET.get('page', 1))
         per_page = int(request.GET.get('per_page', 10))
-        
+
         paginator = Paginator(queryset, per_page)
         page_obj = paginator.get_page(page)
-        
+
         data = []
         for user in page_obj:
             full_name = f"{user.last_name} {user.first_name}".strip() or user.username
-            
+
             if user.is_superuser:
                 role_display = "Quản trị viên"
                 role_code = "admin"
@@ -1149,7 +1065,7 @@ def account_list_api(request):
             else:
                 role_display = "Nhân viên"
                 role_code = "staff"
-            
+
             if user.is_active:
                 if user.last_login:
                     status_display = "Hoạt động"
@@ -1160,7 +1076,7 @@ def account_list_api(request):
             else:
                 status_display = "Đã khóa"
                 status_class = "danger"
-            
+
             data.append({
                 'id': user.id,
                 'username': user.username,
@@ -1182,8 +1098,10 @@ def account_list_api(request):
                 'last_login': user.last_login.isoformat() if user.last_login else None,
                 'date_joined': user.date_joined.isoformat() if user.date_joined else None,
                 'initials': ''.join([word[0].upper() for word in full_name.split() if word])[:2] or user.username[:2].upper(),
+                'target_groups': [{'id': g.id, 'name': g.name} for g in user.target_groups.all()],
+                'target_groups_display': ', '.join([g.name for g in user.target_groups.all()]),
             })
-        
+
         return JsonResponse({
             'success': True,
             'data': data,
@@ -1192,10 +1110,8 @@ def account_list_api(request):
             'per_page': per_page,
             'total_pages': paginator.num_pages,
         })
-        
+
     except Exception as e:
-        import traceback
-        print(f"Error in account_list_api: {traceback.format_exc()}")
         return JsonResponse({
             'success': False,
             'error': str(e)
@@ -1203,13 +1119,14 @@ def account_list_api(request):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def account_detail_api(request, user_id):
     """API lấy chi tiết một tài khoản"""
     try:
         user = get_object_or_404(User, id=user_id)
-        
+
         full_name = f"{user.last_name} {user.first_name}".strip() or user.username
-        
+
         if user.is_superuser:
             role_display = "Quản trị viên"
             role_code = "admin"
@@ -1219,7 +1136,7 @@ def account_detail_api(request, user_id):
         else:
             role_display = "Nhân viên"
             role_code = "staff"
-        
+
         if user.is_active:
             if user.last_login:
                 status_display = "Hoạt động"
@@ -1230,7 +1147,7 @@ def account_detail_api(request, user_id):
         else:
             status_display = "Đã khóa"
             status_class = "danger"
-        
+
         data = {
             'id': user.id,
             'username': user.username,
@@ -1252,13 +1169,14 @@ def account_detail_api(request, user_id):
             'last_login': user.last_login.isoformat() if user.last_login else None,
             'date_joined': user.date_joined.isoformat() if user.date_joined else None,
             'initials': ''.join([word[0].upper() for word in full_name.split() if word])[:2] or user.username[:2].upper(),
+            'target_groups': [{'id': g.id, 'name': g.name} for g in user.target_groups.all()],
         }
-        
+
         return JsonResponse({
             'success': True,
             'data': data
         })
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
@@ -1267,36 +1185,39 @@ def account_detail_api(request, user_id):
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def account_create_api(request):
     """API tạo mới tài khoản"""
     try:
         from django.contrib.auth.hashers import make_password
-        
+        from apps.analytics.models import TargetGroup
+
         data = json.loads(request.body) if request.body else {}
-        
+
         username = data.get('username', '').strip()
         email = data.get('email', '').strip()
         password = data.get('password', '')
         full_name = data.get('full_name', '').strip()
-        
+        target_group_ids = data.get('target_groups', [])
+
         if not username:
             return JsonResponse({'success': False, 'error': 'Tên đăng nhập là bắt buộc'}, status=400)
         if not email:
             return JsonResponse({'success': False, 'error': 'Email là bắt buộc'}, status=400)
         if not password or len(password) < 8:
             return JsonResponse({'success': False, 'error': 'Mật khẩu phải có ít nhất 8 ký tự'}, status=400)
-        
+
         if User.objects.filter(username=username).exists():
             return JsonResponse({'success': False, 'error': f'Tên đăng nhập "{username}" đã tồn tại'}, status=400)
         if User.objects.filter(email=email).exists():
             return JsonResponse({'success': False, 'error': f'Email "{email}" đã được sử dụng'}, status=400)
-        
+
         name_parts = full_name.split()
         first_name = name_parts[-1] if name_parts else ''
         last_name = ' '.join(name_parts[:-1]) if len(name_parts) > 1 else ''
-        
+
         organization = None
         organization_id = data.get('organization_id')
         if organization_id:
@@ -1304,11 +1225,11 @@ def account_create_api(request):
                 organization = Organization.objects.get(id=organization_id)
             except Organization.DoesNotExist:
                 pass
-        
+
         role = data.get('role', 'staff')
         is_staff = role in ['admin', 'manager']
         is_superuser = role == 'admin'
-        
+
         user = User.objects.create(
             username=username,
             email=email,
@@ -1322,7 +1243,12 @@ def account_create_api(request):
             is_superuser=is_superuser,
             is_active=data.get('is_active', True),
         )
-        
+
+        # Gán nhóm đối tượng cho user
+        if target_group_ids:
+            target_groups = TargetGroup.objects.filter(id__in=target_group_ids)
+            user.target_groups.set(target_groups)
+
         return JsonResponse({
             'success': True,
             'message': 'Tạo tài khoản thành công!',
@@ -1332,47 +1258,62 @@ def account_create_api(request):
                 'email': user.email,
                 'full_name': f"{user.last_name} {user.first_name}".strip(),
                 'is_active': user.is_active,
+                'target_groups': [{'id': g.id, 'name': g.name} for g in user.target_groups.all()],
             }
         })
-        
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["PUT", "PATCH"])
 def account_update_api(request, user_id):
     """API cập nhật tài khoản"""
     try:
+        from apps.analytics.models import TargetGroup
+
         user = get_object_or_404(User, id=user_id)
         data = json.loads(request.body) if request.body else {}
-        
+
+        # Cập nhật username
         if 'username' in data and data['username']:
             new_username = data['username'].strip()
             if new_username != user.username and User.objects.filter(username=new_username).exists():
-                return JsonResponse({'success': False, 'error': f'Tên đăng nhập "{new_username}" đã tồn tại'}, status=400)
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Tên đăng nhập "{new_username}" đã tồn tại'
+                }, status=400)
             user.username = new_username
-        
+
+        # Cập nhật email
         if 'email' in data and data['email']:
             new_email = data['email'].strip()
             if new_email != user.email and User.objects.filter(email=new_email).exists():
-                return JsonResponse({'success': False, 'error': f'Email "{new_email}" đã được sử dụng'}, status=400)
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Email "{new_email}" đã được sử dụng'
+                }, status=400)
             user.email = new_email
-        
+
+        # Cập nhật họ tên
         if 'full_name' in data:
             full_name = data['full_name'].strip()
             name_parts = full_name.split()
             user.first_name = name_parts[-1] if name_parts else ''
             user.last_name = ' '.join(name_parts[:-1]) if len(name_parts) > 1 else ''
-        
+
+        # Cập nhật các field khác
         if 'phone' in data:
             user.phone_number = data['phone']
         if 'position' in data:
             user.position = data['position']
         if 'is_active' in data:
             user.is_active = data['is_active']
-        
+
+        # Cập nhật tổ chức
         if 'organization_id' in data:
             if data['organization_id']:
                 try:
@@ -1381,19 +1322,30 @@ def account_update_api(request, user_id):
                     pass
             else:
                 user.organization = None
-        
+
+        # Cập nhật role
         if 'role' in data:
             role = data['role']
             user.is_superuser = role == 'admin'
             user.is_staff = role in ['admin', 'manager']
-        
+
+        # Cập nhật mật khẩu
         if 'password' in data and data['password']:
             if len(data['password']) >= 8:
                 from django.contrib.auth.hashers import make_password
                 user.password = make_password(data['password'])
-        
+
+        # Cập nhật nhóm đối tượng
+        if 'target_groups' in data:
+            target_group_ids = data.get('target_groups', [])
+            if target_group_ids:
+                target_groups = TargetGroup.objects.filter(id__in=target_group_ids)
+                user.target_groups.set(target_groups)
+            else:
+                user.target_groups.clear()
+
         user.save()
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Cập nhật tài khoản thành công!',
@@ -1403,14 +1355,19 @@ def account_update_api(request, user_id):
                 'email': user.email,
                 'full_name': f"{user.last_name} {user.first_name}".strip(),
                 'is_active': user.is_active,
+                'target_groups': [{'id': g.id, 'name': g.name} for g in user.target_groups.all()],
             }
         })
-        
+
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def account_delete_api(request, user_id):
@@ -1418,17 +1375,18 @@ def account_delete_api(request, user_id):
     try:
         if request.user.id == user_id:
             return JsonResponse({'success': False, 'error': 'Bạn không thể xóa tài khoản của chính mình!'}, status=400)
-        
+
         user = get_object_or_404(User, id=user_id)
         user.delete()
-        
+
         return JsonResponse({'success': True, 'message': 'Xóa tài khoản thành công!'})
-        
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 def account_organizations_api(request):
     """API lấy danh sách tổ chức/đơn vị"""
     try:
@@ -1440,14 +1398,15 @@ def account_organizations_api(request):
             'level': org.level,
             'level_display': org.get_level_display(),
         } for org in orgs]
-        
+
         return JsonResponse({'success': True, 'data': data})
-        
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @login_required(login_url='/accounts/login/')
+@admin_required
 @csrf_exempt
 @require_http_methods(["POST"])
 def account_bulk_action_api(request):
@@ -1456,15 +1415,15 @@ def account_bulk_action_api(request):
         data = json.loads(request.body) if request.body else {}
         user_ids = data.get('user_ids', [])
         action = data.get('action', '')
-        
+
         if not user_ids:
             return JsonResponse({'success': False, 'error': 'Vui lòng chọn ít nhất một tài khoản'}, status=400)
-        
+
         if request.user.id in user_ids:
             return JsonResponse({'success': False, 'error': 'Bạn không thể thực hiện thao tác trên tài khoản của chính mình!'}, status=400)
-        
+
         users = User.objects.filter(id__in=user_ids)
-        
+
         if action == 'activate':
             users.update(is_active=True)
             message = f'Đã kích hoạt {users.count()} tài khoản'
@@ -1476,8 +1435,611 @@ def account_bulk_action_api(request):
             message = f'Đã xóa {users.count()} tài khoản'
         else:
             return JsonResponse({'success': False, 'error': 'Hành động không hợp lệ'}, status=400)
-        
+
         return JsonResponse({'success': True, 'message': message})
-        
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# ============================================
+# API DASHBOARD - TỔNG HỢP ĐƠN VỊ KHẢO SÁT
+# ============================================
+
+# apps/analytics/views.py - Sửa hàm survey_unit_dashboard_api
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def survey_unit_dashboard_api(request, survey_id):
+    """
+    API lấy dữ liệu dashboard tổng hợp đơn vị khảo sát
+    """
+    try:
+        survey = get_object_or_404(SurveyModel, id=survey_id)
+        
+        from apps.survey.utils import update_survey_unit_status
+        update_survey_unit_status(survey_id)
+        
+        # Lấy tất cả đơn vị cấp Sở (department)
+        departments = Organization.objects.filter(
+            level='department',
+            is_active=True
+        ).order_by('name')
+        
+        # Lấy tất cả đơn vị cấp Xã/Phường (ward)
+        wards = Organization.objects.filter(
+            level='ward',
+            is_active=True
+        ).order_by('name')
+        
+        # Lấy trạng thái của từng đơn vị trong khảo sát này
+        all_statuses = SurveyUnitStatus.objects.filter(survey=survey)
+        status_map = {s.organization_id: s for s in all_statuses}
+        
+        # Tổng số khảo sát đang active
+        total_surveys = SurveyModel.objects.filter(status='active').count()
+        
+        # Dữ liệu bảng Sở
+        dept_table = []
+        for dept in departments:
+            status = status_map.get(dept.id)
+            
+            # Số khảo sát đã hoàn thành của đơn vị này (tính trên tất cả survey active)
+            unit_completed = SurveyUnitStatus.objects.filter(
+                organization=dept,
+                status='completed'
+            ).count()
+            
+            dept_table.append({
+                'id': dept.id,
+                'name': dept.name,
+                'code': dept.code,
+                'status': status.status if status else 'pending',
+                'status_display': dict(SurveyUnitStatus.STATUS_CHOICES).get(status.status if status else 'pending', 'Chưa hoàn thành'),
+                'completed_at': status.completed_at.isoformat() if status and status.completed_at else None,
+                'done': unit_completed,
+                'total': total_surveys,
+                'progress_display': f"{unit_completed}/{total_surveys}",
+                'progress_percent': round((unit_completed / total_surveys * 100) if total_surveys > 0 else 0, 1),
+            })
+        
+        # Dữ liệu bảng Xã/Phường
+        ward_table = []
+        for ward in wards:
+            status = status_map.get(ward.id)
+            
+            unit_completed = SurveyUnitStatus.objects.filter(
+                organization=ward,
+                status='completed'
+            ).count()
+            
+            ward_table.append({
+                'id': ward.id,
+                'name': ward.name,
+                'code': ward.code,
+                'status': status.status if status else 'pending',
+                'status_display': dict(SurveyUnitStatus.STATUS_CHOICES).get(status.status if status else 'pending', 'Chưa hoàn thành'),
+                'completed_at': status.completed_at.isoformat() if status and status.completed_at else None,
+                'done': unit_completed,
+                'total': total_surveys,
+                'progress_display': f"{unit_completed}/{total_surveys}",
+                'progress_percent': round((unit_completed / total_surveys * 100) if total_surveys > 0 else 0, 1),
+            })
+        
+        # Thống kê cấp Sở
+        dept_statuses = all_statuses.filter(organization__level='department')
+        dept_completed = dept_statuses.filter(status='completed').count()
+        dept_pending = dept_statuses.filter(status='pending').count()
+        dept_in_progress = dept_statuses.filter(status='in_progress').count()
+        dept_total = departments.count()
+        
+        # Thống kê cấp Xã/Phường
+        ward_statuses = all_statuses.filter(organization__level='ward')
+        ward_completed = ward_statuses.filter(status='completed').count()
+        ward_pending = ward_statuses.filter(status='pending').count()
+        ward_in_progress = ward_statuses.filter(status='in_progress').count()
+        ward_total = wards.count()
+        
+        # Tổng hợp chung
+        total_completed = dept_completed + ward_completed
+        total_pending = dept_pending + ward_pending
+        total_in_progress = dept_in_progress + ward_in_progress
+        total_units = dept_total + ward_total
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'survey': {
+                    'id': survey.id,
+                    'title': survey.title,
+                    'code': survey.code,
+                    'status': survey.status,
+                },
+                'summary': {
+                    'total_units': total_units,
+                    'completed': total_completed,
+                    'pending': total_pending,
+                    'in_progress': total_in_progress,
+                    'completion_rate': round((total_completed / total_units * 100) if total_units > 0 else 0, 1),
+                },
+                'department': {
+                    'total': dept_total,
+                    'completed': dept_completed,
+                    'pending': dept_pending,
+                    'in_progress': dept_in_progress,
+                    'list': dept_table,
+                },
+                'ward': {
+                    'total': ward_total,
+                    'completed': ward_completed,
+                    'pending': ward_pending,
+                    'in_progress': ward_in_progress,
+                    'list': ward_table,
+                }
+            }
+        })
+        
+    except Exception as e:
+        import traceback
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }, status=500)
+
+# ============================================
+# TRANG QUẢN LÝ ĐƠN VỊ (ORGANIZATION)
+# ============================================
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def organization_manage_view(request):
+    """Trang quản lý đơn vị"""
+    return render(request, 'analytics/organization_manage.html', {'active_menu': 'organization_manage'})
+
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def organization_list_api(request):
+    """
+    API lấy danh sách đơn vị (Organization)
+    """
+    try:
+        queryset = Organization.objects.all().order_by('name')
+
+        # Filter theo cấp độ
+        level = request.GET.get('level')
+        if level and level != 'all':
+            queryset = queryset.filter(level=level)
+
+        # Filter theo trạng thái
+        status = request.GET.get('status')
+        if status and status != 'all':
+            is_active = status == 'active'
+            queryset = queryset.filter(is_active=is_active)
+
+        # Tìm kiếm theo tên hoặc mã
+        search = request.GET.get('search', '')
+        if search:
+            queryset = queryset.filter(
+                models.Q(name__icontains=search) |
+                models.Q(code__icontains=search)
+            )
+
+        # Pagination
+        page = int(request.GET.get('page', 1))
+        per_page = int(request.GET.get('per_page', 10))
+
+        paginator = Paginator(queryset, per_page)
+        page_obj = paginator.get_page(page)
+
+        # Tạo map parent name
+        parent_map = {org.id: org.name for org in Organization.objects.all()}
+
+        data = []
+        for org in page_obj:
+            data.append({
+                'id': org.id,
+                'code': org.code,
+                'name': org.name,
+                'level': org.level,
+                'level_display': org.get_level_display(),
+                'parent': parent_map.get(org.parent_id) if org.parent_id else None,
+                'parent_id': org.parent_id,
+                'is_active': org.is_active,
+                'created_at': org.created_at.isoformat() if hasattr(org, 'created_at') else None,
+            })
+
+        return JsonResponse({
+            'success': True,
+            'data': data,
+            'total': paginator.count,
+            'page': page,
+            'per_page': per_page,
+            'total_pages': paginator.num_pages,
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def organization_detail_api(request, org_id):
+    """API lấy chi tiết một đơn vị"""
+    try:
+        org = get_object_or_404(Organization, id=org_id)
+
+        data = {
+            'id': org.id,
+            'code': org.code,
+            'name': org.name,
+            'level': org.level,
+            'level_display': org.get_level_display(),
+            'parent_id': org.parent_id,
+            'parent': org.parent.name if org.parent else None,
+            'is_active': org.is_active,
+        }
+
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def organization_create_api(request):
+    """API tạo mới đơn vị"""
+    try:
+        data = json.loads(request.body) if request.body else {}
+
+        code = data.get('code', '').strip()
+        name = data.get('name', '').strip()
+        level = data.get('level', '')
+        parent_id = data.get('parent_id')
+        is_active = data.get('is_active', True)
+
+        if not code:
+            return JsonResponse({'success': False, 'error': 'Mã đơn vị là bắt buộc'}, status=400)
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Tên đơn vị là bắt buộc'}, status=400)
+
+        if not level:
+            return JsonResponse({'success': False, 'error': 'Cấp độ là bắt buộc'}, status=400)
+
+        if Organization.objects.filter(code=code).exists():
+            return JsonResponse({'success': False, 'error': f'Mã đơn vị "{code}" đã tồn tại'}, status=400)
+
+        parent = None
+        if parent_id:
+            try:
+                parent = Organization.objects.get(id=parent_id)
+            except Organization.DoesNotExist:
+                pass
+
+        org = Organization.objects.create(
+            code=code.upper(),
+            name=name,
+            level=level,
+            parent=parent,
+            is_active=is_active
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Tạo đơn vị thành công!',
+            'data': {
+                'id': org.id,
+                'code': org.code,
+                'name': org.name,
+                'level': org.level,
+                'is_active': org.is_active,
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+@csrf_exempt
+@require_http_methods(["PUT", "PATCH"])
+def organization_update_api(request, org_id):
+    """API cập nhật đơn vị"""
+    try:
+        org = get_object_or_404(Organization, id=org_id)
+        data = json.loads(request.body) if request.body else {}
+
+        if 'code' in data and data['code']:
+            new_code = data['code'].strip().upper()
+            if new_code != org.code and Organization.objects.filter(code=new_code).exists():
+                return JsonResponse({'success': False, 'error': f'Mã đơn vị "{new_code}" đã tồn tại'}, status=400)
+            org.code = new_code
+
+        if 'name' in data and data['name']:
+            org.name = data['name'].strip()
+
+        if 'level' in data and data['level']:
+            org.level = data['level']
+
+        if 'parent_id' in data:
+            if data['parent_id']:
+                try:
+                    org.parent = Organization.objects.get(id=data['parent_id'])
+                except Organization.DoesNotExist:
+                    org.parent = None
+            else:
+                org.parent = None
+
+        if 'is_active' in data:
+            org.is_active = data['is_active']
+
+        org.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Cập nhật đơn vị thành công!',
+            'data': {
+                'id': org.id,
+                'code': org.code,
+                'name': org.name,
+                'level': org.level,
+                'is_active': org.is_active,
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def organization_delete_api(request, org_id):
+    """API xóa đơn vị"""
+    try:
+        org = get_object_or_404(Organization, id=org_id)
+
+        # Kiểm tra xem đơn vị có đơn vị con không
+        if Organization.objects.filter(parent=org).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'Không thể xóa đơn vị này vì còn đơn vị con!'
+            }, status=400)
+
+        # Kiểm tra xem đơn vị có user không
+        if User.objects.filter(organization=org).exists():
+            return JsonResponse({
+                'success': False,
+                'error': 'Không thể xóa đơn vị này vì còn người dùng thuộc đơn vị!'
+            }, status=400)
+
+        org.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Xóa đơn vị thành công!'
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def organization_options_api(request):
+    """API lấy danh sách đơn vị để dùng trong dropdown (chọn đơn vị cha)"""
+    try:
+        orgs = Organization.objects.filter(is_active=True).order_by('name')
+        data = [{'id': org.id, 'code': org.code, 'name': org.name, 'level': org.level} for org in orgs]
+
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+# apps/analytics/views.py - Thêm vào cuối file
+
+# apps/analytics/views.py - Sửa hàm organization_with_status_api
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def organization_with_status_api(request):
+    """
+    API lấy danh sách tất cả đơn vị kèm trạng thái hoàn thành khảo sát
+    TỔNG HỢP TOÀN BỘ TIẤN ĐỘ DỰA TRÊN NHÓM ĐỐI TƯỢNG CỦA USER
+    """
+    try:
+        from apps.survey.models import SurveyUnitStatus, Survey, SurveyProgress
+        from apps.accounts.models import Organization, User
+        from apps.analytics.models import TargetGroup
+        
+        # Lấy tất cả organization
+        departments = Organization.objects.filter(
+            level='department',
+            is_active=True
+        ).order_by('name')
+        
+        wards = Organization.objects.filter(
+            level='ward',
+            is_active=True
+        ).order_by('name')
+        
+        # Dữ liệu Sở
+        dept_list = []
+        dept_completed = 0
+        
+        for dept in departments:
+            # Lấy tất cả user thuộc đơn vị này
+            users = User.objects.filter(
+                organization=dept,
+                is_active=True
+            )
+            
+            if not users.exists():
+                # Nếu không có user, vẫn hiển thị đơn vị với 0/0
+                dept_list.append({
+                    'id': dept.id,
+                    'name': dept.name,
+                    'code': dept.code,
+                    'status': 'pending',
+                    'completed_at': None,
+                    'done': 0,
+                    'total': 0,
+                    'progress_display': '0/0',
+                    'progress_percent': 0,
+                })
+                continue
+            
+            # Lấy tất cả target_groups của các user trong đơn vị
+            target_group_ids = users.values_list('target_groups', flat=True).distinct()
+            target_groups = TargetGroup.objects.filter(id__in=target_group_ids, is_active=True)
+            
+            # Lấy tất cả form_code từ các target group
+            all_form_codes = set()
+            for tg in target_groups:
+                if tg.forms:
+                    all_form_codes.update(tg.forms)
+            
+            total_surveys = len(all_form_codes)
+            
+            # Đếm số khảo sát đã hoàn thành của đơn vị này
+            # Một khảo sát được coi là hoàn thành khi có SurveyProgress status='completed'
+            completed_count = SurveyProgress.objects.filter(
+                participant__user__in=users,
+                form_code__in=all_form_codes,
+                status='completed'
+            ).values('form_code').distinct().count()
+            
+            # Kiểm tra xem tất cả đã hoàn thành chưa
+            is_completed = completed_count >= total_surveys and total_surveys > 0
+            
+            # Lấy thời gian hoàn thành mới nhất
+            latest_completed = SurveyProgress.objects.filter(
+                participant__user__in=users,
+                form_code__in=all_form_codes,
+                status='completed'
+            ).order_by('-completed_at').first()
+            
+            status = 'completed' if is_completed else ('in_progress' if completed_count > 0 else 'pending')
+            
+            if status == 'completed':
+                dept_completed += 1
+            
+            dept_list.append({
+                'id': dept.id,
+                'name': dept.name,
+                'code': dept.code,
+                'status': status,
+                'completed_at': latest_completed.completed_at.isoformat() if latest_completed else None,
+                'done': completed_count,
+                'total': total_surveys,
+                'progress_display': f"{completed_count}/{total_surveys}",
+                'progress_percent': round((completed_count / total_surveys * 100) if total_surveys > 0 else 0, 1),
+            })
+        
+        # Dữ liệu Xã/Phường - Tương tự
+        ward_list = []
+        ward_completed = 0
+        
+        for ward in wards:
+            users = User.objects.filter(
+                organization=ward,
+                is_active=True
+            )
+            
+            if not users.exists():
+                ward_list.append({
+                    'id': ward.id,
+                    'name': ward.name,
+                    'code': ward.code,
+                    'status': 'pending',
+                    'completed_at': None,
+                    'done': 0,
+                    'total': 0,
+                    'progress_display': '0/0',
+                    'progress_percent': 0,
+                })
+                continue
+            
+            target_group_ids = users.values_list('target_groups', flat=True).distinct()
+            target_groups = TargetGroup.objects.filter(id__in=target_group_ids, is_active=True)
+            
+            all_form_codes = set()
+            for tg in target_groups:
+                if tg.forms:
+                    all_form_codes.update(tg.forms)
+            
+            total_surveys = len(all_form_codes)
+            
+            completed_count = SurveyProgress.objects.filter(
+                participant__user__in=users,
+                form_code__in=all_form_codes,
+                status='completed'
+            ).values('form_code').distinct().count()
+            
+            is_completed = completed_count >= total_surveys and total_surveys > 0
+            
+            latest_completed = SurveyProgress.objects.filter(
+                participant__user__in=users,
+                form_code__in=all_form_codes,
+                status='completed'
+            ).order_by('-completed_at').first()
+            
+            status = 'completed' if is_completed else ('in_progress' if completed_count > 0 else 'pending')
+            
+            if status == 'completed':
+                ward_completed += 1
+            
+            ward_list.append({
+                'id': ward.id,
+                'name': ward.name,
+                'code': ward.code,
+                'status': status,
+                'completed_at': latest_completed.completed_at.isoformat() if latest_completed else None,
+                'done': completed_count,
+                'total': total_surveys,
+                'progress_display': f"{completed_count}/{total_surveys}",
+                'progress_percent': round((completed_count / total_surveys * 100) if total_surveys > 0 else 0, 1),
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'department': {
+                    'total': departments.count(),
+                    'completed': dept_completed,
+                    'list': dept_list,
+                },
+                'ward': {
+                    'total': wards.count(),
+                    'completed': ward_completed,
+                    'list': ward_list,
+                }
+            }
+        })
+        
+    except Exception as e:
+        import traceback
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }, status=500)

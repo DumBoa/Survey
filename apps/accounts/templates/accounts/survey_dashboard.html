@@ -1,11 +1,11 @@
 <!-- apps/accounts/templates/accounts/survey_dashboard.html -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng điều khiển khảo sát</title>
-    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -25,6 +25,7 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            cursor: pointer;
         }
         .btn-back:hover {
             background: #e5e7eb;
@@ -78,6 +79,147 @@
             color: #6b7280;
             font-size: 0.9rem;
         }
+
+        /* Toast */
+        .toast-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+            background: #f0fdf4;
+            color: #065f46;
+            border: 1px solid #86efac;
+        }
+        .toast-message.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .toast-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            padding: 20px;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            padding: 24px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-content .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-content .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .modal-content .modal-header button {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .modal-content .modal-header button:hover {
+            color: #4b5563;
+        }
+        .modal-content .form-group {
+            margin-bottom: 14px;
+        }
+        .modal-content .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        .modal-content .form-group input,
+        .modal-content .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+            background: #f9fafb;
+        }
+        .modal-content .form-group input:focus,
+        .modal-content .form-group select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+            background: white;
+        }
+        .modal-content .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .modal-content .modal-footer .btn-cancel {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-content .modal-footer .btn-cancel:hover {
+            background: #f3f4f6;
+        }
+        .modal-content .modal-footer .btn-save {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            background: #4f46e5;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-content .modal-footer .btn-save:hover {
+            background: #4338ca;
+        }
+
         @media (max-width: 768px) {
             .survey-item {
                 flex-wrap: wrap !important;
@@ -93,20 +235,29 @@
                 width: 100% !important;
                 text-align: left !important;
             }
+            .modal-content {
+                margin: 10px;
+                padding: 16px;
+            }
         }
     </style>
 </head>
 <body data-template-id="__page-root" class="min-h-screen bg-gray-50">
 
+    <!-- Toast -->
+    <div id="toast" class="toast-message">
+        <span id="toastMessage"></span>
+    </div>
+
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
             <div class="flex items-center gap-3">
-                <a href="{% url 'accounts:congkhaosat' %}" class="p-1.5 rounded hover:bg-gray-100 transition-colors" aria-label="Quay lại">
-                    <i data-lucide="arrow-left" style="width:18px;height:18px;color:#6b7280"></i>
-                </a>
+                <div class="p-1.5 rounded hover:bg-gray-100 transition-colors" aria-label="Trang chủ">
+                    <i data-lucide="home" style="width:18px;height:18px;color:#6b7280"></i>
+                </div>
                 <div>
-                    <h1 class="text-lg font-semibold text-gray-900">Danh sách khảo sát</h1>
+                    <h1 class="text-lg font-semibold text-gray-900">Bảng điều khiển khảo sát</h1>
                     <p class="text-xs text-gray-500">
                         <span id="participant-name">{{ participant.full_name|default:"Chưa có tên" }}</span>
                         <span class="mx-1">-</span>
@@ -117,8 +268,12 @@
             <div class="flex items-center gap-3 text-sm text-gray-500">
                 <i data-lucide="mail" style="width:14px;height:14px"></i>
                 <span id="user-email">{{ participant.email|default:"Chưa có email" }}</span>
-                <a href="{% url 'accounts:congkhaosat' %}" class="btn-back">
-                    <i data-lucide="settings" style="width:14px;height:14px"></i> Đổi thông tin
+                <button onclick="openUpdateModal()" class="btn-back" disabled>
+                    <i data-lucide="settings" style="width:14px;height:14px"></i> Cập nhật thông tin
+                </button>
+
+                <a href="{% url 'accounts:logout' %}" class="btn-back text-red-500 hover:bg-red-50 border-red-200">
+                    <i data-lucide="log-out" style="width:14px;height:14px"></i> Đăng xuất
                 </a>
             </div>
         </div>
@@ -126,6 +281,14 @@
 
     <!-- Main -->
     <main class="max-w-6xl mx-auto px-4 py-6">
+
+        <!-- Thông báo -->
+        {% if message %}
+        <div class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800">
+            <i data-lucide="info" style="width:18px;height:18px;display:inline;margin-right:8px"></i>
+            {{ message }}
+        </div>
+        {% endif %}
 
         <!-- Thống kê -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" aria-label="Thống kê">
@@ -249,19 +412,210 @@
                 <div class="empty-state bg-white border border-gray-200 rounded-lg">
                     <div class="icon"><i data-lucide="inbox"></i></div>
                     <h5>Chưa có biểu mẫu nào</h5>
-                    <p>Bạn chưa được gán biểu mẫu khảo sát nào. Vui lòng quay lại để xác minh thông tin.</p>
-                    <a href="{% url 'accounts:congkhaosat' %}" class="btn-continue mt-3 inline-block">
-                        <i data-lucide="arrow-left" style="width:14px;height:14px;margin-right:4px"></i> Quay lại xác minh
-                    </a>
+                    <p>Bạn chưa được gán biểu mẫu khảo sát nào. Vui lòng liên hệ quản trị viên để được hỗ trợ.</p>
                 </div>
             {% endif %}
         </section>
     </main>
 
+    <!-- ============================================
+         MODAL CẬP NHẬT THÔNG TIN
+         ============================================ -->
+    <div id="updateModal" class="modal-overlay" onclick="if(event.target===this) closeUpdateModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cập nhật thông tin cá nhân</h3>
+                <button onclick="closeUpdateModal()">
+                    <i data-lucide="x" style="width:20px;height:20px"></i>
+                </button>
+            </div>
+            <form id="updateForm" onsubmit="submitUpdate(event)">
+                <div class="form-group">
+                    <label>Họ và tên <span class="text-red-500">*</span></label>
+                    <input type="text" id="updateFullName" placeholder="Nhập họ và tên" required>
+                </div>
+                <div class="form-group">
+                    <label>Email <span class="text-red-500">*</span></label>
+                    <input type="email" id="updateEmail" placeholder="Nhập email" required>
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại <span class="text-red-500">*</span></label>
+                    <input type="tel" id="updatePhone" placeholder="Nhập số điện thoại" required>
+                </div>
+                <div class="form-group">
+                    <label>Chức vụ</label>
+                    <input type="text" id="updatePosition" placeholder="Nhập chức vụ">
+                </div>
+                <div class="form-group">
+                    <label>Đơn vị công tác</label>
+                    <select id="updateOrganization">
+                        <option value="">-- Chọn đơn vị --</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeUpdateModal()">Hủy</button>
+                    <button type="submit" class="btn-save" id="btnSaveUpdate">
+                        <i data-lucide="save" style="width:16px;height:16px;display:inline;margin-right:6px"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        // ============================================
+        // INIT LUCIDE
+        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
         });
+
+        // ============================================
+        // TOAST
+        // ============================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            toast.className = 'toast-message ' + (type === 'error' ? 'error' : '');
+            toastMsg.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // ============================================
+        // CSRF TOKEN
+        // ============================================
+        function getCSRFToken() {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, 10) === 'csrftoken=') {
+                        cookieValue = decodeURIComponent(cookie.substring(10));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ============================================
+        // MODAL UPDATE
+        // ============================================
+        function openUpdateModal() {
+            const modal = document.getElementById('updateModal');
+            const name = document.getElementById('participant-name')?.textContent || '';
+            const email = document.getElementById('user-email')?.textContent || '';
+            const agency = document.getElementById('participant-agency')?.textContent || '';
+
+            document.getElementById('updateFullName').value = name;
+            document.getElementById('updateEmail').value = email;
+            document.getElementById('updatePhone').value = document.querySelector('.user-phone')?.textContent || '';
+
+            // Load organizations
+            fetch('/accounts/api/organizations/', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const select = document.getElementById('updateOrganization');
+                    const currentAgency = agency;
+                    select.innerHTML = '<option value="">-- Chọn đơn vị --</option>';
+                    data.data.forEach(org => {
+                        const selected = org.name === currentAgency ? 'selected' : '';
+                        select.innerHTML += `<option value="${org.id}" ${selected}>${org.name}</option>`;
+                    });
+                }
+            })
+            .catch(err => console.error('Error loading organizations:', err));
+
+            modal.classList.add('show');
+            lucide.createIcons();
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updateModal').classList.remove('show');
+        }
+
+        // ============================================
+        // SUBMIT UPDATE
+        // ============================================
+        function submitUpdate(event) {
+            event.preventDefault();
+
+            const fullName = document.getElementById('updateFullName').value.trim();
+            const email = document.getElementById('updateEmail').value.trim();
+            const phone = document.getElementById('updatePhone').value.trim();
+            const position = document.getElementById('updatePosition').value.trim();
+            const orgId = document.getElementById('updateOrganization').value;
+
+            if (!fullName || !email || !phone) {
+                showToast('Vui lòng điền đầy đủ thông tin bắt buộc!', 'error');
+                return;
+            }
+
+            const data = {
+                full_name: fullName,
+                email: email,
+                phone: phone,
+                position: position,
+                organization_id: orgId || null
+            };
+
+            const btn = document.getElementById('btnSaveUpdate');
+            btn.disabled = true;
+            btn.textContent = 'Đang lưu...';
+
+            fetch('/accounts/api/update-user-info/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Cập nhật thông tin thành công!');
+                    closeUpdateModal();
+                    // Cập nhật lại UI
+                    document.getElementById('participant-name').textContent = data.data.full_name;
+                    document.getElementById('user-email').textContent = data.data.email;
+                    document.getElementById('participant-agency').textContent = data.data.organization || 'Chưa có đơn vị';
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(data.error || 'Có lỗi xảy ra', 'error');
+                }
+            })
+            .catch(err => {
+                showToast('Lỗi kết nối, vui lòng thử lại', 'error');
+                console.error(err);
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="save" style="width:16px;height:16px;display:inline;margin-right:6px"></i> Lưu thay đổi';
+                lucide.createIcons();
+            });
+        }
+
+        // ============================================
+        // CLOSE MODAL WITH ESC
+        // ============================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeUpdateModal();
+            }
+        });
     </script>
+
+    <!-- Hidden field để lưu phone (nếu có) -->
+    <span class="user-phone" style="display:none;">{{ user.phone_number|default:'' }}</span>
+
 </body>
 </html>

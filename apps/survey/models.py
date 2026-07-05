@@ -443,3 +443,68 @@ class SurveyProgress(models.Model):
         verbose_name_plural = "Tiến độ khảo sát"
         unique_together = ('participant', 'form_code')
         ordering = ['created_at']
+# apps/survey/models.py - Thêm vào cuối file
+
+class SurveyUnitStatus(models.Model):
+    """
+    Trạng thái hoàn thành khảo sát của từng đơn vị trong một đợt khảo sát
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Chưa hoàn thành'),
+        ('in_progress', 'Đang làm'),
+        ('completed', 'Đã hoàn thành'),
+        ('expired', 'Quá hạn'),
+    ]
+    
+    survey = models.ForeignKey(
+        'Survey',
+        on_delete=models.CASCADE,
+        related_name='unit_statuses',
+        verbose_name="Đợt khảo sát"
+    )
+    
+    organization = models.ForeignKey(
+        'accounts.Organization',
+        on_delete=models.CASCADE,
+        related_name='survey_statuses',
+        verbose_name="Đơn vị"
+    )
+    
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name="Trạng thái"
+    )
+    
+    # Số lượng người đã hoàn thành trong đơn vị
+    completed_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Số người đã hoàn thành"
+    )
+    
+    # Tổng số người được gán trong đơn vị
+    total_assignees = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Tổng số người được gán"
+    )
+    
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Thời gian hoàn thành"
+    )
+    
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.survey.title} - {self.organization.name} ({self.get_status_display()})"
+    
+    class Meta:
+        verbose_name = "Trạng thái đơn vị khảo sát"
+        verbose_name_plural = "Trạng thái đơn vị khảo sát"
+        unique_together = ('survey', 'organization')
+        indexes = [
+            models.Index(fields=['survey', 'status']),
+            models.Index(fields=['organization', 'status']),
+        ]
