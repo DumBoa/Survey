@@ -32,16 +32,16 @@
             color: #1f2937;
         }
         .btn-continue {
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.65rem;
             font-weight: 500;
             background: #1f2937;
             color: white;
             border: none;
-            transition: all 0.2s;
             text-decoration: none;
             display: inline-block;
+            transition: all 0.2s;
         }
         .btn-continue:hover {
             background: #111827;
@@ -52,9 +52,9 @@
             cursor: not-allowed;
         }
         .btn-review {
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.65rem;
             font-weight: 500;
             background: #10b981;
             color: white;
@@ -130,7 +130,7 @@
             border-radius: 16px;
             max-width: 500px;
             width: 100%;
-            padding: 24px;
+            padding: 16px;
             max-height: 90vh;
             overflow-y: auto;
             animation: modalIn 0.3s ease;
@@ -143,7 +143,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
         .modal-content .modal-header h3 {
             font-size: 18px;
@@ -160,8 +160,13 @@
         .modal-content .modal-header button:hover {
             color: #4b5563;
         }
+        .modal-content .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         .modal-content .form-group {
-            margin-bottom: 14px;
+            margin-bottom: 8px;
         }
         .modal-content .form-group label {
             display: block;
@@ -251,14 +256,14 @@
 
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
+        <div class="max-w-5xl mx-auto px-3 py-2 flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-3">
                 <div class="p-1.5 rounded hover:bg-gray-100 transition-colors" aria-label="Trang chủ">
                     <i data-lucide="home" style="width:18px;height:18px;color:#6b7280"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-semibold text-gray-900">Bảng điều khiển khảo sát</h1>
-                    <p class="text-xs text-gray-500">
+                    <h1 class="text-base font-semibold text-gray-900">Bảng điều khiển khảo sát</h1>
+                    <p class="text-sm text-gray-500">
                         <span id="participant-name">{{ participant.full_name|default:"Chưa có tên" }}</span>
                         <span class="mx-1">-</span>
                         <span id="participant-agency">{{ participant.agency|default:"Chưa có đơn vị" }}</span>
@@ -271,7 +276,6 @@
                 <button onclick="openUpdateModal()" class="btn-back" disabled>
                     <i data-lucide="settings" style="width:14px;height:14px"></i> Cập nhật thông tin
                 </button>
-
                 <a href="{% url 'accounts:logout' %}" class="btn-back text-red-500 hover:bg-red-50 border-red-200">
                     <i data-lucide="log-out" style="width:14px;height:14px"></i> Đăng xuất
                 </a>
@@ -280,7 +284,7 @@
     </header>
 
     <!-- Main -->
-    <main class="max-w-6xl mx-auto px-4 py-6">
+    <main class="max-w-5xl mx-auto px-3 py-4">
 
         <!-- Thông báo -->
         {% if message %}
@@ -292,26 +296,26 @@
 
         <!-- Thống kê -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" aria-label="Thống kê">
-            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3">
+            <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-center">
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Tổng số bài</p>
-                <p class="text-xl font-semibold text-gray-900 mt-0.5">{{ total|default:0 }}</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-0.5">{{ total|default:0 }}</p>
             </div>
-            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3">
+            <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-center">
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Đã hoàn thành</p>
-                <p class="text-xl font-semibold text-emerald-600 mt-0.5">{{ completed|default:0 }}</p>
+                <p class="text-2xl font-semibold text-emerald-600 mt-0.5">{{ completed|default:0 }}</p>
             </div>
-            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3">
+            <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-center">
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Đang làm</p>
-                <p class="text-xl font-semibold text-blue-600 mt-0.5">{{ in_progress|default:0 }}</p>
+                <p class="text-2xl font-semibold text-blue-600 mt-0.5">{{ in_progress|default:0 }}</p>
             </div>
-            <div class="bg-white border border-gray-200 rounded-lg px-4 py-3">
+            <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 text-center">
                 <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Chưa bắt đầu</p>
-                <p class="text-xl font-semibold text-gray-400 mt-0.5">{{ not_started|default:0 }}</p>
+                <p class="text-2xl font-semibold text-gray-400 mt-0.5">{{ not_started|default:0 }}</p>
             </div>
         </section>
 
         <!-- Tiến độ tổng thể -->
-        <div class="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-6">
+        <div class="bg-white border border-gray-200 rounded-lg px-3 py-2 mb-4">
             <div class="flex justify-between items-center">
                 <span class="text-sm font-medium text-gray-700">Tiến độ tổng thể</span>
                 <span class="text-sm font-semibold text-gray-900">{{ overall_progress|default:0 }}%</span>
@@ -331,10 +335,10 @@
             {% if progresses %}
                 <div class="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100">
                     {% for progress in progresses %}
-                        <div class="survey-item px-4 py-3 flex items-center gap-4 flex-wrap md:flex-nowrap">
-                            <!-- Thông tin -->
+                        <div class="survey-item px-3 py-2 flex items-center gap-3 flex-wrap md:flex-nowrap">
+                            <!-- Thông tin khảo sát -->
                             <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-0.5 flex-wrap">
+                                <div class="flex items-center gap-2 flex-wrap">
                                     <span class="text-sm font-medium text-gray-900 truncate">
                                         {% if progress.survey %}
                                             {{ progress.survey.title|default:progress.form_code }}
@@ -347,48 +351,46 @@
                                         {% elif progress.status == 'in_progress' %}bg-blue-50 text-blue-700
                                         {% else %}bg-gray-100 text-gray-600{% endif %}">
                                         {% if progress.status == 'completed' %}
-                                            <i data-lucide="check-circle" style="width:12px;height:12px;margin-right:3px"></i> Hoàn thành
+                                            Hoàn thành
                                         {% elif progress.status == 'in_progress' %}
-                                            <i data-lucide="loader-circle" style="width:12px;height:12px;margin-right:3px"></i> Đang làm
+                                            Đang làm
                                         {% else %}
-                                            <i data-lucide="circle" style="width:12px;height:12px;margin-right:3px"></i> Chưa làm
+                                            Chưa làm
                                         {% endif %}
                                     </span>
                                 </div>
                                 <span class="text-xs text-gray-400">Mã: {{ progress.form_code }}</span>
-                                {% if progress.survey and progress.survey.description %}
-                                    <span class="text-xs text-gray-400 ml-2">• {{ progress.survey.description|truncatechars:40 }}</span>
-                                {% endif %}
                             </div>
 
-                            <!-- Tiến độ -->
-                            <div class="flex items-center gap-3 w-full md:w-auto progress-wrapper">
-                                <div class="flex items-center gap-2 w-28">
-                                    <div class="progress-thin flex-1">
-                                        <div class="progress-thin-fill 
-                                            {% if progress.status == 'completed' %}bg-emerald-500
-                                            {% elif progress.status == 'in_progress' %}bg-blue-500
-                                            {% else %}bg-gray-300{% endif %}" 
-                                            style="width: {{ progress.progress_percent|default:0 }}%">
-                                        </div>
+                            <!-- Progress bar -->
+                            <div class="flex items-center gap-2 w-32 flex-shrink-0">
+                                <div class="progress-thin flex-1">
+                                    <div class="progress-thin-fill 
+                                        {% if progress.progress_percent >= 100 %}bg-emerald-500
+                                        {% elif progress.progress_percent > 0 %}bg-blue-500
+                                        {% else %}bg-gray-300{% endif %}" 
+                                        style="width: {{ progress.progress_percent|default:0 }}%">
                                     </div>
-                                    <span class="text-xs text-gray-500 font-medium w-8 text-right">{{ progress.progress_percent|default:0 }}%</span>
                                 </div>
+                                <span class="text-xs font-medium text-gray-500 w-8 text-right flex-shrink-0">{{ progress.progress_percent|default:0 }}%</span>
                             </div>
 
                             <!-- Nút hành động -->
-                            <div class="w-full md:w-auto text-left md:text-right btn-wrapper">
+                            <div class="text-right flex-shrink-0">
                                 {% if progress.status == 'completed' %}
                                     <button class="btn-review" disabled>
-                                        <i data-lucide="check" style="width:12px;height:12px;margin-right:3px"></i> Đã hoàn thành
+                                        Đã hoàn thành
                                     </button>
+                                    <a href="{% url 'accounts:export_response_pdf' progress.response.id %}" class="btn-continue" style="background:#2563eb; margin-left:4px;" target="_blank">
+                                        Tải về
+                                    </a>
                                 {% elif progress.status == 'in_progress' %}
                                     <a href="{% url 'accounts:survey_dashboard_continue' progress.id %}" class="btn-continue">
-                                        <i data-lucide="play" style="width:12px;height:12px;margin-right:3px"></i> Tiếp tục
+                                        Tiếp tục
                                     </a>
                                 {% else %}
                                     <a href="{% url 'accounts:survey_dashboard_continue' progress.id %}" class="btn-continue">
-                                        <i data-lucide="play" style="width:12px;height:12px;margin-right:3px"></i> Bắt đầu
+                                        Bắt đầu
                                     </a>
                                 {% endif %}
                             </div>
@@ -397,7 +399,7 @@
                 </div>
 
                 <!-- Hướng dẫn -->
-                <div class="mt-4 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 flex items-start gap-3">
+                <div class="mt-4 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-start gap-3">
                     <i data-lucide="info" style="width:18px;height:18px;color:#2563eb;flex-shrink:0;margin-top:1px"></i>
                     <div>
                         <p class="text-sm text-blue-800">
@@ -430,27 +432,29 @@
                 </button>
             </div>
             <form id="updateForm" onsubmit="submitUpdate(event)">
-                <div class="form-group">
-                    <label>Họ và tên <span class="text-red-500">*</span></label>
-                    <input type="text" id="updateFullName" placeholder="Nhập họ và tên" required>
-                </div>
-                <div class="form-group">
-                    <label>Email <span class="text-red-500">*</span></label>
-                    <input type="email" id="updateEmail" placeholder="Nhập email" required>
-                </div>
-                <div class="form-group">
-                    <label>Số điện thoại <span class="text-red-500">*</span></label>
-                    <input type="tel" id="updatePhone" placeholder="Nhập số điện thoại" required>
-                </div>
-                <div class="form-group">
-                    <label>Chức vụ</label>
-                    <input type="text" id="updatePosition" placeholder="Nhập chức vụ">
-                </div>
-                <div class="form-group">
-                    <label>Đơn vị công tác</label>
-                    <select id="updateOrganization">
-                        <option value="">-- Chọn đơn vị --</option>
-                    </select>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Họ và tên <span class="text-red-500">*</span></label>
+                        <input type="text" id="updateFullName" placeholder="Nhập họ và tên" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="text-red-500">*</span></label>
+                        <input type="email" id="updateEmail" placeholder="Nhập email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại <span class="text-red-500">*</span></label>
+                        <input type="tel" id="updatePhone" placeholder="Nhập số điện thoại" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Chức vụ</label>
+                        <input type="text" id="updatePosition" placeholder="Nhập chức vụ">
+                    </div>
+                    <div class="form-group">
+                        <label>Đơn vị công tác</label>
+                        <select id="updateOrganization">
+                            <option value="">-- Chọn đơn vị --</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeUpdateModal()">Hủy</button>

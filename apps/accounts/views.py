@@ -54,7 +54,7 @@ def get_redirect_url_based_on_role(user):
 def logout_view(request):
     """Đăng xuất và quay về trang login"""
     logout(request)
-    return redirect('/accounts/login/')
+    return redirect('/accounts/user-login/')
 
 
 # ============================================
@@ -596,3 +596,337 @@ def get_survey_forms_api(request):
             'success': False,
             'error': str(e)
         }, status=500)
+# apps/accounts/views.py - Sửa lại hàm export_response_pdf
+
+import io
+import logging
+import os
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from django.conf import settings
+import os
+
+logger = logging.getLogger(__name__)
+
+
+# apps/accounts/views.py - Sửa lại phần xử lý grid trong export_response_pdf
+
+@login_required(login_url='/accounts/login/')
+def export_response_pdf(request, response_id):
+    """
+    Xuất phiếu trả lời khảo sát ra file PDF - Hỗ trợ Tiếng Việt
+    """
+    try:
+        from apps.survey.models import Response
+        import json
+        
+        response = get_object_or_404(Response, id=response_id)
+        
+        # Kiểm tra quyền: chỉ user sở hữu mới được tải
+        if response.user != request.user:
+            return HttpResponse('Bạn không có quyền truy cập!', status=403)
+        
+        survey = response.survey
+        answers = response.answers or {}
+        
+        # ============================================================
+        # ĐĂNG KÝ FONT HỖ TRỢ TIẾNG VIỆT
+        # ============================================================
+        font_paths = [
+            "C:/Windows/Fonts/arial.ttf",
+            "C:/Windows/Fonts/times.ttf",
+            "C:/Windows/Fonts/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+            "/System/Library/Fonts/Helvetica.ttf",
+            os.path.join(settings.BASE_DIR, 'fonts', 'DejaVuSans.ttf'),
+            os.path.join(settings.BASE_DIR, 'fonts', 'arial.ttf'),
+        ]
+        
+        font_available = False
+        font_name = 'Helvetica'
+        
+        for font_path in font_paths:
+            if os.path.exists(font_path):
+                try:
+                    pdfmetrics.registerFont(TTFont('VietnamFont', font_path))
+                    font_name = 'VietnamFont'
+                    font_available = True
+                    break
+                except Exception as e:
+                    continue
+        
+        if not font_available:
+            logger.warning("Không tìm thấy font hỗ trợ Tiếng Việt, sử dụng font mặc định")
+        
+        # Tạo buffer cho PDF
+        buffer = io.BytesIO()
+        
+        # Tạo document
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=20*mm,
+            leftMargin=20*mm,
+            topMargin=20*mm,
+            bottomMargin=20*mm,
+        )
+        
+        # Styles
+        styles = getSampleStyleSheet()
+        
+        title_style = ParagraphStyle(
+            'TitleStyle',
+            parent=styles['Heading1'],
+            fontSize=18,
+            alignment=TA_CENTER,
+            spaceAfter=12,
+            fontName=font_name,
+            encoding='utf-8'
+        )
+        
+        heading_style = ParagraphStyle(
+            'HeadingStyle',
+            parent=styles['Heading2'],
+            fontSize=14,
+            spaceAfter=8,
+            spaceBefore=12,
+            fontName=font_name,
+            encoding='utf-8'
+        )
+        
+        question_style = ParagraphStyle(
+            'QuestionStyle',
+            parent=styles['Normal'],
+            fontSize=11,
+            spaceAfter=4,
+            fontName=font_name,
+            encoding='utf-8'
+        )
+        
+        answer_style = ParagraphStyle(
+            'AnswerStyle',
+            parent=styles['Normal'],
+            fontSize=11,
+            spaceAfter=8,
+            leftIndent=20,
+            fontName=font_name,
+            textColor=colors.HexColor('#2563eb'),
+            encoding='utf-8'
+        )
+        
+        info_style = ParagraphStyle(
+            'InfoStyle',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=colors.HexColor('#6b7280'),
+            alignment=TA_CENTER,
+            spaceAfter=4,
+            fontName=font_name,
+            encoding='utf-8'
+        )
+        
+        # Xây dựng nội dung
+        story = []
+        
+        # Tiêu đề
+        story.append(Paragraph("PHIẾU TRẢ LỜI KHẢO SÁT", title_style))
+        story.append(Spacer(1, 4))
+        story.append(Paragraph(f"<b>{survey.title}</b>", heading_style))
+        story.append(Spacer(1, 4))
+        
+        # Thông tin người trả lời
+        user_info = [
+            ['Họ và tên:', response.user.get_full_name() if response.user else 'Chưa có'],
+            ['Email:', response.respondent_email or 'Chưa có'],
+            ['Thời gian nộp:', response.submitted_at.strftime('%H:%M %d/%m/%Y') if response.submitted_at else 'Chưa nộp'],
+            ['Thời gian làm bài:', f"{response.time_taken} giây" if response.time_taken else 'Chưa có'],
+        ]
+        
+        info_table = Table(user_info, colWidths=[60*mm, 90*mm])
+        info_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (-1, -1), font_name),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor('#6b7280')),
+            ('TEXTCOLOR', (1, 0), (1, -1), colors.black),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        story.append(info_table)
+        story.append(Spacer(1, 12))
+        story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#e5e7eb')))
+        story.append(Spacer(1, 12))
+        
+        # Duyệt qua các section và câu hỏi
+        sections = survey.sections.all().order_by('order')
+        question_counter = 0
+        
+        for section in sections:
+            # Tiêu đề section
+            story.append(Paragraph(f"<b>{section.title}</b>", heading_style))
+            if section.description:
+                story.append(Paragraph(section.description, info_style))
+            
+            questions = section.questions.all().order_by('order')
+            
+            for question in questions:
+                question_counter += 1
+                q_id = str(question.id)
+                answer = answers.get(q_id, '')
+                
+                # Bỏ qua các câu hỏi không phải dạng câu hỏi thật
+                if question.question_type and question.question_type.code in ['title', 'paragraph']:
+                    continue
+                
+                # Câu hỏi
+                q_text = f"{question_counter}. {question.title}"
+                story.append(Paragraph(q_text, question_style))
+                
+                # ============================================================
+                # XỬ LÝ CÂU TRẢ LỜI - ĐẶC BIỆT LÀ GRID
+                # ============================================================
+                if answer:
+                    # Kiểm tra nếu answer là dict và có type='grid'
+                    if isinstance(answer, dict) and answer.get('type') == 'grid':
+                        grid_data = answer.get('data', [])
+                        
+                        if grid_data and len(grid_data) > 0:
+                            # Xác định số cột từ hàng đầu tiên
+                            num_cols = len(grid_data[0]) if grid_data else 0
+                            
+                            if num_cols > 0:
+                                # Tạo bảng grid
+                                grid_table_data = []
+                                
+                                # Header - lấy từ config của question hoặc tạo mặc định
+                                headers = ['Tiêu chí']
+                                # Lấy header từ question config nếu có
+                                if question.config and question.config.get('criteria_label'):
+                                    headers = [question.config.get('criteria_label', 'Tiêu chí')]
+                                
+                                # Thêm các cột từ scale
+                                if question.config and question.config.get('scale'):
+                                    for item in question.config.get('scale', []):
+                                        if isinstance(item, dict):
+                                            headers.append(item.get('label', str(item.get('value', ''))))
+                                        else:
+                                            headers.append(str(item))
+                                else:
+                                    # Tạo header mặc định
+                                    for i in range(1, num_cols):
+                                        headers.append(str(i))
+                                
+                                # Đảm bảo số header khớp với số cột
+                                while len(headers) < num_cols:
+                                    headers.append(str(len(headers)))
+                                
+                                grid_table_data.append(headers)
+                                
+                                # Data rows
+                                for row in grid_data:
+                                    row_data = []
+                                    for cell in row:
+                                        if cell is None:
+                                            row_data.append('')
+                                        else:
+                                            row_data.append(str(cell))
+                                    grid_table_data.append(row_data)
+                                
+                                # Tính width cho từng cột
+                                col_widths = [50*mm]  # Cột tiêu chí rộng hơn
+                                for i in range(1, num_cols):
+                                    col_widths.append(20*mm)
+                                
+                                grid_table = Table(grid_table_data, colWidths=col_widths)
+                                grid_table.setStyle(TableStyle([
+                                    ('FONTNAME', (0, 0), (-1, -1), font_name),
+                                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f3f4f6')),
+                                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+                                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                    ('ALIGN', (0, 1), (0, -1), 'LEFT'),
+                                    ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#d1d5db')),
+                                    ('TOPPADDING', (0, 0), (-1, -1), 4),
+                                    ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                                ]))
+                                story.append(grid_table)
+                            else:
+                                story.append(Paragraph("<i>Không có dữ liệu</i>", answer_style))
+                        else:
+                            story.append(Paragraph("<i>Không có dữ liệu</i>", answer_style))
+                    
+                    # Xử lý answer là list (multi-choice)
+                    elif isinstance(answer, list):
+                        answer_text = ', '.join(str(a) for a in answer if a)
+                        if answer_text:
+                            story.append(Paragraph(answer_text, answer_style))
+                        else:
+                            story.append(Paragraph("<i>Chưa trả lời</i>", answer_style))
+                    
+                    # Xử lý answer là dict khác (không phải grid)
+                    elif isinstance(answer, dict):
+                        # Nếu là dict thường, hiển thị dạng key: value
+                        if answer:
+                            answer_text = ', '.join(f"{k}: {v}" for k, v in answer.items() if v)
+                            if answer_text:
+                                story.append(Paragraph(answer_text, answer_style))
+                            else:
+                                story.append(Paragraph("<i>Chưa trả lời</i>", answer_style))
+                        else:
+                            story.append(Paragraph("<i>Chưa trả lời</i>", answer_style))
+                    
+                    # Xử lý answer là string hoặc number
+                    else:
+                        if str(answer).strip():
+                            story.append(Paragraph(str(answer), answer_style))
+                        else:
+                            story.append(Paragraph("<i>Chưa trả lời</i>", answer_style))
+                else:
+                    story.append(Paragraph("<i>Chưa trả lời</i>", answer_style))
+                
+                story.append(Spacer(1, 4))
+            
+            story.append(Spacer(1, 8))
+            story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#e5e7eb')))
+            story.append(Spacer(1, 8))
+        
+        # Footer
+        story.append(Spacer(1, 20))
+        story.append(Paragraph(
+            f"<i>Xuất ngày {timezone.now().strftime('%H:%M %d/%m/%Y')}</i>",
+            info_style
+        ))
+        
+        # Build PDF
+        doc.build(story)
+        
+        # Lấy dữ liệu từ buffer
+        pdf_data = buffer.getvalue()
+        buffer.close()
+        
+        # Tạo response
+        response_pdf = HttpResponse(content_type='application/pdf')
+        response_pdf['Content-Disposition'] = f'attachment; filename="khao_sat_{survey.code}_{response.id}.pdf"'
+        response_pdf.write(pdf_data)
+        
+        return response_pdf
+        
+    except Exception as e:
+        logger.error(f"Error exporting PDF: {e}")
+        import traceback
+        traceback.print_exc()
+        return HttpResponse(f"Lỗi khi xuất PDF: {str(e)}", status=500)

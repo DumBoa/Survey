@@ -34,4 +34,6 @@ urlpatterns = [
     path('api/organizations/', views.get_organizations_api, name='api_organizations'),
     path('api/target-groups/', views.get_target_groups_api, name='api_target_groups'),
     path('api/survey-forms/', views.get_survey_forms_api, name='api_survey_forms'),
+        # === EXPORT PDF ===
+    path('export/<int:response_id>/pdf/', views.export_response_pdf, name='export_response_pdf'),
 ]
