@@ -1130,7 +1130,68 @@
     onchange="handleWordImport(event)"
   />
 
-  <script>
+<script>
+    // ============================================
+    // UTILS MÔ PHỎNG CHECKBOX CHO TRÌNH CHỈNH SỬA
+    // ============================================
+    window.buildMockCheckboxCell = function(optionsArray) {
+        if (!optionsArray || optionsArray.length === 0) {
+            return `<div class="text-gray-400 text-xs text-center italic">[Chưa có lựa chọn]</div>`;
+        }
+        return `<div class="flex flex-col gap-1.5 text-left pointer-events-none">` +
+            optionsArray.map(opt => `
+                <label class="flex items-start gap-1 text-[11px] text-gray-700 leading-tight">
+                    <input type="checkbox" disabled class="w-3 h-3 mt-0.5 shrink-0"> 
+                    <span class="break-words">${escapeHtml(opt)}</span>
+                </label>`).join('') +
+            `</div>`;
+    };
+
+    window.updateTableColType = function(select, elId, colIdx) {
+        const el = document.querySelector(`.doc-section[data-id="${elId}"]`);
+        if(!el) return;
+        const th = el.querySelectorAll("table tr:first-child th, table tr:first-child td")[colIdx];
+        if(th) {
+            th.dataset.colType = select.value;
+            const opts = th.dataset.colOptions ? th.dataset.colOptions.split('|').filter(Boolean) : [];
+            const rows = el.querySelectorAll("table tr:not(:first-child)");
+            rows.forEach(r => {
+                const td = r.children[colIdx];
+                if(td) {
+                    if (select.value === 'checkbox') {
+                        td.innerHTML = window.buildMockCheckboxCell(opts);
+                        td.className = "border border-gray-300 p-1.5 bg-gray-50 align-top";
+                        td.contentEditable = false;
+                    } else {
+                        td.innerHTML = '';
+                        td.className = "border border-gray-300 p-1";
+                        td.contentEditable = true;
+                    }
+                }
+            });
+            markDirty();
+            if(window.updatePropsPanel) window.updatePropsPanel(el);
+        }
+    };
+
+    window.updateTableColOptions = function(input, elId, colIdx) {
+        const el = document.querySelector(`.doc-section[data-id="${elId}"]`);
+        if(!el) return;
+        const th = el.querySelectorAll("table tr:first-child th, table tr:first-child td")[colIdx];
+        if(th) {
+            th.dataset.colOptions = input.value;
+            const opts = input.value.split('|').filter(Boolean);
+            const rows = el.querySelectorAll("table tr:not(:first-child)");
+            rows.forEach(r => {
+                const td = r.children[colIdx];
+                if(td && th.dataset.colType === 'checkbox') {
+                    td.innerHTML = window.buildMockCheckboxCell(opts);
+                }
+            });
+            markDirty();
+        }
+    };
+
     // ============================================
     // API CLIENT
     // ============================================
@@ -1164,77 +1225,29 @@
         }
       },
 
-      // Survey
-      getSurveys() {
-        return this.request("/surveys/");
-      },
-      getSurvey(id) {
-        return this.request(`/surveys/${id}/`);
-      },
-      createSurvey(data) {
-        return this.request("/surveys/", "POST", data);
-      },
-      updateSurvey(id, data) {
-        return this.request(`/surveys/${id}/`, "PUT", data);
-      },
-      deleteSurvey(id) {
-        return this.request(`/surveys/${id}/`, "DELETE");
-      },
-      duplicateSurvey(id) {
-        return this.request(`/surveys/${id}/duplicate/`, "POST");
-      },
-      publishSurvey(id) {
-        return this.request(`/surveys/${id}/publish/`, "POST");
-      },
+      getSurveys() { return this.request("/surveys/"); },
+      getSurvey(id) { return this.request(`/surveys/${id}/`); },
+      createSurvey(data) { return this.request("/surveys/", "POST", data); },
+      updateSurvey(id, data) { return this.request(`/surveys/${id}/`, "PUT", data); },
+      deleteSurvey(id) { return this.request(`/surveys/${id}/`, "DELETE"); },
+      duplicateSurvey(id) { return this.request(`/surveys/${id}/duplicate/`, "POST"); },
+      publishSurvey(id) { return this.request(`/surveys/${id}/publish/`, "POST"); },
 
-      // Sections
-      getSections(surveyId) {
-        return this.request(`/surveys/${surveyId}/sections/`);
-      },
-      createSection(surveyId, data) {
-        return this.request(`/surveys/${surveyId}/sections/`, "POST", data);
-      },
-      updateSection(id, data) {
-        return this.request(`/sections/${id}/`, "PUT", data);
-      },
-      deleteSection(id) {
-        return this.request(`/sections/${id}/`, "DELETE");
-      },
+      getSections(surveyId) { return this.request(`/surveys/${surveyId}/sections/`); },
+      createSection(surveyId, data) { return this.request(`/surveys/${surveyId}/sections/`, "POST", data); },
+      updateSection(id, data) { return this.request(`/sections/${id}/`, "PUT", data); },
+      deleteSection(id) { return this.request(`/sections/${id}/`, "DELETE"); },
 
-      // Questions
-      getQuestions(sectionId) {
-        return this.request(`/sections/${sectionId}/questions/`);
-      },
-      createQuestion(sectionId, data) {
-        return this.request(`/sections/${sectionId}/questions/`, "POST", data);
-      },
-      updateQuestion(id, data) {
-        return this.request(`/questions/${id}/`, "PUT", data);
-      },
-      deleteQuestion(id) {
-        return this.request(`/questions/${id}/`, "DELETE");
-      },
+      getQuestions(sectionId) { return this.request(`/sections/${sectionId}/questions/`); },
+      createQuestion(sectionId, data) { return this.request(`/sections/${sectionId}/questions/`, "POST", data); },
+      updateQuestion(id, data) { return this.request(`/questions/${id}/`, "PUT", data); },
+      deleteQuestion(id) { return this.request(`/questions/${id}/`, "DELETE"); },
 
-      // Question Types
-      getQuestionTypes() {
-        return this.request("/question-types/");
-      },
-
-      // Categories
-      getCategories() {
-        return this.request("/categories/");
-      },
-
-      // Responses
-      createResponse(data) {
-        return this.request("/responses/", "POST", data);
-      },
-      getResponse(id) {
-        return this.request(`/responses/${id}/`);
-      },
-      getSurveyStats(id) {
-        return this.request(`/responses/${id}/stats/`);
-      },
+      getQuestionTypes() { return this.request("/question-types/"); },
+      getCategories() { return this.request("/categories/"); },
+      createResponse(data) { return this.request("/responses/", "POST", data); },
+      getResponse(id) { return this.request(`/responses/${id}/`); },
+      getSurveyStats(id) { return this.request(`/responses/${id}/stats/`); },
     };
 
     function getCsrfToken() {
@@ -1357,7 +1370,6 @@
             lucide.createIcons();
             setTimeout(() => badge.classList.add("hidden"), 2000);
             showToast("Đã lưu khảo sát!", "success");
-            // Refresh section manager after save
             updateSectionManager();
           }
         } catch (error) {
@@ -1388,20 +1400,11 @@
             hasSectionBreak = true;
             sectionCounter++;
 
-            // QUAN TRỌNG: mã section CHỈ lấy từ data-section-code (gán 1 lần, ổn định,
-            // không đổi theo tiêu đề). KHÔNG được suy ra mã từ nội dung tiêu đề bằng regex
-            // nữa — tiêu đề mặc định "PHẦN MỚI" từng bị nhận nhầm thành mã "M" và làm nhiều
-            // section khác nhau bị coi là trùng mã, gộp hết vào 1 section khi lưu.
             let code = comp.dataset.sectionCode;
             if (!code) {
-              // Section-break cũ chưa từng có sectionCode (vd: phần tử được tạo trước khi
-              // có cơ chế này) -> gán một mã mới NGAY TẠI ĐÂY và lưu lại vào DOM để các lần
-              // build sau (vd autosave tiếp theo) dùng lại đúng mã này, không sinh mã mới mỗi lần.
               code = "sec_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
               comp.dataset.sectionCode = code;
             }
-            // Đảm bảo không bao giờ có 2 section-break khác nhau dùng cùng 1 mã
-            // (phòng trường hợp dữ liệu cũ/lỗi có sẵn mã trùng nhau).
             while (usedCodes.has(code)) {
               code = code + "_dup" + sectionCounter;
               comp.dataset.sectionCode = code;
@@ -1413,9 +1416,6 @@
             const title = titleEl ? titleEl.textContent.trim() : `Phần ${sectionCounter}`;
             const description = descEl ? descEl.textContent.trim() : "";
 
-            // Nếu có __default__ section (câu hỏi nằm trước section-break đầu tiên),
-            // merge nó vào section-break NÀY (đây là section-break đầu tiên gặp __default__,
-            // không liên quan gì đến việc trùng mã ở trên).
             const defaultIdx = sections.findIndex((s) => s.code === "__default__");
             if (defaultIdx >= 0 && sections[defaultIdx].questions.length > 0) {
               currentSection = sections[defaultIdx];
@@ -1427,7 +1427,6 @@
               if (defaultIdx >= 0) {
                 sections.splice(defaultIdx, 1);
               }
-              // Mỗi section-break luôn tạo MỘT section MỚI và riêng biệt.
               currentSection = {
                 code: code,
                 title: title,
@@ -1440,7 +1439,6 @@
             return;
           }
 
-          // Nếu chưa có section nào, tạm thời tạo __default__
           if (!currentSection) {
             currentSection = {
               code: "__default__",
@@ -1452,18 +1450,15 @@
             sections.push(currentSection);
           }
 
-          // Thêm câu hỏi vào section hiện tại
           const questionData = this.extractQuestionData(comp);
           questionData.order = currentSection.questions.length;
           currentSection.questions.push(questionData);
         });
 
-        // Nếu không có section-break nào
         if (!hasSectionBreak && sections.length > 0) {
           sections[0].code = "main";
         }
 
-        // Dọn dẹp: xóa __default__ rỗng nếu có section-break
         if (hasSectionBreak) {
           const defaultIdx = sections.findIndex((s) => s.code === "__default__");
           if (defaultIdx >= 0) {
@@ -1547,27 +1542,34 @@
         if (type === "data-table") {
           const table = comp.querySelector("table");
           if (table) {
-            const firstRow = table.querySelector("tr");
             const columns = [];
+            const firstRow = table.querySelector("tr");
             if (firstRow) {
               firstRow.querySelectorAll("th, td").forEach((cell) => {
                 const text = cell.textContent.trim();
-                if (text) columns.push(text);
+                const colType = cell.dataset.colType || 'text';
+                const colOptions = cell.dataset.colOptions ? cell.dataset.colOptions.split('|').filter(Boolean) : [];
+                if (text) columns.push({ name: text, type: colType, options: colOptions });
               });
             }
+            
             const allRows = table.querySelectorAll("tr");
             const data = [];
             allRows.forEach((row, rowIndex) => {
               if (rowIndex === 0) return;
               const rowData = [];
-              row.querySelectorAll("td").forEach((td) => {
-                rowData.push(td.textContent.trim());
+              row.querySelectorAll("td").forEach((td, colIdx) => {
+                if (columns[colIdx] && columns[colIdx].type === 'checkbox') {
+                    rowData.push(''); 
+                } else {
+                    rowData.push(td.textContent.trim());
+                }
               });
               if (rowData.some((cell) => cell !== "")) {
                 data.push(rowData);
               }
             });
-            config.columns = columns.length > 0 ? columns : ["Cột 1", "Cột 2", "Cột 3"];
+            config.columns = columns.length > 0 ? columns : [{name: "Cột 1", type: "text"}];
             config.data = data;
             config.rows = data.length;
           }
@@ -1597,9 +1599,6 @@
         let fallbackCounter = 0;
         for (const sectionData of sectionsData) {
           let code = sectionData.code;
-          // QUAN TRỌNG: KHÔNG dùng "A" làm mã mặc định chung cho mọi section thiếu mã —
-          // nếu có từ 2 section trở lên thiếu mã, cả 2 sẽ cùng map vào "A" và bị gộp/ghi
-          // đè lẫn nhau. Mỗi section thiếu mã phải nhận một mã DUY NHẤT riêng.
           if (!code || code === "__default__" || updatedCodes.includes(code)) {
             fallbackCounter++;
             code = "sec_fallback_" + Date.now().toString(36) + "_" + fallbackCounter;
@@ -1659,16 +1658,6 @@
       },
     };
 
-    // ============================================
-    // EXTRACT FUNCTIONS
-    // ============================================
-    // TRƯỚC ĐÂY hàm này suy ra "mã section" bằng cách đọc chữ trong tiêu đề (regex
-    // /PHẦN\s+([A-Z])/) rồi XOÁ LUÔN bất kỳ section-break nào bị coi là "trùng mã".
-    // Đây chính là nguyên nhân khiến nhiều section bị mất sau khi lưu: tiêu đề mặc định
-    // "PHẦN MỚI" vô tình khớp regex thành mã "M", nên 2 section khác nhau cùng dùng tiêu đề
-    // mặc định sẽ bị coi là trùng và 1 trong 2 bị xoá khỏi DOM.
-    // Bây giờ hàm chỉ làm một việc an toàn: đảm bảo MỌI section-break có một
-    // dataset.sectionCode ổn định, duy nhất — không bao giờ xoá phần tử của người dùng.
     function cleanupSectionBreaks() {
       const allSections = document.querySelectorAll('.doc-section[data-type="section-break"]');
       const usedCodes = new Set();
@@ -1678,8 +1667,6 @@
           usedCodes.add(code);
           return;
         }
-        // Thiếu mã, hoặc mã bị trùng với một section khác (dữ liệu cũ/lỗi) -> cấp mã mới,
-        // KHÔNG xoá phần tử.
         do {
           code = "sec_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
         } while (usedCodes.has(code));
@@ -1784,7 +1771,7 @@
     // ============================================
     // SECTION MANAGER
     // ============================================
-    function updateSectionManager() {
+    window.updateSectionManager = function() {
       const container = document.getElementById("section-manager");
       const badge = document.getElementById("section-count-badge");
       const breakEls = document.querySelectorAll('.doc-section[data-type="section-break"]');
@@ -1816,24 +1803,23 @@
 
       container.innerHTML = html;
 
-      // Click để chọn section-break
       container.querySelectorAll(".section-manager-item").forEach((item) => {
         item.addEventListener("click", function () {
           const breakId = this.dataset.sectionBreakId;
           scrollToSectionBreak(breakId);
         });
       });
-    }
+    };
 
-    function scrollToSectionBreak(breakId) {
+    window.scrollToSectionBreak = function(breakId) {
       const el = document.querySelector(`.doc-section[data-id="${breakId}"]`);
       if (el) {
         selectComponent(el);
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       }
-    }
+    };
 
-    function removeSectionBreak(breakId) {
+    window.removeSectionBreak = function(breakId) {
       const el = document.querySelector(`.doc-section[data-id="${breakId}"]`);
       if (el && confirm("Xóa phần này?")) {
         el.remove();
@@ -1845,7 +1831,7 @@
         updateSectionManager();
         showToast("Đã xóa phần", "success");
       }
-    }
+    };
 
     // ============================================
     // SURVEY LIST
@@ -1946,15 +1932,12 @@
           const page = createPage(index + 1);
           const contentEl = page.querySelector(".page-content");
 
-          // Luôn thêm section-break cho mọi section (kể cả section đầu)
-          // Section-break đầu tiên có section code gốc từ dữ liệu
           const breakEl = document.createElement("div");
           breakEl.className = "doc-section";
           breakEl.dataset.type = "section-break";
           breakEl.dataset.id = "comp_" + ++componentCounter;
           breakEl.dataset.required = "false";
           breakEl.dataset.questionId = null;
-          // LƯU MÃ SECTION GỐC vào data attribute - ĐÂY LÀ CHÌA KHÓA SỬA LỖI
           const sectionCode = section.code || String.fromCharCode(65 + index);
           breakEl.dataset.sectionCode = sectionCode;
 
@@ -1973,7 +1956,6 @@
           `;
           contentEl.appendChild(breakEl);
 
-          // Thêm các câu hỏi của section
           if (section.questions && section.questions.length > 0) {
             section.questions.forEach((question) => {
               const comp = createComponentFromQuestion(question);
@@ -2140,34 +2122,58 @@
           break;
         }
         case "data-table": {
-          const columns = config.columns && config.columns.length > 0 ? config.columns : ["Cột 1", "Cột 2", "Cột 3"];
+          const columns = config.columns && config.columns.length > 0 ? config.columns : [{name: "Cột 1", type: "text"}];
           const tableData = config.data && config.data.length > 0 ? config.data : [];
-          let tableHeaderHtml = columns.map((col) => `<th class="border border-gray-300 p-1 bg-gray-50" contenteditable="true">${col}</th>`).join("");
+
+          let tableHeaderHtml = columns.map((col) => {
+              let name = typeof col === 'string' ? col : col.name;
+              let type = typeof col === 'string' ? 'text' : col.type;
+              let options = typeof col === 'string' ? '' : (col.options || []).join('|');
+              return `<th class="border border-gray-300 p-1 bg-gray-50" contenteditable="true" data-col-type="${type}" data-col-options="${escapeHtml(options)}">${escapeHtml(name)}</th>`;
+          }).join("");
+
           let tableBodyHtml = "";
           if (tableData.length > 0) {
             tableData.forEach((rowData) => {
               let rowHtml = "<tr>";
               columns.forEach((col, idx) => {
-                rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true">${rowData[idx] || ""}</td>`;
+                let type = typeof col === 'string' ? 'text' : col.type;
+                if (type === 'checkbox') {
+                    let opts = typeof col === 'string' ? [] : (col.options || []);
+                    rowHtml += `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockCheckboxCell(opts)}</td>`;
+                } else {
+                    rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true">${escapeHtml(rowData[idx] || "")}</td>`;
+                }
               });
               rowHtml += "</tr>";
               tableBodyHtml += rowHtml;
             });
           } else {
             let rowHtml = "<tr>";
-            columns.forEach(() => { rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true"></td>`; });
+            columns.forEach((col) => {
+                let type = typeof col === 'string' ? 'text' : col.type;
+                if (type === 'checkbox') {
+                    let opts = typeof col === 'string' ? [] : (col.options || []);
+                    rowHtml += `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockCheckboxCell(opts)}</td>`;
+                } else {
+                    rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true"></td>`;
+                }
+            });
             rowHtml += "</tr>";
             tableBodyHtml = rowHtml;
           }
+
           html = `<span class="component-badge">${badgeText}</span>
             <div class="flex items-start gap-2">
               ${dragHandleHtml}
               <div class="flex-1">
                 <p contenteditable="true" class="text-sm mb-2 font-medium">${question.title || "Bảng dữ liệu:"}</p>
-                <table class="w-full border-collapse border border-gray-300 text-xs">
-                  <tr>${tableHeaderHtml}</tr>
-                  ${tableBodyHtml}
-                </table>
+                <div style="overflow-x:auto;">
+                  <table class="w-full border-collapse border border-gray-300 text-xs">
+                    <tr>${tableHeaderHtml}</tr>
+                    ${tableBodyHtml}
+                  </table>
+                </div>
                 <div class="mt-1 table-controls">
                   <button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800">+ Thêm hàng</button>
                   <button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 ml-2">+ Thêm cột</button>
@@ -2473,15 +2479,15 @@
       const toolbarWidth = toolbar.offsetWidth || 220;
       toolbar.style.top = Math.max(4, rect.top - 48) + "px";
       toolbar.style.left = Math.min(window.innerWidth - toolbarWidth - 10, rect.right - toolbarWidth) + "px";
-      updatePropsPanel(el);
-      updateSectionManager();
+      window.updatePropsPanel(el);
+      window.updateSectionManager();
     }
 
     function hideFloatingToolbar() {
       document.getElementById("floating-toolbar").classList.remove("visible");
     }
 
-    function updatePropsPanel(el) {
+    window.updatePropsPanel = function(el) {
       const panel = document.getElementById("props-panel");
       const type = el.dataset.type || "unknown";
       const required = el.dataset.required === "true";
@@ -2530,6 +2536,7 @@
               <span>Ẩn thành phần</span>
             </label>
           </div>`;
+          
       if (type === "single-choice" || type === "multi-choice") {
         const opts = el.querySelectorAll('.option-item span[contenteditable="true"]');
         let optsHtml2 = "";
@@ -2540,6 +2547,7 @@
           <button onclick="addOptionToSelected()" class="w-full mt-2 text-xs bg-blue-50 text-blue-700 py-1 rounded hover:bg-blue-100 transition">+ Thêm lựa chọn</button>
         </div>`;
       }
+      
       if (type === "rating-grid") {
         const table = el.querySelector(".grid-table");
         if (table) {
@@ -2555,14 +2563,35 @@
           </div>`;
         }
       }
+      
       if (type === "data-table") {
         const table = el.querySelector("table");
         if (table) {
           const rows = table.querySelectorAll("tr");
-          const cols = rows.length > 0 ? rows[0].querySelectorAll("th, td").length : 0;
+          const cols = rows.length > 0 ? Array.from(rows[0].querySelectorAll("th, td")) : [];
+
+          let colConfigHtml = cols.map((th, idx) => {
+              let name = th.textContent.trim();
+              let cType = th.dataset.colType || 'text';
+              let opts = th.dataset.colOptions || '';
+              return `
+                <div class="mb-2 p-2 border border-gray-200 rounded">
+                    <div class="flex justify-between items-center mb-1 gap-2">
+                        <span class="font-medium truncate" style="max-width:90px;" title="${escapeHtml(name)}">${escapeHtml(name) || `Cột ${idx+1}`}</span>
+                        <select onchange="updateTableColType(this, '${el.dataset.id}', ${idx})" class="text-xs border border-gray-300 rounded px-1 py-0.5 flex-1 w-full max-w-[100px]">
+                            <option value="text" ${cType==='text'?'selected':''}>Văn bản</option>
+                            <option value="checkbox" ${cType==='checkbox'?'selected':''}>Nhiều lựa chọn</option>
+                        </select>
+                    </div>
+                    ${cType === 'checkbox' ? `<input type="text" value="${escapeHtml(opts)}" onchange="updateTableColOptions(this, '${el.dataset.id}', ${idx})" placeholder="Lựa chọn 1|Lựa chọn 2" class="w-full text-xs border border-gray-300 rounded px-1 py-1" title="Nhập các lựa chọn, cách nhau bằng dấu gạch đứng |">` : ''}
+                </div>
+              `;
+          }).join('');
+
           html += `<div class="bg-white rounded p-3 shadow-sm">
-            <div class="text-xs text-gray-500">Bảng dữ liệu</div>
-            <div class="text-xs text-gray-700 mt-1"><div>${rows.length - 1} hàng × ${cols} cột</div></div>
+            <div class="text-xs text-gray-500 mb-2 font-medium text-blue-600">Cấu hình Cột (Bảng dữ liệu)</div>
+            <div class="max-h-48 overflow-y-auto">${colConfigHtml}</div>
+            <div class="text-xs text-gray-700 mt-2"><div>${rows.length - 1} hàng × ${cols.length} cột</div></div>
             <div class="flex gap-1 mt-2 flex-wrap">
               <button onclick="addTableRowFromProps()" class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100">+ Hàng</button>
               <button onclick="addTableColFromProps()" class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded hover:bg-blue-100">+ Cột</button>
@@ -2570,11 +2599,14 @@
           </div>`;
         }
       }
+      
       html += `<div class="bg-white rounded p-3 shadow-sm">
         <div class="text-xs text-gray-500">ID thành phần</div>
         <div class="text-xs font-mono text-gray-600">${el.dataset.id}</div>
       </div></div>`;
+      
       panel.innerHTML = html;
+      
       const btnChangeType = document.getElementById("btn-change-type");
       if (btnChangeType) {
         btnChangeType.addEventListener("click", function (e) {
@@ -2583,7 +2615,7 @@
           changeComponentType();
         });
       }
-    }
+    };
 
     function changeComponentType() {
       if (!selectedEl) {
@@ -2699,10 +2731,11 @@
             if (headerRow) {
               headerRow.innerHTML = "";
               config.columns.forEach((col) => {
+                let name = typeof col === 'string' ? col : col.name;
                 const th = document.createElement("th");
                 th.className = "border border-gray-300 p-1 bg-gray-50";
                 th.contentEditable = true;
-                th.textContent = col;
+                th.textContent = name;
                 headerRow.appendChild(th);
               });
             }
@@ -2731,7 +2764,7 @@
       const badge = selectedEl.querySelector(".component-badge");
       if (badge) badge.textContent = badgeText[newType] || newType;
       fixClonedElement(selectedEl);
-      updatePropsPanel(selectedEl);
+      window.updatePropsPanel(selectedEl);
       markDirty();
       showToast(`Đã đổi thành: ${badgeText[newType] || newType}`, "success");
     }
@@ -2823,7 +2856,7 @@
     function toggleRequired() {
       if (selectedEl) {
         selectedEl.dataset.required = selectedEl.dataset.required === "true" ? "false" : "true";
-        updatePropsPanel(selectedEl);
+        window.updatePropsPanel(selectedEl);
         markDirty();
       }
     }
@@ -2831,7 +2864,7 @@
     function toggleVisibility() {
       if (selectedEl) {
         selectedEl.classList.toggle("hidden-section");
-        updatePropsPanel(selectedEl);
+        window.updatePropsPanel(selectedEl);
         markDirty();
       }
     }
@@ -2884,9 +2917,6 @@
       el.onclick = function (e) { if (!e.target.closest(".drag-handle") && !e.target.closest("button")) selectComponent(this); };
       const templates = getComponentTemplate(type);
       el.innerHTML = templates;
-      // QUAN TRỌNG: gán mã section DUY NHẤT ngay khi tạo, không suy ra từ tiêu đề.
-      // Tiêu đề mặc định "PHẦN MỚI" từng bị regex /PHẦN\s+([A-Z])/ nhận nhầm thành mã "M",
-      // khiến nhiều section-break mới thêm bị coi là trùng mã và bị gộp/xoá khi lưu.
       if (type === "section-break") {
         el.dataset.sectionCode = generateUniqueSectionCode();
       }
@@ -2900,12 +2930,10 @@
       const componentLabel = components.find((c) => c.type === type)?.label || type;
       showToast("Đã thêm: " + componentLabel, "success");
       if (type === "section-break") {
-        setTimeout(updateSectionManager, 100);
+        setTimeout(window.updateSectionManager, 100);
       }
     }
 
-    // Sinh mã section nội bộ DUY NHẤT (không phụ thuộc tiêu đề, không bao giờ trùng).
-    // Mã này chỉ dùng để định danh ổn định trong lúc chỉnh sửa/lưu; không hiển thị cho người dùng.
     function generateUniqueSectionCode() {
       const existing = new Set(
         Array.from(document.querySelectorAll('.doc-section[data-type="section-break"]'))
@@ -2946,7 +2974,7 @@
     // ============================================
     // OPTION FUNCTIONS
     // ============================================
-    function addOption(btn) {
+    window.addOption = function(btn) {
       const container = btn.closest(".options-container") || btn.closest(".space-y-1");
       const radioName = container.querySelector('input[type="radio"]')?.name || "q" + Date.now();
       const label = document.createElement("label");
@@ -2956,9 +2984,9 @@
       container.insertBefore(label, btn);
       markDirty();
       lucide.createIcons();
-    }
+    };
 
-    function removeOption(btn) {
+    window.removeOption = function(btn) {
       const container = btn.closest(".options-container") || btn.closest(".space-y-1");
       const items = container.querySelectorAll(".option-item");
       if (items.length > 2) {
@@ -2967,58 +2995,76 @@
       } else {
         showToast("Cần ít nhất 2 lựa chọn!", "warning");
       }
-    }
+    };
 
-    function addOptionToSelected() {
+    window.addOptionToSelected = function() {
       if (selectedEl) {
         const btn = selectedEl.querySelector('button[onclick*="addOption"]');
         if (btn) addOption(btn);
       }
-    }
+    };
 
     // ============================================
     // TABLE FUNCTIONS
     // ============================================
-    function addTableRow(btn) {
+    window.addTableRow = function(btn) {
       const table = btn.closest(".doc-section").querySelector("table");
       if (!table) return;
-      const cols = table.querySelector("tr")?.children?.length || 0;
+      const firstRow = table.querySelector("tr");
+      const cols = firstRow?.children?.length || 0;
       const row = document.createElement("tr");
-      for (let i = 0; i < cols; i++) { const td = document.createElement("td"); td.className = "border border-gray-300 p-1"; td.contentEditable = true; row.appendChild(td); }
+      for (let i = 0; i < cols; i++) { 
+        const th = firstRow.children[i];
+        const td = document.createElement("td"); 
+        
+        if (th && th.dataset.colType === 'checkbox') {
+            const opts = th.dataset.colOptions ? th.dataset.colOptions.split('|').filter(Boolean) : [];
+            td.className = "border border-gray-300 p-1.5 bg-gray-50 align-top";
+            td.contentEditable = false;
+            td.innerHTML = window.buildMockCheckboxCell(opts);
+        } else {
+            td.className = "border border-gray-300 p-1"; 
+            td.contentEditable = true; 
+        }
+        row.appendChild(td); 
+      }
       table.appendChild(row);
       reattachEvents();
       markDirty();
+      if(selectedEl) window.updatePropsPanel(selectedEl);
       showToast("Đã thêm hàng mới", "success");
-    }
+    };
 
-    function addTableCol(btn) {
+    window.addTableCol = function(btn) {
       const table = btn.closest(".doc-section").querySelector("table");
       if (!table) return;
       table.querySelectorAll("tr").forEach((tr) => {
-        const isHeader = tr.parentElement?.tagName === "THEAD";
+        const isHeader = tr.parentElement?.tagName === "THEAD" || tr === table.querySelector("tr");
         const td = document.createElement(isHeader ? "th" : "td");
-        td.className = "border border-gray-300 p-1";
+        td.className = isHeader ? "border border-gray-300 p-1 bg-gray-50" : "border border-gray-300 p-1";
         td.contentEditable = true;
+        if(isHeader) td.dataset.colType = "text";
         tr.appendChild(td);
       });
       reattachEvents();
       markDirty();
+      if(selectedEl) window.updatePropsPanel(selectedEl);
       showToast("Đã thêm cột mới", "success");
-    }
+    };
 
-    function addTableRowFromProps() {
+    window.addTableRowFromProps = function() {
       if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addTableRow"]'); if (btn) addTableRow(btn); }
-    }
-    function addTableColFromProps() {
+    };
+    window.addTableColFromProps = function() {
       if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addTableCol"]'); if (btn) addTableCol(btn); }
-    }
+    };
 
     // ============================================
     // RATING GRID FUNCTIONS
     // ============================================
     function getGridTable(el) { return el.closest ? el.closest(".doc-section").querySelector(".grid-table") : el.closest(".doc-section").querySelector(".grid-table"); }
 
-    function addGridRow(btn) {
+    window.addGridRow = function(btn) {
       const table = getGridTable(btn);
       if (!table) return;
       const headerCells = Array.from(table.querySelectorAll("thead th"));
@@ -3041,16 +3087,16 @@
       reattachEvents();
       markDirty();
       showToast("Đã thêm hàng mới", "success");
-    }
+    };
 
-    function removeGridRow(btn) {
+    window.removeGridRow = function(btn) {
       const tbody = getGridTable(btn)?.querySelector("tbody");
       if (!tbody) return;
       if (tbody.children.length > 1) { tbody.lastElementChild.remove(); markDirty(); showToast("Đã xóa hàng", "success"); }
       else showToast("Cần ít nhất 1 hàng!", "warning");
-    }
+    };
 
-    function addGridCol(btn) {
+    window.addGridCol = function(btn) {
       const table = getGridTable(btn);
       if (!table) return;
       const timestamp = Date.now();
@@ -3062,9 +3108,9 @@
       reattachEvents();
       markDirty();
       showToast("Đã thêm cột mới", "success");
-    }
+    };
 
-    function removeGridCol(btn) {
+    window.removeGridCol = function(btn) {
       const table = getGridTable(btn);
       if (!table) return;
       const thead = table.querySelector("thead");
@@ -3073,9 +3119,9 @@
       const hdr = thead.querySelector("tr");
       if (hdr.children.length > 2) { hdr.lastElementChild.remove(); tbody.querySelectorAll("tr").forEach((r) => r.lastElementChild.remove()); markDirty(); showToast("Đã xóa cột", "success"); }
       else showToast("Cần ít nhất 2 cột!", "warning");
-    }
+    };
 
-    function changeGridType(sel) {
+    window.changeGridType = function(sel) {
       const table = getGridTable(sel);
       if (!table) return;
       const type = sel.value;
@@ -3102,10 +3148,10 @@
       reattachEvents();
       markDirty();
       showToast("Đã đổi loại lưới đánh giá", "success");
-    }
+    };
 
-    function addGridRowFromProps() { if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addGridRow"]'); if (btn) addGridRow(btn); } }
-    function addGridColFromProps() { if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addGridCol"]'); if (btn) addGridCol(btn); } }
+    window.addGridRowFromProps = function() { if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addGridRow"]'); if (btn) addGridRow(btn); } };
+    window.addGridColFromProps = function() { if (selectedEl) { const btn = selectedEl.querySelector('button[onclick*="addGridCol"]'); if (btn) addGridCol(btn); } };
 
     // ============================================
     // SAVE / PREVIEW / EXPORT / PUBLISH
@@ -3199,7 +3245,6 @@
 
     const CHECKBOX_RE = /[☐☑☒□]/g;
     const CHECKBOX_TEST_RE = /[☐☑☒□]/;
-    const MULTI_OPTION_LINE_RE = CHECKBOX_TEST_RE;
 
     function handleWordImport(event) {
       const file = event.target.files[0];
@@ -3218,7 +3263,7 @@
           blocks.forEach((block) => appendImportedBlock(content, block));
           reattachEvents();
           markDirty();
-          updateSectionManager();
+          window.updateSectionManager();
           if (result.messages && result.messages.length) console.warn("Mammoth messages:", result.messages);
           showToast(`Đã import ${blocks.length} thành phần từ Word!`, "success");
         }).catch((err) => { showToast("Lỗi import: " + err.message, "error"); });
@@ -3239,9 +3284,7 @@
       let i = 0;
       let pendingHeading = null;
       let pendingHeadingNote = null;
-      // Tiêu đề trông như một "PHẦN"/"MỤC" thật (mốc phân chia section trong file Word)
-      // sẽ được nhập thành một section-break thật, để cấu trúc phần được giữ lại sau khi lưu.
-      // Các tiêu đề khác (in hoa toàn dòng, chữ đậm cả dòng...) vẫn nhập thành "title" như cũ.
+
       const isSectionMarkerHeading = (text) => /^(PHẦN|MỤC)\s+\S/i.test(text);
       const flushPendingHeadingAsTitle = () => {
         if (pendingHeading) {
@@ -3250,6 +3293,7 @@
         }
         if (pendingHeadingNote) { blocks.push({ type: "paragraph", text: pendingHeadingNote }); pendingHeadingNote = null; }
       };
+
       while (i < n) {
         const item = rawItems[i];
         if (item.isTable) {
@@ -3265,8 +3309,6 @@
             options.push(...lineOptions); j++;
           }
           const finalOptions = options.length ? options : ["Lựa chọn 1", "Lựa chọn 2"];
-          // Nếu câu hỏi chỉ có đúng 2 lựa chọn dạng nhị phân (Có/Không, Yes/No...)
-          // thì đây thực chất là câu hỏi 1 lựa chọn, không phải nhiều lựa chọn.
           const isBinaryYesNo = finalOptions.length === 2 && finalOptions.every((o) => /^(có|không|yes|no)$/i.test(o.trim()));
           blocks.push({ type: isBinaryYesNo ? "single-choice" : "multi-choice", question: heading || "Lựa chọn:", options: finalOptions, note: note || "" });
           i = j; continue;
@@ -3323,56 +3365,95 @@
     }
 
     function parseWordTable(tableEl, heading) {
-      const rows = Array.from(tableEl.querySelectorAll("tr")).map((tr) => Array.from(tr.children).map((td) => td.textContent.trim()));
-      if (rows.length === 0) return { type: "data-table", question: heading, rows: [["Cột 1"]] };
-      const header = rows[0]; const bodyRows = rows.slice(1); const numCols = header.length;
-      const hasAnyRealCheckbox = bodyRows.some((r) => r.some((cell) => CHECKBOX_TEST_RE.test(cell)));
-      if (!hasAnyRealCheckbox) return { type: "data-table", question: heading, rows };
-      function colCheckboxRatio(colIdx) { let checkbox = 0, total = 0; bodyRows.forEach((r) => { const cell = r[colIdx] ?? ""; total++; if (CHECKBOX_TEST_RE.test(cell) || cell === "") checkbox++; }); return total > 0 ? checkbox / total : 0; }
-      let checkboxStartCol = -1;
-      for (let c = 1; c < numCols; c++) { let allRestAreCheckbox = true; for (let c2 = c; c2 < numCols; c2++) { if (colCheckboxRatio(c2) <= 0.6) { allRestAreCheckbox = false; break; } } if (allRestAreCheckbox) { checkboxStartCol = c; break; } }
-      if (checkboxStartCol === -1) return { type: "data-table", question: heading, rows };
-      let criteriaCol = checkboxStartCol - 1;
-      const looksLikeOrdinal = (colIdx) => bodyRows.every((r) => /^\d+$/.test((r[colIdx] ?? "").trim()));
-      while (criteriaCol > 0 && looksLikeOrdinal(criteriaCol)) criteriaCol--;
-      // Xác định từng cột trong vùng tích chọn là cột tích thật (có ký hiệu ☐/☑...)
-      // hay cột để trống hoàn toàn (dành cho việc ghi/nhập dữ liệu tự do, ví dụ "Khối lượng").
-      const regionCols = [];
-      for (let c = checkboxStartCol; c < numCols; c++) {
-        const label = (header[c] || "").trim();
-        const hasReal = bodyRows.some((r) => CHECKBOX_TEST_RE.test(r[c] ?? ""));
-        regionCols.push({ label, hasReal });
-      }
-      const realCount = regionCols.filter((c) => c.hasReal).length;
-      let cols, gridType;
-      if (realCount >= 2) {
-        // Lưới thật: nhiều cột tích loại trừ nhau theo từng hàng (vd Có/Không, thang điểm 1-5).
-        // Cột nào hoàn toàn trống (không có ký hiệu tích) trong vùng này được coi là cột nhập text.
-        const realLabels = regionCols.filter((c) => c.hasReal).map((c) => c.label);
-        const isYesNo = realLabels.length >= 1 && realLabels.every((h) => /^(Có|Không|Yes|No|Cần)$/i.test(h));
-        const isScale = realLabels.length >= 3 && realLabels.every((h) => /^\d+$/.test(h));
-        gridType = isYesNo ? "yesno" : realLabels.length === 10 && isScale ? "scale10" : isScale ? "scale5" : "yesno";
-        cols = regionCols.map((c) => ({ label: c.label, kind: c.hasReal ? "radio" : "text" }));
-      } else {
-        // Chỉ có 1 cột tích thật (vd "Có dữ liệu") -> đây là kiểu tích chọn độc lập theo từng hàng
-        // (checkbox, không loại trừ nhau), các cột trống còn lại (vd "Khối lượng") là cột nhập text.
-        gridType = "checklist";
-        cols = regionCols.map((c) => ({ label: c.label, kind: c.hasReal ? "checkbox" : "text" }));
-      }
-      if (!cols.length) cols = [{ label: "Có", kind: "checkbox" }];
-      return { type: "rating-grid", question: heading || "Đánh giá theo từng tiêu chí:", gridType, criteriaLabel: header[criteriaCol] || "Tiêu chí", cols, criteria: bodyRows.map((r) => r[criteriaCol]).filter(Boolean) };
+        const rows = Array.from(tableEl.querySelectorAll("tr")).map((tr) => Array.from(tr.children).map((td) => td.textContent.trim()));
+        if (rows.length === 0) return { type: "data-table", question: heading, columns: [{name: "Cột 1", type: 'text'}], data: [[""]] };
+        
+        const header = rows[0]; 
+        const bodyRows = rows.slice(1); 
+        const numCols = header.length;
+
+        let isMixedDataTable = false;
+        let dataTableCols = [];
+
+        for(let c=0; c<numCols; c++) {
+            let hasCheckboxes = false;
+            let options = new Set();
+            for(let r=0; r<bodyRows.length; r++) {
+                let cell = bodyRows[r][c] || "";
+                if (CHECKBOX_TEST_RE.test(cell)) {
+                    hasCheckboxes = true;
+                    cell.split(CHECKBOX_RE).forEach(opt => {
+                        let txt = opt.trim();
+                        if(txt) options.add(txt);
+                    });
+                }
+            }
+            if (hasCheckboxes && options.size > 0) {
+                isMixedDataTable = true;
+                dataTableCols.push({ name: header[c] || `Cột ${c+1}`, type: 'checkbox', options: Array.from(options) });
+            } else {
+                dataTableCols.push({ name: header[c] || `Cột ${c+1}`, type: 'text' });
+            }
+        }
+
+        if (isMixedDataTable) {
+             const cleanRows = bodyRows.map(row => {
+                 return row.map((cell, c) => {
+                     if (dataTableCols[c] && dataTableCols[c].type === 'checkbox') return ""; 
+                     return cell;
+                 });
+             });
+             return {
+                 type: 'data-table',
+                 question: heading,
+                 columns: dataTableCols,
+                 data: cleanRows
+             };
+        }
+
+        const hasAnyRealCheckbox = bodyRows.some((r) => r.some((cell) => CHECKBOX_TEST_RE.test(cell)));
+        if (!hasAnyRealCheckbox) {
+            return { type: "data-table", question: heading, columns: header.map(h => ({name: h, type:'text'})), data: bodyRows };
+        }
+        function colCheckboxRatio(colIdx) { let checkbox = 0, total = 0; bodyRows.forEach((r) => { const cell = r[colIdx] ?? ""; total++; if (CHECKBOX_TEST_RE.test(cell) || cell === "") checkbox++; }); return total > 0 ? checkbox / total : 0; }
+        let checkboxStartCol = -1;
+        for (let c = 1; c < numCols; c++) { let allRestAreCheckbox = true; for (let c2 = c; c2 < numCols; c2++) { if (colCheckboxRatio(c2) <= 0.6) { allRestAreCheckbox = false; break; } } if (allRestAreCheckbox) { checkboxStartCol = c; break; } }
+        if (checkboxStartCol === -1) {
+            return { type: "data-table", question: heading, columns: header.map(h => ({name: h, type:'text'})), data: bodyRows };
+        }
+        let criteriaCol = checkboxStartCol - 1;
+        const looksLikeOrdinal = (colIdx) => bodyRows.every((r) => /^\d+$/.test((r[colIdx] ?? "").trim()));
+        while (criteriaCol > 0 && looksLikeOrdinal(criteriaCol)) criteriaCol--;
+        const regionCols = [];
+        for (let c = checkboxStartCol; c < numCols; c++) {
+            const label = (header[c] || "").trim();
+            const hasReal = bodyRows.some((r) => CHECKBOX_TEST_RE.test(r[c] ?? ""));
+            regionCols.push({ label, hasReal });
+        }
+        const realCount = regionCols.filter((c) => c.hasReal).length;
+        let cols, gridType;
+        if (realCount >= 2) {
+            const realLabels = regionCols.filter((c) => c.hasReal).map((c) => c.label);
+            const isYesNo = realLabels.length >= 1 && realLabels.every((h) => /^(Có|Không|Yes|No|Cần)$/i.test(h));
+            const isScale = realLabels.length >= 3 && realLabels.every((h) => /^\d+$/.test(h));
+            gridType = isYesNo ? "yesno" : realLabels.length === 10 && isScale ? "scale10" : isScale ? "scale5" : "yesno";
+            cols = regionCols.map((c) => ({ label: c.label, kind: c.hasReal ? "radio" : "text" }));
+        } else {
+            gridType = "checklist";
+            cols = regionCols.map((c) => ({ label: c.label, kind: c.hasReal ? "checkbox" : "text" }));
+        }
+        if (!cols.length) cols = [{ label: "Có", kind: "checkbox" }];
+        return { type: "rating-grid", question: heading || "Đánh giá theo từng tiêu chí:", gridType, criteriaLabel: header[criteriaCol] || "Tiêu chí", cols, criteria: bodyRows.map((r) => r[criteriaCol]).filter(Boolean) };
     }
 
     function appendImportedBlock(content, block) {
       const el = document.createElement("div");
       el.className = "doc-section"; el.dataset.id = "comp_" + ++componentCounter; el.dataset.required = "false"; el.dataset.questionId = null;
       const noteHtml = `<p class="component-note text-xs text-gray-400 italic mt-1.5" contenteditable="true" data-placeholder="Thêm ghi chú/hướng dẫn (không bắt buộc)...">${block.note ? escapeHtml(block.note) : ""}</p>`;
+      
       if (block.type === "section-break") {
         el.dataset.type = "section-break";
-        // Mỗi section-break nhập từ Word PHẢI có mã riêng, không trùng với section khác,
-        // và không suy ra từ chữ trong tiêu đề (xem ghi chú ở addComponent/buildSurveyData).
         el.dataset.sectionCode = generateUniqueSectionCode();
-        // Tách "PHẦN A: Mô tả..." thành tiêu đề + mô tả nếu có dấu hai chấm/gạch ngang
         const headingMatch = block.text.match(/^(.+?)[\:\-–—]\s*(.+)$/);
         const sectionTitle = headingMatch ? headingMatch[1].trim() : block.text;
         const sectionDesc = headingMatch ? headingMatch[2].trim() : "";
@@ -3409,13 +3490,29 @@
         el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-semibold">${escapeHtml(block.question)}</p><div class="rating-grid-controls mb-2 flex gap-2 flex-wrap text-xs"><button onclick="event.stopPropagation();addGridRow(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Hàng</button><button onclick="event.stopPropagation();removeGridRow(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Hàng</button><button onclick="event.stopPropagation();addGridCol(this)" class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded hover:bg-blue-100">+ Cột</button><button onclick="event.stopPropagation();removeGridCol(this)" class="px-2 py-0.5 bg-red-50 text-red-700 rounded hover:bg-red-100">- Cột</button><select onchange="event.stopPropagation();changeGridType(this)" class="border border-gray-300 rounded px-1 py-0.5"><option value="yesno" ${block.gridType === "yesno" ? "selected" : ""}>Có/Không</option><option value="scale5" ${block.gridType === "scale5" ? "selected" : ""}>Thang 1-5</option><option value="scale10" ${block.gridType === "scale10" ? "selected" : ""}>Thang 1-10</option><option value="checklist" ${block.gridType === "checklist" ? "selected" : ""}>Danh sách tích chọn</option></select></div><table class="grid-table" data-grid-type="${block.gridType}"><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>${noteHtml}</div></div>`;
       } else if (block.type === "data-table") {
         el.dataset.type = "data-table";
-        const rowsHtml = block.rows.map((row, ri) => {
-          const cellTag = ri === 0 ? "th" : "td";
-          const cellClass = ri === 0 ? "border border-gray-300 p-1 bg-gray-50" : "border border-gray-300 p-1";
-          const cells = row.map((c) => `<${cellTag} class="${cellClass}" contenteditable="true">${escapeHtml(c)}</${cellTag}>`).join("");
-          return `<tr>${cells}</tr>`;
+        const cols = block.columns || [{name: 'Cột 1', type:'text'}];
+        const dataRows = block.data || [[]];
+
+        const tableHeaderHtml = cols.map(c => {
+             let name = typeof c === 'string' ? c : c.name;
+             let type = typeof c === 'string' ? 'text' : (c.type || 'text');
+             let options = (c.options || []).join('|');
+             return `<th class="border border-gray-300 p-1 bg-gray-50" contenteditable="true" data-col-type="${type}" data-col-options="${escapeHtml(options)}">${escapeHtml(name)}</th>`;
         }).join("");
-        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">${escapeHtml(block.question || "Bảng dữ liệu:")}</p><table class="w-full border-collapse border border-gray-300 text-xs">${rowsHtml}</table><div class="mt-1 table-controls"><button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800">+ Thêm hàng</button><button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 ml-2">+ Thêm cột</button></div>${noteHtml}</div></div>`;
+
+        const rowsHtml = dataRows.map(row => {
+             const cells = row.map((c, idx) => {
+                 let colType = cols[idx] ? cols[idx].type : 'text';
+                 if (colType === 'checkbox') {
+                     let opts = cols[idx].options || [];
+                     return `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockCheckboxCell(opts)}</td>`;
+                 }
+                 return `<td class="border border-gray-300 p-1" contenteditable="true">${escapeHtml(c)}</td>`;
+             }).join("");
+             return `<tr>${cells}</tr>`;
+        }).join("");
+
+        el.innerHTML = `<span class="component-badge">Nhập từ Word</span><div class="flex items-start gap-2"><span class="drag-handle">⠿</span><div class="flex-1"><p contenteditable="true" class="text-sm mb-2 font-medium">${escapeHtml(block.question || "Bảng dữ liệu:")}</p><div style="overflow-x:auto;"><table class="w-full border-collapse border border-gray-300 text-xs"><tr>${tableHeaderHtml}</tr>${rowsHtml}</table></div><div class="mt-1 table-controls"><button onclick="addTableRow(this)" class="text-xs text-blue-600 hover:text-blue-800">+ Thêm hàng</button><button onclick="addTableCol(this)" class="text-xs text-blue-600 hover:text-blue-800 ml-2">+ Thêm cột</button></div>${noteHtml}</div></div>`;
       } else {
         el.dataset.type = "paragraph";
         el.innerHTML = `<div class="flex-1"><p contenteditable="true" class="text-sm">${escapeHtml(block.text || "")}</p>${noteHtml}</div>`;
@@ -3431,8 +3528,6 @@
 
     // ============================================
     // "KHÁC" (OTHER) OPTION SUPPORT
-    // Cho phép lựa chọn "Khác" trong câu hỏi 1/nhiều lựa chọn có thêm
-    // một ô nhập văn bản tự do đi kèm.
     // ============================================
     function isOtherOptionLabel(text) {
       return /^kh[aá]c\b/i.test((text || "").trim());
@@ -3450,7 +3545,6 @@
       return options.map((opt) => buildOptionRowHtml(opt, inputType, groupName)).join("");
     }
 
-    // Khi người dùng bấm vào ô nhập "Khác", tự động tích chọn ô checkbox/radio tương ứng
     function onOtherInputFocus(input) {
       const label = input.closest(".option-item");
       if (!label) return;
@@ -3460,9 +3554,6 @@
 
     // ============================================
     // LƯỚI ĐÁNH GIÁ / BẢNG TÍCH CHỌN LINH HOẠT
-    // Mỗi cột trong lưới có thể là: "radio" (chọn 1 trong các cột loại trừ nhau),
-    // "checkbox" (tích chọn độc lập, ví dụ cột "Có dữ liệu"), hoặc
-    // "text" (cột để nhập dữ liệu tự do, ví dụ cột "Khối lượng").
     // ============================================
     function gridInputHtml(kind, radioName) {
       if (kind === "text") return `<input type="text" class="survey-input text-xs w-full text-center" placeholder="Nhập...">`;
@@ -3473,22 +3564,22 @@
     // ============================================
     // SETTINGS FUNCTIONS
     // ============================================
-    function changePageSize(size) {
+    window.changePageSize = function(size) {
       const pages = document.querySelectorAll(".a4-page");
       pages.forEach((p) => { if (size === "A4") p.removeAttribute("data-size"); else p.dataset.size = "Letter"; });
       showToast("Đã đổi khổ giấy: " + size, "success");
       scheduleRepaginate();
-    }
+    };
 
-    function changeBrandColor(color) {
+    window.changeBrandColor = function(color) {
       document.querySelectorAll(".doc-section.selected-component").forEach((el) => { el.style.outlineColor = color; });
       showToast("Đã đổi màu thương hiệu", "success");
-    }
+    };
 
-    function changeGlobalFont(font) {
+    window.changeGlobalFont = function(font) {
       document.querySelectorAll(".a4-page").forEach((p) => { p.style.fontFamily = font; });
       showToast("Đã đổi font: " + font, "success");
-    }
+    };
 
     // ============================================
     // MARK DIRTY / AUTO-SAVE
@@ -3564,7 +3655,7 @@
         el.querySelectorAll(".survey-input").forEach((input) => { input.onchange = function (e) { e.stopPropagation(); markDirty(); }; input.oninput = function (e) { e.stopPropagation(); markDirty(); }; });
         el.querySelectorAll('[contenteditable="true"]').forEach((editable) => {
           editable.oninput = function (e) { e.stopPropagation(); markDirty(); };
-          editable.onblur = function (e) { if (selectedEl === el) updatePropsPanel(el); };
+          editable.onblur = function (e) { if (selectedEl === el) window.updatePropsPanel(el); };
         });
         el.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach((input) => { input.onclick = function (e) { e.stopPropagation(); }; input.onchange = function (e) { e.stopPropagation(); markDirty(); }; });
         el.onkeydown = function (e) {

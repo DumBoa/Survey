@@ -79,6 +79,46 @@
         color: #6b7280;
       }
 
+      .btn-back {
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #4b5563;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .btn-back:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+      }
+
+      .btn-back-mobile {
+        display: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: #4b5563;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+      }
+
+      .btn-back-mobile:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+      }
+
       .progress-container {
         background: #ffffff;
         padding: 12px 40px;
@@ -115,6 +155,27 @@
         background: #0054a4;
         border-radius: 10px;
         transition: width 0.3s ease;
+      }
+
+      .progress-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 6px;
+        font-size: 0.75rem;
+        color: #9ca3af;
+      }
+
+      .progress-detail .completed-text {
+        color: #6b7280;
+      }
+
+      .progress-detail .status-text {
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .progress-detail .status-text.completed {
+        color: #16a34a;
       }
 
       .main-content {
@@ -770,6 +831,29 @@
         box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
       }
 
+      .btn-dashboard {
+        padding: 12px 32px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        background: #0054a4;
+        color: white;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+      }
+
+      .btn-dashboard:hover {
+        background: #004a8a;
+        box-shadow: 0 4px 16px rgba(0, 84, 164, 0.3);
+        transform: translateY(-1px);
+      }
+
       .toast {
         position: fixed;
         bottom: 24px;
@@ -833,27 +917,70 @@
       }
 
       .success-card .icon-check {
-        width: 64px;
-        height: 64px;
+        width: 72px;
+        height: 72px;
         border-radius: 50%;
-        background: #e8f0fe;
+        background: #dcfce7;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 16px;
-        color: #0054a4;
+        margin: 0 auto 20px;
+        color: #16a34a;
+      }
+
+      .success-card .icon-check svg {
+        width: 36px;
+        height: 36px;
       }
 
       .success-card h2 {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 700;
         color: #1a1a1a;
         margin-bottom: 8px;
       }
 
       .success-card p {
-        font-size: 14px;
+        font-size: 15px;
         color: #6b7280;
+        max-width: 420px;
+        margin: 0 auto 8px;
+        line-height: 1.6;
+      }
+
+      .success-card .divider {
+        width: 60px;
+        height: 3px;
+        background: #0054a4;
+        border-radius: 4px;
+        margin: 16px auto 20px;
+      }
+
+      .success-card .summary-stats {
+        display: flex;
+        justify-content: center;
+        gap: 48px;
+        margin: 20px 0 28px;
+      }
+
+      .success-card .summary-stats .stat-item {
+        text-align: center;
+      }
+
+      .success-card .summary-stats .stat-item .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0054a4;
+      }
+
+      .success-card .summary-stats .stat-item .stat-label {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 2px;
+      }
+
+      .success-card .btn-dashboard {
+        margin-top: 8px;
       }
 
       .loading-state {
@@ -884,7 +1011,7 @@
       .footer-spacer {
         height: 40px;
       }
-      /* Input "Khác" - trong suốt, không viền */
+
       .other-input {
         border: none !important;
         background: transparent !important;
@@ -897,14 +1024,17 @@
         font-family: inherit;
         margin-left: 4px;
       }
+
       .other-input:focus {
         border-bottom-color: #0054a4 !important;
       }
+
       .other-input::placeholder {
         color: #bbb;
         font-style: italic;
         font-size: 0.8rem;
       }
+
       @media (max-width: 1024px) {
         .sidebar {
           display: none;
@@ -927,6 +1057,12 @@
         }
         .header-text p {
           font-size: 0.75rem;
+        }
+        .btn-back {
+          display: none !important;
+        }
+        .btn-back-mobile {
+          display: inline-flex !important;
         }
         .progress-container {
           padding: 8px 16px;
@@ -961,6 +1097,34 @@
           overflow-x: auto;
           white-space: nowrap;
         }
+        .success-card {
+          padding: 32px 16px;
+        }
+        .success-card .summary-stats {
+          gap: 24px;
+          flex-wrap: wrap;
+        }
+        .success-card .summary-stats .stat-item .stat-number {
+          font-size: 22px;
+        }
+        .btn-dashboard {
+          padding: 10px 24px;
+          font-size: 0.9rem;
+        }
+        .progress-detail {
+          font-size: 0.65rem;
+          flex-wrap: wrap;
+          gap: 4px;
+        }
+      }
+      .error-highlight {
+        border-left: 4px solid #dc2626 !important;
+        background-color: #fef2f2 !important;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-left: -16px;
+        margin-right: -16px;
+        transition: all 0.3s ease;
       }
     </style>
   </head>
@@ -977,6 +1141,17 @@
             <p id="survey-description">{{ survey.description|default:"" }}</p>
           </div>
         </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Quay lại
+          </a>
+          <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-back-mobile">
+            ← Quay lại
+          </a>
+        </div>
       </div>
     </header>
 
@@ -989,6 +1164,10 @@
         </div>
         <div class="progress-bar">
           <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+        <div class="progress-detail">
+          <span class="completed-text" id="question-completed-text">0/0 câu hỏi</span>
+          <span class="status-text" id="question-status-text">Chưa bắt đầu</span>
         </div>
       </div>
     </div>
@@ -1036,1093 +1215,1248 @@
         <!-- Success Screen -->
         <div id="success-screen" class="success-card">
           <div class="icon-check">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
           <h2>Cảm ơn bạn đã tham gia</h2>
-          <p>
-            Khảo sát đã được gửi thành công. Câu trả lời của bạn đã được ghi
-            nhận.
-          </p>
+          <p>Khảo sát đã được gửi thành công. Câu trả lời của bạn đã được ghi nhận.</p>
+          <div class="divider"></div>
+          <div class="summary-stats">
+            <div class="stat-item">
+              <div class="stat-number" id="total-questions-display">0</div>
+              <div class="stat-label">Tổng số câu hỏi</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" style="color: #16a34a;" id="completed-questions-display">0</div>
+              <div class="stat-label">Đã hoàn thành</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" style="color: #f59e0b;">100%</div>
+              <div class="stat-label">Tiến độ</div>
+            </div>
+          </div>
+          <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-dashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Quay lại bảng điều khiển
+          </a>
         </div>
       </main>
     </div>
 
     <div class="footer-spacer"></div>
-
-    <script>
-              (function() {
-          'use strict';
-
-          const SURVEY_ID = {{ survey_id }};
-          let surveyData = null;
-          let responseData = null;
-          let answers = {};
-          let sectionProgress = {};
-          let currentPage = 0;
-          let totalPages = 0;
-          let startTime = Date.now();
-          let saveTimeout = null;
-          let isSubmitted = false;
-          let allQuestions = [];
-          let currentQuestionIndex = 0;
-          const urlParams = new URLSearchParams(window.location.search);
-          const progressId = urlParams.get('progress_id');
-
-          // ============================================
-          // API CLIENT
-          // ============================================
-          const API = {
-              async request(endpoint, method = 'GET', data = null) {
-                  const url = `/survey/api/public${endpoint}`;
-                  const options = {
-                      method,
-                      headers: {
-                          'Content-Type': 'application/json',
-                          'X-CSRFToken': getCsrfToken()
-                      },
-                      credentials: 'same-origin'
-                  };
-                  if (data) options.body = JSON.stringify(data);
-                  const res = await fetch(url, options);
-                  if (!res.ok) {
-                      const err = await res.json().catch(() => ({}));
-                      throw new Error(err.error || `HTTP ${res.status}`);
-                  }
-                  return res.json();
-              },
-              getSurvey(id) { return this.request(`/surveys/${id}/`); },
-              getResponse(id) { return this.request(`/surveys/${id}/response/`); },
-              submitResponse(data) { return this.request('/responses/submit/', 'POST', data); }
-          };
-
-          function getCsrfToken() {
-              const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
-              return cookieValue ? cookieValue.split('=')[1] : '';
-          }
-
-          // ============================================
-          // HELPERS
-          // ============================================
-          function showToast(msg, type = 'info') {
-              const existing = document.querySelector('.toast');
-              if (existing) existing.remove();
-              const toast = document.createElement('div');
-              toast.className = `toast ${type}`;
-              toast.textContent = msg;
-              document.body.appendChild(toast);
-              setTimeout(() => {
-                  toast.classList.add('hiding');
-                  setTimeout(() => toast.remove(), 300);
-              }, 4000);
-          }
-
-          function escapeHtml(str) {
-              const div = document.createElement('div');
-              div.textContent = str || '';
-              return div.innerHTML;
-          }
-
-          // ============================================
-          // AUTO FILL USER INFO
-          // ============================================
-          function autoFillUserInfo(savedAnswers) {
-              if (!savedAnswers) return;
-
-              // Lấy thông tin user từ answers
-              const userInfo = {
-                  full_name: savedAnswers.full_name || savedAnswers['Họ tên'] || '',
-                  email: savedAnswers.email || savedAnswers['Email'] || '',
-                  phone: savedAnswers.phone || savedAnswers['Điện thoại'] || '',
-                  position: savedAnswers.position || savedAnswers['Chức vụ'] || '',
-                  department: savedAnswers.department || savedAnswers['Bộ phận'] || '',
-                  agency: savedAnswers.agency || savedAnswers['Đơn vị'] || savedAnswers.organization || '',
-              };
-
-              // Nếu không có thông tin, bỏ qua
-              const hasInfo = Object.values(userInfo).some(v => v);
-              if (!hasInfo) return;
-
-              // Tìm tất cả input trong phiếu khảo sát
-              const allInputs = document.querySelectorAll('.question-item input[type="text"], .question-item textarea');
-
-              allInputs.forEach(input => {
-                  const item = input.closest('.question-item');
-                  if (!item) return;
-
-                  // Tìm tiêu đề câu hỏi
-                  const titleEl = item.querySelector('.question-title');
-                  if (!titleEl) return;
-
-                  const titleText = titleEl.textContent.trim().toLowerCase();
-
-                  // Mapping giữa từ khóa và giá trị
-                  const mappings = [
-                      { keywords: ['đơn vị', 'agency', 'organization', 'cơ quan'], value: userInfo.agency || userInfo.department },
-                      { keywords: ['họ tên', 'người cung cấp', 'full name', 'full_name'], value: userInfo.full_name },
-                      { keywords: ['chức vụ', 'position'], value: userInfo.position },
-                      { keywords: ['bộ phận', 'phòng ban', 'department'], value: userInfo.department || userInfo.agency },
-                      { keywords: ['điện thoại', 'phone', 'số điện thoại'], value: userInfo.phone },
-                      { keywords: ['email', 'mail'], value: userInfo.email },
-                  ];
-
-                  for (const mapping of mappings) {
-                      const matched = mapping.keywords.some(keyword => titleText.includes(keyword));
-                      if (matched && mapping.value) {
-                          if (input.type === 'text' || input.tagName === 'TEXTAREA') {
-                              // Chỉ điền nếu input đang trống
-                              if (!input.value.trim()) {
-                                  input.value = mapping.value;
-                                  // Đánh dấu là đã được tự động điền
-                                  input.style.borderColor = '#10b981';
-                                  input.style.backgroundColor = '#f0fdf4';
-                                  // Thêm tooltip nhỏ
-                                  input.title = 'Đã tự động điền từ thông tin tài khoản';
-                              }
-                          }
-                          break;
-                      }
-                  }
-              });
-
-              // Cập nhật progress sau khi điền
-              setTimeout(updateProgress, 100);
-          }
-
-          // ============================================
-          // RENDER SURVEY
-          // ============================================
-          function renderSurvey(data) {
-              surveyData = data;
-              const sections = data.sections || [];
-
-              if (sections.length === 0) {
-                  document.getElementById('loading-state').style.display = 'none';
-                  document.getElementById('survey-content').innerHTML = `
-                      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:24px;text-align:center;">
-                          <p style="color:#dc2626;font-weight:600">Không có câu hỏi nào trong khảo sát này.</p>
-                      </div>
-                  `;
-                  document.getElementById('survey-content').style.display = 'block';
-                  return;
-              }
-
-              // Build list of all real questions
-              allQuestions = [];
-              sections.forEach((section, sIdx) => {
-                  const questions = section.questions || [];
-                  questions.forEach((q, qIdx) => {
-                      if (!['title', 'paragraph'].includes(q.question_type_code)) {
-                          allQuestions.push({
-                              id: q.id,
-                              sectionIndex: sIdx,
-                              questionIndex: qIdx,
-                              sectionCode: section.code || String(sIdx + 1),
-                              sectionDisplayCode: String(sIdx + 1),
-                              sectionTitle: section.title,
-                              title: q.title,
-                              questionNumber: allQuestions.length + 1,
-                              isRealQuestion: true
-                          });
-                      }
-                  });
-              });
-
-              document.getElementById('question-count').textContent = allQuestions.length;
-
-              totalPages = sections.length;
-              let html = '';
-
-              sections.forEach((section, idx) => {
-                  const isActive = idx === 0;
-                  let displayTitle = section.title || `Phần ${idx + 1}`;
-                  if (displayTitle.includes('sec_')) displayTitle = `Phần ${idx + 1}`;
-
-                  let badgeText = String(idx + 1);
-                  const match = displayTitle.match(/(?:Phần|Mục)\s*([A-Z0-9]+)/i);
-                  if (match) badgeText = match[1];
-
-                  html += `
-                      <div class="section-card ${isActive ? 'is-active' : ''}" data-section="${idx}" id="section-${idx}">
-                          <div class="section-header">
-                              <div class="section-number">${escapeHtml(badgeText)}</div>
-                              <div class="section-title">${escapeHtml(displayTitle)}</div>
-                          </div>
-                          <div class="section-body">
-                              ${renderQuestions(section.questions || [], idx)}
-                          </div>
-                      </div>
-                  `;
-              });
-
-              document.getElementById('survey-content').innerHTML = html;
-              document.getElementById('survey-content').style.display = 'block';
-              document.getElementById('loading-state').style.display = 'none';
-              document.getElementById('survey-actions').style.display = 'flex';
-
-              renderQuestionNav(allQuestions);
-              updatePagination();
-              updateProgress();
-
-              // ============================================================
-              // TỰ ĐỘNG ĐIỀN THÔNG TIN USER SAU KHI RENDER
-              // ============================================================
-              setTimeout(() => {
-                  // Ưu tiên dùng answers từ response, nếu không có thì dùng user info từ response
-                  if (answers && Object.keys(answers).length > 0) {
-                      autoFillUserInfo(answers);
-                      loadAnswers(answers);
-                  } else if (responseData && responseData.answers) {
-                      autoFillUserInfo(responseData.answers);
-                      loadAnswers(responseData.answers);
-                  }
-              }, 200);
-
-              attachEventListeners();
-              setTimeout(() => renderQuestionNav(allQuestions), 100);
-          }
-
-          // ============================================
-          // RENDER QUESTIONS
-          // ============================================
-          function renderQuestions(questions, sectionIdx) {
-              if (!questions || questions.length === 0) {
-                  return '<p style="color:#9ca3af;font-size:14px;">Không có câu hỏi nào trong phần này.</p>';
-              }
-
-              let html = '';
-              let questionCounter = 0;
-
-              questions.forEach((q, qIdx) => {
-                  const isRealQuestion = !['title', 'paragraph'].includes(q.question_type_code);
-                  if (isRealQuestion) questionCounter++;
-
-                  const questionNumber = isRealQuestion ? questionCounter : '';
-                  const required = q.is_required ? '<span class="question-required">*</span>' : '';
-                  const name = `q_${q.id}`;
-                  const description = q.description || '';
-
-                  html += `<div class="question-item" data-question-id="${q.id}" data-section="${sectionIdx}" data-question-index="${qIdx}">`;
-
-                  switch(q.question_type_code) {
-                      case 'title':
-                          html += `
-                              <div style="margin: 12px 0 8px; font-weight: 600; font-size: 20px; color: #1a1a1a;">
-                                  ${escapeHtml(q.title)}
-                              </div>
-                          `;
-                          break;
-
-                      case 'paragraph':
-                          html += `
-                              <div style="margin-bottom: 12px;">
-                                  ${escapeHtml(q.title)}
-                              </div>
-                          `;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                          break;
-
-                      case 'short-text':
-                          html += `
-                              <div class="question-title">
-                                  <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                              </div>
-                              <div class="form-group">
-                                  <input type="text"
-                                         name="${name}"
-                                         id="${name}"
-                                         placeholder="${escapeHtml(q.config?.placeholder || 'Nhập câu trả lời...')}"
-                                         ${q.is_required ? 'required' : ''}>
-                              </div>
-                          `;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                          break;
-
-                      case 'long-text':
-                          html += `
-                              <div class="question-title">
-                                  <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                              </div>
-                              <div class="textarea-group">
-                                  <textarea name="${name}"
-                                            id="${name}"
-                                            placeholder="${escapeHtml(q.config?.placeholder || 'Nhập nội dung...')}"
-                                            rows="${q.config?.rows || 4}"
-                                            ${q.is_required ? 'required' : ''}></textarea>
-                              </div>
-                          `;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                          break;
-
-                      case 'single-choice':
-                          html += `<div class="question-title"><span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}</div>
-                                  <div class="checkbox-group">`;
-                          const choices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
-                          choices.forEach((choice, ci) => {
-                              const isOther = /^kh[aá]c\b|^other\b/i.test(choice.trim());
-                              const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
-                              html += `
-                                  <label class="custom-radio-label">
-                                      <input type="radio" name="${name}" value="${escapeHtml(choice)}" ${q.is_required && ci === 0 ? 'required' : ''}>
-                                      <span>${escapeHtml(choice)}</span>
-                                      ${otherInputHtml}
-                                  </label>
-                              `;
-                          });
-                          html += `</div>`;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                          break;
-
-                      case 'multi-choice':
-                          html += `
-                              <div class="question-title">
-                                  <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                              </div>
-                              <div class="checkbox-group">
-                          `;
-                          const multiChoices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
-                          multiChoices.forEach((choice) => {
-                              const isOther = /^kh[aá]c\b|^other\b/i.test(choice.trim());
-                              const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
-                              html += `
-                                  <label class="custom-checkbox">
-                                      <input type="checkbox" name="${name}[]" value="${escapeHtml(choice)}">
-                                      <span>${escapeHtml(choice)}</span>
-                                      ${otherInputHtml}
-                                  </label>
-                              `;
-                          });
-                          html += `</div>`;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                          break;
-
-                      case 'rating-grid': {
-                          const cfg = q.config || {};
-                          const criteria = cfg.criteria || ['Tiêu chí 1'];
-                          const scale = cfg.scale || [{value: 1, label: 'Có', kind: 'radio'}, {value: 2, label: 'Không', kind: 'radio'}];
-
-                          html += `
-                              <div class="question-title">
-                                  <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                              </div>
-                              <table class="scale-table">
-                                  <thead>
-                                      <tr>
-                                          <th style="width:35%">Tiêu chí</th>
-                          `;
-                          scale.forEach(s => {
-                              html += `<th>${escapeHtml(s.label)}<span class="scale-label">${s.value}</span></th>`;
-                          });
-                          html += `
-                                              </tr>
-                                          </thead>
-                                          <tbody>
-                          `;
-                          criteria.forEach((criterion, ci) => {
-                              html += `<tr><td>${escapeHtml(criterion)}</td>`;
-                              scale.forEach((s, si) => {
-                                  const kind = s.kind || 'radio';
-                                  const inputName = `${name}_${ci}`;
-                                  if (kind === 'radio') {
-                                      html += `
-                                          <td>
-                                              <label class="custom-radio-label" style="justify-content:center;">
-                                                  <input type="radio"
-                                                         name="${inputName}"
-                                                         value="${s.value}"
-                                                         ${q.is_required && ci === 0 && si === 0 ? 'required' : ''}>
-                                              </label>
-                                          </td>
-                                      `;
-                                  } else if (kind === 'checkbox') {
-                                      html += `
-                                          <td>
-                                              <label class="custom-checkbox" style="justify-content:center;">
-                                                  <input type="checkbox"
-                                                         name="${inputName}[]"
-                                                         value="${s.value}">
-                                              </label>
-                                          </td>
-                                      `;
-                                  } else if (kind === 'text') {
-                                      html += `
-                                          <td>
-                                              <input type="text"
-                                                     name="${inputName}_${si}"
-                                                     placeholder="Nhập..."
-                                                     style="width:100%;padding:6px 8px;border:1.5px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit;background:#fff;"
-                                                     ${q.is_required && ci === 0 && si === 0 ? 'required' : ''}>
-                                          </td>
-                                      `;
-                                  }
-                              });
-                              html += `</tr>`;
-                          });
-                          html += `
-                                          </tbody>
-                                      </table>
-                          `;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                          break;
-                      }
-
-                      case 'data-table': {
-                          const dtCfg = q.config || {};
-                          const columns = dtCfg.columns || ['Cột 1', 'Cột 2', 'Cột 3'];
-                          let tableData = dtCfg.data || [];
-                          const numRows = dtCfg.rows || 2;
-
-                          if (tableData.length === 0) {
-                              tableData = [];
-                              for (let r = 0; r < numRows; r++) {
-                                  const rowData = [];
-                                  for (let c = 0; c < columns.length; c++) rowData.push('');
-                                  tableData.push(rowData);
-                              }
-                          }
-
-                          html += `
-                              <div class="question-title">
-                                  <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                              </div>
-                              <table class="data-table">
-                                  <thead>
-                                      <tr>
-                          `;
-                          columns.forEach(col => {
-                              html += `<th>${escapeHtml(col)}</th>`;
-                          });
-                          html += `
-                                              </tr>
-                                          </thead>
-                                          <tbody>
-                          `;
-                          tableData.forEach((rowData, rowIndex) => {
-                              html += `<tr>`;
-                              columns.forEach((col, colIndex) => {
-                                  const inputName = `${name}_${rowIndex}_${colIndex}`;
-                                  const cellValue = rowData[colIndex] || '';
-                                  const hasData = cellValue.trim() !== '';
-
-                                  html += `
-                                      <td>
-                                          <div class="input-wrapper">
-                                              ${hasData ? `
-                                                  <div class="data-label has-data">${escapeHtml(cellValue)}</div>
-                                                  <input type="hidden" name="${inputName}" value="${escapeHtml(cellValue)}">
-                                              ` : `
-                                                  <input type="text"
-                                                         name="${inputName}"
-                                                         placeholder="..."
-                                                         ${q.is_required ? 'required' : ''}>
-                                              `}
-                                          </div>
-                                      </td>
-                                  `;
-                              });
-                              html += `</tr>`;
-                          });
-                          html += `
-                                          </tbody>
-                                      </table>
-                          `;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                          break;
-                      }
-
-                      default:
-                          html += `
-                              <div class="question-title">
-                                  <span>Câu ${questionNumber}.</span> ${escapeHtml(q.title)} ${required}
-                              </div>
-                              <div class="form-group">
-                                  <input type="text" name="${name}" placeholder="Câu hỏi chưa được hỗ trợ">
-                              </div>
-                          `;
-                          if (description) html += `<div class="question-note">${escapeHtml(description)}</div>`;
-                  }
-
-                  html += `</div>`;
-                  if (qIdx < questions.length - 1) html += `<hr class="question-divider">`;
-              });
-
-              return html;
-          }
-
-          // ============================================
-          // ON OTHER INPUT FOCUS
-          // ============================================
-          function onOtherInputFocus(input) {
-              const label = input.closest('.custom-radio-label, .custom-checkbox');
-              if (!label) return;
-              const radio = label.querySelector('input[type="radio"], input[type="checkbox"]');
-              if (radio && !radio.checked) {
-                  radio.checked = true;
-                  radio.dispatchEvent(new Event('change', { bubbles: true }));
-              }
-          }
-
-          // ============================================
-          // RENDER QUESTION NAV
-          // ============================================
-          function renderQuestionNav(questions) {
-              const nav = document.getElementById('question-nav');
-              if (!nav) return;
-              nav.innerHTML = '';
-              let currentSectionIndex = -1;
-
-              questions.forEach((q, idx) => {
-                  if (q.sectionIndex !== currentSectionIndex) {
-                      currentSectionIndex = q.sectionIndex;
-                      const sectionHeader = document.createElement('div');
-                      sectionHeader.className = 'section-header-nav';
-                      let headerText = q.sectionTitle || `Phần ${q.sectionIndex + 1}`;
-                      if (headerText.includes('sec_')) headerText = `Phần ${q.sectionIndex + 1}`;
-                      sectionHeader.textContent = headerText;
-                      nav.appendChild(sectionHeader);
-                  }
-
-                  const isAnswered = isQuestionAnswered(q.id);
-                  const isActive = idx === currentQuestionIndex;
-
-                  const btn = document.createElement('button');
-                  btn.type = 'button';
-                  btn.className = 'question-nav-item';
-                  if (isActive) btn.classList.add('is-active');
-                  if (isAnswered) btn.classList.add('is-complete');
-
-                  btn.innerHTML = `
-                      <span class="status-dot"></span>
-                      <span class="q-number">${q.questionNumber}.</span>
-                      <span class="q-text">${escapeHtml(q.title)}</span>
-                      <span class="q-status-icon">${isAnswered ? '✓' : ''}</span>
-                  `;
-
-                  btn.addEventListener('click', () => goToQuestion(idx));
-                  nav.appendChild(btn);
-              });
-          }
-
-          // ============================================
-          // CHECK IF QUESTION IS ANSWERED
-          // ============================================
-          function isQuestionAnswered(questionId) {
-              const item = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
-              if (!item) return false;
-
-              const gridTable = item.querySelector('.scale-table');
-              if (gridTable) {
-                  const inputs = gridTable.querySelectorAll('input');
-                  for (let inp of inputs) {
-                      if (inp.type === 'radio' && inp.checked) return true;
-                      if (inp.type === 'checkbox' && inp.checked) return true;
-                      if (inp.type === 'text' && inp.value.trim() !== '') return true;
-                  }
-                  return false;
-              }
-
-              const inputs = item.querySelectorAll('input, textarea');
-              for (let inp of inputs) {
-                  if (inp.type === 'radio' && inp.checked) return true;
-                  if (inp.type === 'checkbox' && inp.checked) return true;
-                  if ((inp.type === 'text' || inp.tagName === 'TEXTAREA') && inp.value.trim() !== '') return true;
-              }
-              return false;
-          }
-
-          // ============================================
-          // GO TO SPECIFIC QUESTION
-          // ============================================
-          function goToQuestion(index) {
-              if (index < 0 || index >= allQuestions.length) return;
-              const q = allQuestions[index];
-              currentQuestionIndex = index;
-              currentPage = q.sectionIndex;
-
-              document.querySelectorAll('.section-card').forEach((card, idx) => {
-                  card.classList.toggle('is-active', idx === q.sectionIndex);
-              });
-
-              const questionEl = document.querySelector(`.question-item[data-question-id="${q.id}"]`);
-              if (questionEl) {
-                  setTimeout(() => {
-                      questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      questionEl.style.transition = 'background 0.3s';
-                      questionEl.style.background = '#e8f0fe';
-                      setTimeout(() => { questionEl.style.background = 'transparent'; }, 1500);
-                  }, 200);
-              }
-
-              renderQuestionNav(allQuestions);
-              updatePagination();
-              updateProgress();
-          }
-
-          // ============================================
-          // COMPUTE SECTION STATS
-          // ============================================
-          function computeSectionStats() {
-              const sections = surveyData?.sections || [];
-              const stats = [];
-              sections.forEach((section) => {
-                  const questions = section.questions || [];
-                  const inputQuestions = questions.filter(q => !['title', 'paragraph'].includes(q.question_type_code));
-                  let answered = 0;
-                  inputQuestions.forEach(q => { if (isQuestionAnswered(q.id)) answered++; });
-                  stats.push({
-                      code: section.code || '',
-                      title: section.title || '',
-                      total: inputQuestions.length,
-                      answered: answered,
-                      pct: inputQuestions.length > 0 ? Math.round((answered / inputQuestions.length) * 100) : 0
-                  });
-              });
-              return stats;
-          }
-
-          // ============================================
-          // LOAD ANSWERS
-          // ============================================
-          function loadAnswers(savedAnswers) {
-              Object.keys(savedAnswers).forEach(key => {
-                  const value = savedAnswers[key];
-                  const questionId = parseInt(key);
-                  const item = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
-                  if (!item) return;
-
-                  // Grid
-                  const gridTable = item.querySelector('.scale-table');
-                  if (gridTable && value && value.type === 'grid' && Array.isArray(value.data)) {
-                      const rows = gridTable.querySelectorAll('tbody tr');
-                      rows.forEach((row, ri) => {
-                          if (ri >= value.data.length) return;
-                          const rowData = value.data[ri];
-                          const cells = row.querySelectorAll('td');
-                          cells.forEach((cell, ci) => {
-                              if (ci >= rowData.length) return;
-                              const val = rowData[ci];
-                              const radio = cell.querySelector('input[type="radio"]');
-                              if (radio && val !== null && val !== undefined) {
-                                  if (radio.value === String(val)) radio.checked = true;
-                                  return;
-                              }
-                              const checkboxes = cell.querySelectorAll('input[type="checkbox"]');
-                              if (checkboxes.length && Array.isArray(val)) {
-                                  checkboxes.forEach(cb => {
-                                      if (val.includes(cb.value)) cb.checked = true;
-                                  });
-                                  return;
-                              }
-                              const textInput = cell.querySelector('input[type="text"]');
-                              if (textInput) {
-                                  textInput.value = val || '';
-                              }
-                          });
-                      });
-                      return;
-                  }
-
-                  const name = `q_${questionId}`;
-                  const elements = item.querySelectorAll(`[name^="${name}"]`);
-                  if (elements.length === 0) return;
-
-                  const firstEl = elements[0];
-
-                  if (firstEl.type === 'radio') {
-                      const options = getOptionsForQuestion(questionId);
-                      if (options && options.length > 0 && !options.includes(value)) {
-                          const otherOption = options.find(opt => /^kh[aá]c\b|^other\b/i.test(opt));
-                          if (otherOption) {
-                              const otherRadio = item.querySelector(`input[value="${escapeHtml(otherOption)}"]`);
-                              if (otherRadio) {
-                                  otherRadio.checked = true;
-                                  const otherInput = otherRadio.closest('.custom-radio-label').querySelector('.other-input');
-                                  if (otherInput) otherInput.value = value;
-                                  return;
-                              }
-                          }
-                      }
-                      elements.forEach(el => {
-                          if (el.value === String(value)) el.checked = true;
-                      });
-                  } else if (firstEl.type === 'checkbox') {
-                      const values = Array.isArray(value) ? value : [value];
-                      elements.forEach(el => {
-                          if (values.includes(el.value)) {
-                              el.checked = true;
-                          } else {
-                              if (/^kh[aá]c\b|^other\b/i.test(el.value)) {
-                                  const options = getOptionsForQuestion(questionId);
-                                  const unmatched = values.filter(v => !options.includes(v));
-                                  if (unmatched.length > 0) {
-                                      const otherInput = el.closest('.custom-checkbox').querySelector('.other-input');
-                                      if (otherInput) {
-                                          otherInput.value = unmatched[0];
-                                          el.checked = true;
-                                      }
-                                  }
-                              }
-                          }
-                      });
-                  } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA') {
-                      if (elements.length === 1) {
-                          firstEl.value = value || '';
-                      } else {
-                          if (Array.isArray(value)) {
-                              elements.forEach(el => {
-                                  const nameParts = el.name.split('_');
-                                  if (nameParts.length >= 3) {
-                                      const rowIdx = parseInt(nameParts[1]);
-                                      const colIdx = parseInt(nameParts[2]);
-                                      if (value[rowIdx] && value[rowIdx][colIdx] !== undefined) {
-                                          el.value = value[rowIdx][colIdx] || '';
-                                      }
-                                  }
-                              });
-                          }
-                      }
-                  }
-              });
-
-              setTimeout(() => renderQuestionNav(allQuestions), 100);
-          }
-
-          function getOptionsForQuestion(questionId) {
-              if (!surveyData) return [];
-              for (const section of surveyData.sections) {
-                  for (const q of section.questions) {
-                      if (q.id === questionId) {
-                          return q.options || [];
-                      }
-                  }
-              }
-              return [];
-          }
-
-          // ============================================
-          // COLLECT ANSWERS
-          // ============================================
-          function collectAnswers() {
-              const allAnswers = {};
-              const allQuestionsEl = document.querySelectorAll('.question-item');
-
-              allQuestionsEl.forEach(item => {
-                  const questionId = item.dataset.questionId;
-                  if (!questionId) return;
-                  const qId = parseInt(questionId);
-
-                  const gridTable = item.querySelector('.scale-table');
-                  if (gridTable) {
-                      const gridData = [];
-                      const rows = gridTable.querySelectorAll('tbody tr');
-                      rows.forEach(row => {
-                          const rowData = [];
-                          const cells = row.querySelectorAll('td');
-                          cells.forEach(cell => {
-                              const radio = cell.querySelector('input[type="radio"]:checked');
-                              if (radio) {
-                                  rowData.push(radio.value);
-                                  return;
-                              }
-                              const checkedCheckboxes = cell.querySelectorAll('input[type="checkbox"]:checked');
-                              if (checkedCheckboxes.length) {
-                                  rowData.push(Array.from(checkedCheckboxes).map(el => el.value));
-                                  return;
-                              }
-                              const textInput = cell.querySelector('input[type="text"]');
-                              if (textInput) {
-                                  rowData.push(textInput.value.trim() || null);
-                                  return;
-                              }
-                              rowData.push(null);
-                          });
-                          gridData.push(rowData);
-                      });
-                      allAnswers[qId] = { type: 'grid', data: gridData };
-                      return;
-                  }
-
-                  const name = `q_${qId}`;
-                  const elements = item.querySelectorAll(`[name^="${name}"]`);
-                  if (elements.length === 0) return;
-
-                  const firstEl = elements[0];
-
-                  if (firstEl.type === 'radio') {
-                      const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
-                      if (checkedRadio) {
-                          let value = checkedRadio.value;
-                          if (/^kh[aá]c\b|^other\b/i.test(value)) {
-                              const otherInput = checkedRadio.closest('.custom-radio-label').querySelector('.other-input');
-                              if (otherInput && otherInput.value.trim() !== '') {
-                                  value = otherInput.value.trim();
-                              }
-                          }
-                          allAnswers[qId] = value;
-                      }
-                  } else if (firstEl.type === 'checkbox') {
-                      const checkedCheckboxes = item.querySelectorAll(`[name^="${name}[]"]:checked`);
-                      if (checkedCheckboxes.length > 0) {
-                          const values = Array.from(checkedCheckboxes).map(cb => {
-                              let val = cb.value;
-                              if (/^kh[aá]c\b|^other\b/i.test(val)) {
-                                  const otherInput = cb.closest('.custom-checkbox').querySelector('.other-input');
-                                  if (otherInput && otherInput.value.trim() !== '') {
-                                      return otherInput.value.trim();
-                                  }
-                              }
-                              return val;
-                          });
-                          allAnswers[qId] = values;
-                      }
-                  } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA') {
-                      if (elements.length === 1) {
-                          const val = firstEl.value.trim();
-                          if (val) allAnswers[qId] = val;
-                      } else {
-                          const matrixData = [];
-                          const rowMap = {};
-                          elements.forEach(el => {
-                              const nameParts = el.name.split('_');
-                              if (nameParts.length >= 3) {
-                                  const rowIdx = parseInt(nameParts[1]);
-                                  const colIdx = parseInt(nameParts[2]);
-                                  if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
-                                  rowMap[rowIdx][colIdx] = el.value.trim();
-                              }
-                          });
-                          const rowKeys = Object.keys(rowMap).sort((a, b) => parseInt(a) - parseInt(b));
-                          rowKeys.forEach(rowKey => matrixData.push(rowMap[rowKey]));
-                          if (matrixData.length > 0) allAnswers[qId] = matrixData;
-                      }
-                  }
-              });
-
-              return allAnswers;
-          }
-
-          // ============================================
-          // UPDATE PROGRESS
-          // ============================================
-          function updateProgress() {
-              const stats = computeSectionStats();
-              let totalQuestions = 0, totalAnswered = 0;
-              stats.forEach(s => { totalQuestions += s.total; totalAnswered += s.answered; });
-              const pct = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
-
-              document.getElementById('progress-fill').style.width = `${pct}%`;
-              document.getElementById('progress-percent').textContent = `${pct}%`;
-              document.getElementById('progress-text').textContent =
-                  `Đã hoàn thành: ${totalAnswered}/${totalQuestions} câu hỏi`;
-              renderQuestionNav(allQuestions);
-          }
-
-          // ============================================
-          // PAGINATION
-          // ============================================
-          function updatePagination() {
-              const totalPages = surveyData?.sections?.length || 0;
-              document.getElementById('prev-btn').disabled = currentPage === 0;
-              document.getElementById('next-btn').disabled = currentPage === totalPages - 1;
-          }
-
-          function goToPage(pageIndex) {
-              if (pageIndex < 0 || pageIndex >= (surveyData?.sections?.length || 0)) return;
-              const currentAnswers = collectAnswers();
-              Object.assign(answers, currentAnswers);
-              currentPage = pageIndex;
-
-              document.querySelectorAll('.section-card').forEach((card, idx) => {
-                  card.classList.toggle('is-active', idx === pageIndex);
-              });
-
-              updatePagination();
-              updateProgress();
-              document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-
-          window.goToPage = goToPage;
-
-          // ============================================
-          // ATTACH EVENT LISTENERS
-          // ============================================
-          function attachEventListeners() {
-              document.getElementById('prev-btn').addEventListener('click', () => {
-                  if (currentPage > 0) goToPage(currentPage - 1);
-              });
-
-              document.getElementById('next-btn').addEventListener('click', () => {
-                  if (currentPage < (surveyData?.sections?.length || 0) - 1) goToPage(currentPage + 1);
-              });
-
-              document.getElementById('submit-btn').addEventListener('click', submitSurvey);
-
-              document.addEventListener('change', (e) => {
-                  if (e.target.closest('.question-item')) {
-                      scheduleSave();
-                      updateProgress();
-                  }
-              });
-
-              document.addEventListener('input', (e) => {
-                  if (e.target.closest('.question-item')) {
-                      scheduleSave();
-                      updateProgress();
-                  }
-              });
-          }
-
-          // ============================================
-          // SAVE DRAFT
-          // ============================================
-          async function saveDraft() {
-              if (isSubmitted) return;
-              const answersData = collectAnswers();
-              const stats = computeSectionStats();
-              const progress = {};
-              stats.forEach(s => { progress[s.code] = s.pct; });
-
-              try {
-                  const res = await API.submitResponse({
-                      survey_id: SURVEY_ID,
-                      response_id: responseData?.id,
-                      progress_id: progressId,
-                      answers: answersData,
-                      section_progress: progress,
-                      status: 'draft',
-                      time_taken: Math.round((Date.now() - startTime) / 1000)
-                  });
-                  if (res.success) {
-                      responseData = res;
-                      showToast('Đã lưu bản nháp', 'success');
-                  }
-              } catch (e) {
-                  showToast('Lỗi khi lưu: ' + e.message, 'error');
-              }
-          }
-
-          function scheduleSave() {
-              clearTimeout(saveTimeout);
-              saveTimeout = setTimeout(() => saveDraft(), 3000);
-          }
-
-          // ============================================
-          // SUBMIT SURVEY
-          // ============================================
-          async function submitSurvey() {
-              const requiredFields = document.querySelectorAll('[required]');
-              let isValid = true;
-              let firstInvalid = null;
-
-              requiredFields.forEach(el => {
-                  if (el.type === 'radio') {
-                      const name = el.name;
-                      const checked = document.querySelector(`[name="${name}"]:checked`);
-                      if (!checked) {
-                          isValid = false;
-                          if (!firstInvalid) firstInvalid = el.closest('.question-item');
-                      }
-                  } else if (el.type === 'checkbox') {
-                      // skip
-                  } else if (el.value.trim() === '') {
-                      isValid = false;
-                      if (!firstInvalid) firstInvalid = el.closest('.question-item');
-                  }
-              });
-
-              if (!isValid) {
-                  showToast('Vui lòng trả lời tất cả câu hỏi bắt buộc', 'warning');
-                  if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  return;
-              }
-
-              if (!confirm('Bạn có chắc chắn muốn nộp khảo sát này?')) return;
-
-              const answersData = collectAnswers();
-              const stats = computeSectionStats();
-              const progress = {};
-              stats.forEach(s => { progress[s.code] = s.pct; });
-
-              try {
-                  const res = await API.submitResponse({
-                      survey_id: SURVEY_ID,
-                      response_id: responseData?.id,
-                      progress_id: progressId,
-                      answers: answersData,
-                      section_progress: progress,
-                      status: 'submitted',
-                      time_taken: Math.round((Date.now() - startTime) / 1000)
-                  });
-                  if (res.success) {
-                      isSubmitted = true;
-                      document.getElementById('survey-content').style.display = 'none';
-                      document.getElementById('survey-actions').style.display = 'none';
-                      document.getElementById('sidebar').style.display = 'none';
-                      document.getElementById('success-screen').style.display = 'block';
-                      showToast('Khảo sát đã được gửi thành công!', 'success');
-                  }
-              } catch (e) {
-                  showToast('Lỗi khi gửi: ' + e.message, 'error');
-              }
-          }
-
-          // ============================================
-          // INIT
-          // ============================================
-          async function init() {
-              try {
-                  const [survey, response] = await Promise.all([
-                      API.getSurvey(SURVEY_ID),
-                      API.getResponse(SURVEY_ID)
-                  ]);
-
-                  surveyData = survey;
-                  responseData = response;
-                  answers = response.answers || {};
-                  sectionProgress = response.section_progress || {};
-
-                  renderSurvey(survey);
-
-                  setInterval(() => {
-                      if (!isSubmitted && Object.keys(collectAnswers()).length > 0) {
-                          saveDraft();
-                      }
-                  }, 30000);
-
-                  if (Object.keys(answers).length > 0) {
-                      showToast('Đã khôi phục dữ liệu đã lưu', 'info');
-                  }
-
-              } catch (error) {
-                  console.error('Init error:', error);
-                  showToast('Lỗi: ' + error.message, 'error');
-                  document.getElementById('loading-state').innerHTML = `
-                      <p style="color:#dc2626;font-weight:600">Không thể tải khảo sát</p>
-                      <p style="font-size:13px;color:#dc2626;margin-top:6px">${escapeHtml(error.message)}</p>
-                      <button onclick="location.reload()" style="margin-top:18px;padding:10px 22px;background:#0054a4;color:white;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer">
-                          Thử lại
-                      </button>
-                  `;
-              }
-          }
-
-          if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', init);
-          } else {
-              init();
-          }
-
-      })();
+<script>
+      (function() {
+        'use strict';
+
+        const SURVEY_ID = {{ survey_id }};
+        let surveyData = null;
+        let responseData = null;
+        let answers = {};
+        let sectionProgress = {};
+        let currentPage = 0;
+        let totalPages = 0;
+        let startTime = Date.now();
+        let saveTimeout = null;
+        let isSubmitted = false;
+        let allQuestions = [];
+        let currentQuestionIndex = 0;
+        const urlParams = new URLSearchParams(window.location.search);
+        const progressId = urlParams.get('progress_id');
+
+        // ============================================
+        // API CLIENT
+        // ============================================
+        const API = {
+            async request(endpoint, method = 'GET', data = null) {
+                const url = `/survey/api/public${endpoint}`;
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    credentials: 'same-origin'
+                };
+                if (data) options.body = JSON.stringify(data);
+                const res = await fetch(url, options);
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `HTTP ${res.status}`);
+                }
+                return res.json();
+            },
+            getSurvey(id) { return this.request(`/surveys/${id}/`); },
+            getResponse(id) { return this.request(`/surveys/${id}/response/`); },
+            submitResponse(data) { return this.request('/responses/submit/', 'POST', data); }
+        };
+
+        function getCsrfToken() {
+            const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookieValue ? cookieValue.split('=')[1] : '';
+        }
+
+        // ============================================
+        // HELPERS
+        // ============================================
+        function showToast(msg, type = 'info') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        function formatMultiLine(str) {
+            if (str === null || str === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        // ============================================
+        // AUTO FILL USER INFO
+        // ============================================
+        function autoFillUserInfo(savedAnswers) {
+            if (!savedAnswers) return;
+
+            const userInfo = {
+                full_name: savedAnswers.full_name || savedAnswers['Họ tên'] || '',
+                email: savedAnswers.email || savedAnswers['Email'] || '',
+                phone: savedAnswers.phone || savedAnswers['Điện thoại'] || '',
+                position: savedAnswers.position || savedAnswers['Chức vụ'] || '',
+                department: savedAnswers.department || savedAnswers['Bộ phận'] || '',
+                agency: savedAnswers.agency || savedAnswers['Đơn vị'] || savedAnswers.organization || '',
+            };
+
+            const hasInfo = Object.values(userInfo).some(v => v);
+            if (!hasInfo) return;
+
+            const allInputs = document.querySelectorAll('.question-item input[type="text"], .question-item textarea');
+
+            allInputs.forEach(input => {
+                const item = input.closest('.question-item');
+                if (!item) return;
+
+                const titleEl = item.querySelector('.question-title');
+                if (!titleEl) return;
+
+                const titleText = titleEl.textContent.trim().toLowerCase();
+
+                const mappings = [
+                    { keywords: ['đơn vị', 'agency', 'organization', 'cơ quan'], value: userInfo.agency || userInfo.department },
+                    { keywords: ['họ tên', 'người cung cấp', 'full name', 'full_name'], value: userInfo.full_name },
+                    { keywords: ['chức vụ', 'position'], value: userInfo.position },
+                    { keywords: ['bộ phận', 'phòng ban', 'department'], value: userInfo.department || userInfo.agency },
+                    { keywords: ['điện thoại', 'phone', 'số điện thoại'], value: userInfo.phone },
+                    { keywords: ['email', 'mail'], value: userInfo.email },
+                ];
+
+                for (const mapping of mappings) {
+                    const matched = mapping.keywords.some(keyword => titleText.includes(keyword));
+                    if (matched && mapping.value) {
+                        if (input.type === 'text' || input.tagName === 'TEXTAREA') {
+                            if (!input.value.trim()) {
+                                input.value = mapping.value;
+                                input.style.borderColor = '#10b981';
+                                input.style.backgroundColor = '#f0fdf4';
+                                input.title = 'Đã tự động điền từ thông tin tài khoản';
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+
+            setTimeout(updateProgress, 100);
+        }
+
+        // ============================================
+        // RENDER SURVEY
+        // ============================================
+        function renderSurvey(data) {
+            surveyData = data;
+            const sections = data.sections || [];
+
+            if (sections.length === 0) {
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('survey-content').innerHTML = `
+                    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:24px;text-align:center;">
+                        <p style="color:#dc2626;font-weight:600">Không có câu hỏi nào trong khảo sát này.</p>
+                    </div>
+                `;
+                document.getElementById('survey-content').style.display = 'block';
+                return;
+            }
+
+            allQuestions = [];
+            sections.forEach((section, sIdx) => {
+                const questions = section.questions || [];
+                questions.forEach((q, qIdx) => {
+                    if (!['title', 'paragraph'].includes(q.question_type_code)) {
+                        allQuestions.push({
+                            id: q.id,
+                            sectionIndex: sIdx,
+                            questionIndex: qIdx,
+                            sectionCode: section.code || String(sIdx + 1),
+                            sectionDisplayCode: String(sIdx + 1),
+                            sectionTitle: section.title,
+                            title: q.title,
+                            questionNumber: allQuestions.length + 1,
+                            isRealQuestion: true
+                        });
+                    }
+                });
+            });
+
+            document.getElementById('question-count').textContent = allQuestions.length;
+
+            totalPages = sections.length;
+            let html = '';
+
+            sections.forEach((section, idx) => {
+                const isActive = idx === 0;
+                let displayTitle = section.title || `Phần ${idx + 1}`;
+                if (displayTitle.includes('sec_')) displayTitle = `Phần ${idx + 1}`;
+
+                let badgeText = String(idx + 1);
+                const match = displayTitle.match(/(?:Phần|Mục)\s*([A-Z0-9]+)/i);
+                if (match) badgeText = match[1];
+
+                html += `
+                    <div class="section-card ${isActive ? 'is-active' : ''}" data-section="${idx}" id="section-${idx}">
+                        <div class="section-header">
+                            <div class="section-number">${escapeHtml(badgeText)}</div>
+                            <div class="section-title">${escapeHtml(displayTitle)}</div>
+                        </div>
+                        <div class="section-body">
+                            ${renderQuestions(section.questions || [], idx)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('survey-content').innerHTML = html;
+            document.getElementById('survey-content').style.display = 'block';
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('survey-actions').style.display = 'flex';
+
+            renderQuestionNav(allQuestions);
+            updatePagination();
+            updateProgress();
+
+            setTimeout(() => {
+                if (answers && Object.keys(answers).length > 0) {
+                    autoFillUserInfo(answers);
+                    loadAnswers(answers);
+                } else if (responseData && responseData.answers) {
+                    autoFillUserInfo(responseData.answers);
+                    loadAnswers(responseData.answers);
+                }
+            }, 200);
+
+            attachEventListeners();
+            setTimeout(() => renderQuestionNav(allQuestions), 100);
+        }
+
+        // ============================================
+        // RENDER QUESTIONS
+        // ============================================
+        function renderQuestions(questions, sectionIdx) {
+            if (!questions || questions.length === 0) {
+                return '<p style="color:#9ca3af;font-size:14px;">Không có câu hỏi nào trong phần này.</p>';
+            }
+
+            let html = '';
+            let questionCounter = 0;
+
+            questions.forEach((q, qIdx) => {
+                const isRealQuestion = !['title', 'paragraph'].includes(q.question_type_code);
+                if (isRealQuestion) questionCounter++;
+
+                const questionNumber = isRealQuestion ? questionCounter : '';
+                const required = q.is_required ? '<span class="question-required">*</span>' : '';
+                const name = `q_${q.id}`;
+                const description = q.description || '';
+
+                // BẢN NÂNG CẤP: Gắn cờ data-required lên wrapper của câu hỏi
+                html += `<div class="question-item" data-question-id="${q.id}" data-section="${sectionIdx}" data-question-index="${qIdx}" data-required="${q.is_required ? 'true' : 'false'}">`;
+
+                switch(q.question_type_code) {
+                    case 'title':
+                        html += `
+                            <div style="margin: 12px 0 8px; font-weight: 600; font-size: 20px; color: #1a1a1a;">
+                                ${formatMultiLine(q.title)}
+                            </div>
+                        `;
+                        break;
+
+                    case 'paragraph':
+                        html += `
+                            <div style="margin-bottom: 12px;">
+                                ${formatMultiLine(q.title)}
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'short-text':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="form-group">
+                                <input type="text"
+                                       name="${name}"
+                                       id="${name}"
+                                       placeholder="${escapeHtml(q.config?.placeholder || 'Nhập câu trả lời...')}"
+                                       ${q.is_required ? 'required' : ''}>
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'long-text':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="textarea-group">
+                                <textarea name="${name}"
+                                          id="${name}"
+                                          placeholder="${escapeHtml(q.config?.placeholder || 'Nhập nội dung...')}"
+                                          rows="${q.config?.rows || 4}"
+                                          ${q.is_required ? 'required' : ''}></textarea>
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'single-choice':
+                        html += `<div class="question-title"><span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}</div>
+                                <div class="checkbox-group">`;
+                        const choices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                        choices.forEach((choice, ci) => {
+                            const isOther = /^kh[aá]c\b|^other\b/i.test(choice.trim());
+                            const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
+                            html += `
+                                <label class="custom-radio-label">
+                                    <input type="radio" name="${name}" value="${escapeHtml(choice)}">
+                                    <span>${escapeHtml(choice)}</span>
+                                    ${otherInputHtml}
+                                </label>
+                            `;
+                        });
+                        html += `</div>`;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'multi-choice':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="checkbox-group">
+                        `;
+                        const multiChoices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                        multiChoices.forEach((choice) => {
+                            const isOther = /^kh[aá]c\b|^other\b/i.test(choice.trim());
+                            const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
+                            html += `
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="${name}[]" value="${escapeHtml(choice)}">
+                                    <span>${escapeHtml(choice)}</span>
+                                    ${otherInputHtml}
+                                </label>
+                            `;
+                        });
+                        html += `</div>`;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'rating-grid': {
+                        const cfg = q.config || {};
+                        const criteria = cfg.criteria || ['Tiêu chí 1'];
+                        const scale = cfg.scale || [{value: 1, label: 'Có', kind: 'radio'}, {value: 2, label: 'Không', kind: 'radio'}];
+
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <table class="scale-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:35%">Tiêu chí</th>
+                        `;
+                        scale.forEach(s => {
+                            html += `<th>${escapeHtml(s.label)}<span class="scale-label">${s.value}</span></th>`;
+                        });
+                        html += `
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        `;
+                        criteria.forEach((criterion, ci) => {
+                            html += `<tr><td>${escapeHtml(criterion)}</td>`;
+                            scale.forEach((s, si) => {
+                                const kind = s.kind || 'radio';
+                                const inputName = `${name}_${ci}`;
+                                if (kind === 'radio') {
+                                    html += `
+                                        <td>
+                                            <label class="custom-radio-label" style="justify-content:center;">
+                                                <input type="radio"
+                                                       name="${inputName}"
+                                                       value="${s.value}">
+                                            </label>
+                                        </td>
+                                    `;
+                                } else if (kind === 'checkbox') {
+                                    html += `
+                                        <td>
+                                            <label class="custom-checkbox" style="justify-content:center;">
+                                                <input type="checkbox"
+                                                       name="${inputName}[]"
+                                                       value="${s.value}">
+                                            </label>
+                                        </td>
+                                    `;
+                                } else if (kind === 'text') {
+                                    html += `
+                                        <td>
+                                            <input type="text"
+                                                   name="${inputName}_${si}"
+                                                   placeholder="Nhập..."
+                                                   style="width:100%;padding:6px 8px;border:1.5px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit;background:#fff;">
+                                        </td>
+                                    `;
+                                }
+                            });
+                            html += `</tr>`;
+                        });
+                        html += `
+                                        </tbody>
+                                    </table>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+                    }
+
+                    case 'data-table': {
+                        const dtCfg = q.config || {};
+                        const columns = dtCfg.columns || [{name: 'Cột 1', type: 'text'}, {name: 'Cột 2', type: 'text'}];
+                        let tableData = dtCfg.data || [];
+                        const numRows = dtCfg.rows || 2;
+
+                        if (tableData.length === 0) {
+                            tableData = [];
+                            for (let r = 0; r < numRows; r++) {
+                                const rowData = [];
+                                for (let c = 0; c < columns.length; c++) rowData.push('');
+                                tableData.push(rowData);
+                            }
+                        }
+
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                        `;
+                        columns.forEach(col => {
+                            let colName = typeof col === 'string' ? col : col.name;
+                            html += `<th>${escapeHtml(colName)}</th>`;
+                        });
+                        html += `
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        tableData.forEach((rowData, rowIndex) => {
+                            html += `<tr>`;
+                            columns.forEach((col, colIndex) => {
+                                const inputName = `${name}_${rowIndex}_${colIndex}`;
+                                const cellValue = rowData[colIndex] || '';
+                                const hasData = cellValue.trim() !== '';
+                                const colType = typeof col === 'string' ? 'text' : (col.type || 'text');
+                                const colOptions = typeof col === 'string' ? [] : (col.options || []);
+
+                                html += `<td><div class="input-wrapper">`;
+
+                                if (colType === 'text') {
+                                    if (hasData) {
+                                        html += `
+                                            <div class="data-label has-data">${escapeHtml(cellValue)}</div>
+                                            <input type="hidden" name="${inputName}" value="${escapeHtml(cellValue)}">
+                                        `;
+                                    } else {
+                                        html += `
+                                            <input type="text"
+                                                   name="${inputName}"
+                                                   placeholder="...">
+                                        `;
+                                    }
+                                } else if (colType === 'checkbox') {
+                                    html += `<div class="checkbox-group" style="text-align: left;">`;
+                                    colOptions.forEach(opt => {
+                                        html += `
+                                          <label class="custom-checkbox" style="padding: 4px; gap: 8px;">
+                                              <input type="checkbox" name="${inputName}[]" value="${escapeHtml(opt)}">
+                                              <span style="font-size: 0.8rem;">${escapeHtml(opt)}</span>
+                                          </label>
+                                        `;
+                                    });
+                                    html += `</div>`;
+                                }
+                                
+                                html += `</div></td>`;
+                            });
+                            html += `</tr>`;
+                        });
+                        html += `
+                                </tbody>
+                            </table>
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+                    }
+
+                    default:
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="${name}" placeholder="Câu hỏi chưa được hỗ trợ">
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                }
+
+                html += `</div>`;
+                if (qIdx < questions.length - 1) html += `<hr class="question-divider">`;
+            });
+
+            return html;
+        }
+
+        // ============================================
+        // ON OTHER INPUT FOCUS
+        // ============================================
+        function onOtherInputFocus(input) {
+            const label = input.closest('.custom-radio-label, .custom-checkbox');
+            if (!label) return;
+            const radio = label.querySelector('input[type="radio"], input[type="checkbox"]');
+            if (radio && !radio.checked) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        // ============================================
+        // RENDER QUESTION NAV
+        // ============================================
+        function renderQuestionNav(questions) {
+            const nav = document.getElementById('question-nav');
+            if (!nav) return;
+            nav.innerHTML = '';
+            let currentSectionIndex = -1;
+
+            questions.forEach((q, idx) => {
+                if (q.sectionIndex !== currentSectionIndex) {
+                    currentSectionIndex = q.sectionIndex;
+                    const sectionHeader = document.createElement('div');
+                    sectionHeader.className = 'section-header-nav';
+                    let headerText = q.sectionTitle || `Phần ${q.sectionIndex + 1}`;
+                    if (headerText.includes('sec_')) headerText = `Phần ${q.sectionIndex + 1}`;
+                    sectionHeader.textContent = headerText;
+                    nav.appendChild(sectionHeader);
+                }
+
+                const isAnswered = isQuestionAnswered(q.id);
+                const isActive = idx === currentQuestionIndex;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'question-nav-item';
+                if (isActive) btn.classList.add('is-active');
+                if (isAnswered) btn.classList.add('is-complete');
+
+                btn.innerHTML = `
+                    <span class="status-dot"></span>
+                    <span class="q-number">${q.questionNumber}.</span>
+                    <span class="q-text">${escapeHtml(q.title)}</span>
+                    <span class="q-status-icon">${isAnswered ? '✓' : ''}</span>
+                `;
+
+                btn.addEventListener('click', () => goToQuestion(idx));
+                nav.appendChild(btn);
+            });
+        }
+
+        // ============================================
+        // BẢN NÂNG CẤP: KIỂM TRA CÂU HỎI ĐÃ TRẢ LỜI
+        // ============================================
+        function isQuestionAnswered(questionId) {
+            const item = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
+            if (!item) return false;
+
+            const gridTable = item.querySelector('.scale-table');
+            if (gridTable) {
+                const rows = gridTable.querySelectorAll('tbody tr');
+                if (rows.length === 0) return false;
+                let allRowsAnswered = true;
+                for (let row of rows) {
+                    let rowAnswered = false;
+                    const inputs = row.querySelectorAll('input');
+                    for (let inp of inputs) {
+                        if (inp.type === 'radio' && inp.checked) rowAnswered = true;
+                        if (inp.type === 'checkbox' && inp.checked) rowAnswered = true;
+                        if (inp.type === 'text' && inp.value.trim() !== '') rowAnswered = true;
+                    }
+                    if (!rowAnswered) {
+                        allRowsAnswered = false;
+                        break;
+                    }
+                }
+                return allRowsAnswered;
+            }
+
+            const dataTable = item.querySelector('.data-table');
+            if (dataTable) {
+                const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="hidden"], tbody input[type="checkbox"]:checked');
+                for (let inp of inputs) {
+                    if (inp.type === 'checkbox') {
+                        return true;
+                    } else if (inp.value && inp.value.trim() !== '') {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            const inputs = item.querySelectorAll('input, textarea');
+            for (let inp of inputs) {
+                if (inp.type === 'radio' && inp.checked) return true;
+                if (inp.type === 'checkbox' && inp.checked) return true;
+                if ((inp.type === 'text' || inp.tagName === 'TEXTAREA') && inp.value.trim() !== '') return true;
+            }
+            return false;
+        }
+
+        // ============================================
+        // GO TO SPECIFIC QUESTION
+        // ============================================
+        function goToQuestion(index) {
+            if (index < 0 || index >= allQuestions.length) return;
+            const q = allQuestions[index];
+            currentQuestionIndex = index;
+            currentPage = q.sectionIndex;
+
+            document.querySelectorAll('.section-card').forEach((card, idx) => {
+                card.classList.toggle('is-active', idx === q.sectionIndex);
+            });
+
+            const questionEl = document.querySelector(`.question-item[data-question-id="${q.id}"]`);
+            if (questionEl) {
+                setTimeout(() => {
+                    questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    questionEl.style.transition = 'background 0.3s';
+                    questionEl.style.background = '#e8f0fe';
+                    setTimeout(() => { questionEl.style.background = 'transparent'; }, 1500);
+                }, 200);
+            }
+
+            renderQuestionNav(allQuestions);
+            updatePagination();
+            updateProgress();
+        }
+
+        // ============================================
+        // COMPUTE SECTION STATS
+        // ============================================
+        function computeSectionStats() {
+            const sections = surveyData?.sections || [];
+            const stats = [];
+            sections.forEach((section) => {
+                const questions = section.questions || [];
+                const inputQuestions = questions.filter(q => !['title', 'paragraph'].includes(q.question_type_code));
+                let answered = 0;
+                inputQuestions.forEach(q => { if (isQuestionAnswered(q.id)) answered++; });
+                stats.push({
+                    code: section.code || '',
+                    title: section.title || '',
+                    total: inputQuestions.length,
+                    answered: answered,
+                    pct: inputQuestions.length > 0 ? Math.round((answered / inputQuestions.length) * 100) : 0
+                });
+            });
+            return stats;
+        }
+
+        // ============================================
+        // LOAD ANSWERS
+        // ============================================
+        function loadAnswers(savedAnswers) {
+            Object.keys(savedAnswers).forEach(key => {
+                const value = savedAnswers[key];
+                const questionId = parseInt(key);
+                const item = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
+                if (!item) return;
+
+                const gridTable = item.querySelector('.scale-table');
+                if (gridTable && value && value.type === 'grid' && Array.isArray(value.data)) {
+                    const rows = gridTable.querySelectorAll('tbody tr');
+                    rows.forEach((row, ri) => {
+                        if (ri >= value.data.length) return;
+                        const rowData = value.data[ri];
+                        const cells = row.querySelectorAll('td');
+                        cells.forEach((cell, ci) => {
+                            if (ci >= rowData.length) return;
+                            const val = rowData[ci];
+                            const radio = cell.querySelector('input[type="radio"]');
+                            if (radio && val !== null && val !== undefined) {
+                                if (radio.value === String(val)) radio.checked = true;
+                                return;
+                            }
+                            const checkboxes = cell.querySelectorAll('input[type="checkbox"]');
+                            if (checkboxes.length && Array.isArray(val)) {
+                                checkboxes.forEach(cb => {
+                                    if (val.includes(cb.value)) cb.checked = true;
+                                });
+                                return;
+                            }
+                            const textInput = cell.querySelector('input[type="text"]');
+                            if (textInput) {
+                                textInput.value = val || '';
+                            }
+                        });
+                    });
+                    return;
+                }
+
+                const name = `q_${questionId}`;
+                const elements = item.querySelectorAll(`[name^="${name}"]`);
+                if (elements.length === 0) return;
+
+                const firstEl = elements[0];
+
+                if (firstEl.type === 'radio') {
+                    const options = getOptionsForQuestion(questionId);
+                    if (options && options.length > 0 && !options.includes(value)) {
+                        const otherOption = options.find(opt => /^kh[aá]c\b|^other\b/i.test(opt));
+                        if (otherOption) {
+                            const otherRadio = item.querySelector(`input[value="${escapeHtml(otherOption)}"]`);
+                            if (otherRadio) {
+                                otherRadio.checked = true;
+                                const otherInput = otherRadio.closest('.custom-radio-label').querySelector('.other-input');
+                                if (otherInput) otherInput.value = value;
+                                return;
+                            }
+                        }
+                    }
+                    elements.forEach(el => {
+                        if (el.value === String(value)) el.checked = true;
+                    });
+                } else if (firstEl.type === 'checkbox' && !firstEl.name.includes('_')) {
+                    const values = Array.isArray(value) ? value : [value];
+                    elements.forEach(el => {
+                        if (values.includes(el.value)) {
+                            el.checked = true;
+                        } else {
+                            if (/^kh[aá]c\b|^other\b/i.test(el.value)) {
+                                const options = getOptionsForQuestion(questionId);
+                                const unmatched = values.filter(v => !options.includes(v));
+                                if (unmatched.length > 0) {
+                                    const otherInput = el.closest('.custom-checkbox').querySelector('.other-input');
+                                    if (otherInput) {
+                                        otherInput.value = unmatched[0];
+                                        el.checked = true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox') {
+                    if (elements.length === 1 && firstEl.type !== 'checkbox') {
+                        firstEl.value = value || '';
+                    } else {
+                        if (Array.isArray(value)) {
+                            elements.forEach(el => {
+                                const nameParts = el.name.split('_');
+                                if (nameParts.length >= 3) {
+                                    const rowIdx = parseInt(nameParts[1]);
+                                    const colIdx = parseInt(nameParts[2]);
+                                    const cellVal = value[rowIdx] && value[rowIdx][colIdx];
+
+                                    if (el.type === 'checkbox') {
+                                        if (Array.isArray(cellVal) && cellVal.includes(el.value)) {
+                                            el.checked = true;
+                                        }
+                                    } else {
+                                        if (cellVal !== undefined && cellVal !== null) {
+                                            el.value = cellVal;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+
+            setTimeout(() => renderQuestionNav(allQuestions), 100);
+        }
+
+        function getOptionsForQuestion(questionId) {
+            if (!surveyData) return [];
+            for (const section of surveyData.sections) {
+                for (const q of section.questions) {
+                    if (q.id === questionId) {
+                        return q.options || [];
+                    }
+                }
+            }
+            return [];
+        }
+
+        // ============================================
+        // COLLECT ANSWERS
+        // ============================================
+        function collectAnswers() {
+            const allAnswers = {};
+            const allQuestionsEl = document.querySelectorAll('.question-item');
+
+            allQuestionsEl.forEach(item => {
+                const questionId = item.dataset.questionId;
+                if (!questionId) return;
+                const qId = parseInt(questionId);
+
+                const gridTable = item.querySelector('.scale-table');
+                if (gridTable) {
+                    const gridData = [];
+                    const rows = gridTable.querySelectorAll('tbody tr');
+                    rows.forEach(row => {
+                        const rowData = [];
+                        const cells = row.querySelectorAll('td');
+                        cells.forEach(cell => {
+                            const radio = cell.querySelector('input[type="radio"]:checked');
+                            if (radio) {
+                                rowData.push(radio.value);
+                                return;
+                            }
+                            const checkedCheckboxes = cell.querySelectorAll('input[type="checkbox"]:checked');
+                            if (checkedCheckboxes.length) {
+                                rowData.push(Array.from(checkedCheckboxes).map(el => el.value));
+                                return;
+                            }
+                            const textInput = cell.querySelector('input[type="text"]');
+                            if (textInput) {
+                                rowData.push(textInput.value.trim() || null);
+                                return;
+                            }
+                            rowData.push(null);
+                        });
+                        gridData.push(rowData);
+                    });
+                    allAnswers[qId] = { type: 'grid', data: gridData };
+                    return;
+                }
+
+                const name = `q_${qId}`;
+                const elements = item.querySelectorAll(`[name^="${name}"]`);
+                if (elements.length === 0) return;
+
+                const firstEl = elements[0];
+
+                if (firstEl.type === 'radio') {
+                    const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
+                    if (checkedRadio) {
+                        let value = checkedRadio.value;
+                        if (/^kh[aá]c\b|^other\b/i.test(value)) {
+                            const otherInput = checkedRadio.closest('.custom-radio-label').querySelector('.other-input');
+                            if (otherInput && otherInput.value.trim() !== '') {
+                                value = otherInput.value.trim();
+                            }
+                        }
+                        allAnswers[qId] = value;
+                    }
+                } else if (firstEl.type === 'checkbox' && !firstEl.name.includes('_')) {
+                    const checkedCheckboxes = item.querySelectorAll(`[name^="${name}[]"]:checked`);
+                    if (checkedCheckboxes.length > 0) {
+                        const values = Array.from(checkedCheckboxes).map(cb => {
+                            let val = cb.value;
+                            if (/^kh[aá]c\b|^other\b/i.test(val)) {
+                                const otherInput = cb.closest('.custom-checkbox').querySelector('.other-input');
+                                if (otherInput && otherInput.value.trim() !== '') {
+                                    return otherInput.value.trim();
+                                }
+                            }
+                            return val;
+                        });
+                        allAnswers[qId] = values;
+                    }
+                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox') {
+                    if (elements.length === 1 && firstEl.type !== 'checkbox') {
+                        const val = firstEl.value.trim();
+                        if (val) allAnswers[qId] = val;
+                    } else {
+                        const matrixData = [];
+                        const rowMap = {};
+                        elements.forEach(el => {
+                            const nameParts = el.name.split('_');
+                            if (nameParts.length >= 3) {
+                                const rowIdx = parseInt(nameParts[1]);
+                                const colIdx = parseInt(nameParts[2]);
+                                if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
+
+                                if (el.type === 'checkbox') {
+                                    if (!rowMap[rowIdx][colIdx]) rowMap[rowIdx][colIdx] = [];
+                                    if (el.checked) {
+                                        rowMap[rowIdx][colIdx].push(el.value);
+                                    }
+                                } else {
+                                    rowMap[rowIdx][colIdx] = el.value.trim();
+                                }
+                            }
+                        });
+                        
+                        const rowKeys = Object.keys(rowMap).sort((a, b) => parseInt(a) - parseInt(b));
+                        rowKeys.forEach(rowKey => {
+                            let maxCol = rowMap[rowKey].length || 0;
+                            for(let i=0; i<maxCol; i++) {
+                                if (rowMap[rowKey][i] === undefined) rowMap[rowKey][i] = null;
+                            }
+                            matrixData.push(rowMap[rowKey]);
+                        });
+                        if (matrixData.length > 0) allAnswers[qId] = matrixData;
+                    }
+                }
+            });
+
+            return allAnswers;
+        }
+
+        // ============================================
+        // UPDATE PROGRESS
+        // ============================================
+        function updateProgress() {
+            const stats = computeSectionStats();
+            let totalQuestions = 0, totalAnswered = 0;
+            stats.forEach(s => { totalQuestions += s.total; totalAnswered += s.answered; });
+            const pct = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
+
+            document.getElementById('progress-fill').style.width = `${pct}%`;
+            document.getElementById('progress-percent').textContent = `${pct}%`;
+            document.getElementById('progress-text').textContent =
+                `Đã hoàn thành: ${totalAnswered}/${totalQuestions} câu hỏi`;
+
+            const completedText = document.getElementById('question-completed-text');
+            if (completedText) {
+                completedText.textContent = `${totalAnswered}/${totalQuestions} câu hỏi`;
+            }
+
+            const statusText = document.getElementById('question-status-text');
+            if (statusText) {
+                if (pct === 100 && totalQuestions > 0) {
+                    statusText.textContent = 'Hoàn thành!';
+                    statusText.className = 'status-text completed';
+                } else if (pct === 0) {
+                    statusText.textContent = 'Chưa bắt đầu';
+                    statusText.className = 'status-text';
+                } else {
+                    statusText.textContent = `Đang làm (${pct}%)`;
+                    statusText.className = 'status-text';
+                }
+            }
+
+            renderQuestionNav(allQuestions);
+        }
+
+        // ============================================
+        // PAGINATION
+        // ============================================
+        function updatePagination() {
+            const totalPages = surveyData?.sections?.length || 0;
+            document.getElementById('prev-btn').disabled = currentPage === 0;
+            document.getElementById('next-btn').disabled = currentPage === totalPages - 1;
+        }
+
+        function goToPage(pageIndex) {
+            if (pageIndex < 0 || pageIndex >= (surveyData?.sections?.length || 0)) return;
+            const currentAnswers = collectAnswers();
+            Object.assign(answers, currentAnswers);
+            currentPage = pageIndex;
+
+            document.querySelectorAll('.section-card').forEach((card, idx) => {
+                card.classList.toggle('is-active', idx === pageIndex);
+            });
+
+            updatePagination();
+            updateProgress();
+            document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        window.goToPage = goToPage;
+
+        // ============================================
+        // BẢN NÂNG CẤP: LẮNG NGHE SỰ KIỆN XÓA HIGHLIGHT LỖI
+        // ============================================
+        function attachEventListeners() {
+            document.getElementById('prev-btn').addEventListener('click', () => {
+                if (currentPage > 0) goToPage(currentPage - 1);
+            });
+
+            document.getElementById('next-btn').addEventListener('click', () => {
+                if (currentPage < (surveyData?.sections?.length || 0) - 1) goToPage(currentPage + 1);
+            });
+
+            document.getElementById('submit-btn').addEventListener('click', submitSurvey);
+
+            document.addEventListener('change', (e) => {
+                const item = e.target.closest('.question-item');
+                if (item) {
+                    item.classList.remove('error-highlight');
+                    scheduleSave();
+                    updateProgress();
+                }
+            });
+
+            document.addEventListener('input', (e) => {
+                const item = e.target.closest('.question-item');
+                if (item) {
+                    item.classList.remove('error-highlight');
+                    scheduleSave();
+                    updateProgress();
+                }
+            });
+        }
+
+        // ============================================
+        // SAVE DRAFT
+        // ============================================
+        async function saveDraft() {
+            if (isSubmitted) return;
+            const answersData = collectAnswers();
+            const stats = computeSectionStats();
+            const progress = {};
+            stats.forEach(s => { progress[s.code] = s.pct; });
+
+            try {
+                const res = await API.submitResponse({
+                    survey_id: SURVEY_ID,
+                    response_id: responseData?.id,
+                    progress_id: progressId,
+                    answers: answersData,
+                    section_progress: progress,
+                    status: 'draft',
+                    time_taken: Math.round((Date.now() - startTime) / 1000)
+                });
+                if (res.success) {
+                    responseData = res;
+                    showToast('Đã lưu bản nháp', 'success');
+                }
+            } catch (e) {
+                showToast('Lỗi khi lưu: ' + e.message, 'error');
+            }
+        }
+
+        function scheduleSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => saveDraft(), 3000);
+        }
+
+        // ============================================
+        // BẢN NÂNG CẤP: VALIDATE CHÍNH XÁC CÂU HỎI BẮT BUỘC
+        // ============================================
+        async function submitSurvey() {
+            let isValid = true;
+            let firstInvalid = null;
+
+            const allQuestionsEl = document.querySelectorAll('.question-item');
+            
+            // Xóa highlight lỗi cũ trước khi check lại
+            document.querySelectorAll('.error-highlight').forEach(el => el.classList.remove('error-highlight'));
+
+            allQuestionsEl.forEach(item => {
+                const isRequired = item.dataset.required === 'true';
+                if (!isRequired) return;
+
+                let answered = false;
+
+                const scaleTable = item.querySelector('.scale-table');
+                const dataTable = item.querySelector('.data-table');
+
+                if (scaleTable) {
+                    const rows = scaleTable.querySelectorAll('tbody tr');
+                    if (rows.length === 0) {
+                        answered = false;
+                    } else {
+                        let allRowsAnswered = true;
+                        rows.forEach(row => {
+                            let rowAnswered = false;
+                            const inputs = row.querySelectorAll('input');
+                            for (let inp of inputs) {
+                                if (inp.type === 'radio' && inp.checked) rowAnswered = true;
+                                if (inp.type === 'checkbox' && inp.checked) rowAnswered = true;
+                                if (inp.type === 'text' && inp.value.trim() !== '') rowAnswered = true;
+                            }
+                            if (!rowAnswered) allRowsAnswered = false;
+                        });
+                        answered = allRowsAnswered;
+                    }
+                } else if (dataTable) {
+                    const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="hidden"], tbody input[type="checkbox"]:checked');
+                    for (let inp of inputs) {
+                        if (inp.type === 'checkbox') {
+                            answered = true; break;
+                        } else if (inp.value && inp.value.trim() !== '') {
+                            answered = true; break;
+                        }
+                    }
+                } else {
+                    const inputs = item.querySelectorAll('input, textarea');
+                    for (let inp of inputs) {
+                        if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) {
+                            answered = true; break;
+                        } else if ((inp.type === 'text' || inp.tagName === 'TEXTAREA') && inp.value.trim() !== '') {
+                            answered = true; break;
+                        }
+                    }
+                }
+
+                if (!answered) {
+                    isValid = false;
+                    if (!firstInvalid) firstInvalid = item;
+                    // Thêm viền đỏ báo lỗi
+                    item.classList.add('error-highlight');
+                }
+            });
+
+            if (!isValid) {
+                showToast('Vui lòng trả lời tất cả câu hỏi bắt buộc!', 'warning');
+                if (firstInvalid) {
+                    const sectionIdx = parseInt(firstInvalid.dataset.section);
+                    if (currentPage !== sectionIdx && typeof goToPage === 'function') {
+                        goToPage(sectionIdx);
+                    }
+                    setTimeout(() => {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+                return;
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn nộp khảo sát này?')) return;
+
+            const answersData = collectAnswers();
+            const stats = computeSectionStats();
+            const progress = {};
+            stats.forEach(s => { progress[s.code] = s.pct; });
+
+            let totalQuestions = 0, totalAnswered = 0;
+            stats.forEach(s => { totalQuestions += s.total; totalAnswered += s.answered; });
+
+            try {
+                const res = await API.submitResponse({
+                    survey_id: SURVEY_ID,
+                    response_id: responseData?.id,
+                    progress_id: progressId,
+                    answers: answersData,
+                    section_progress: progress,
+                    status: 'submitted',
+                    time_taken: Math.round((Date.now() - startTime) / 1000)
+                });
+                if (res.success) {
+                    isSubmitted = true;
+
+                    document.getElementById('total-questions-display').textContent = totalQuestions;
+                    document.getElementById('completed-questions-display').textContent = totalAnswered;
+
+                    document.getElementById('survey-content').style.display = 'none';
+                    document.getElementById('survey-actions').style.display = 'none';
+                    document.getElementById('sidebar').style.display = 'none';
+                    document.getElementById('success-screen').style.display = 'block';
+                    document.getElementById('progress-fill').style.width = '100%';
+                    document.getElementById('progress-percent').textContent = '100%';
+                    document.getElementById('progress-text').textContent = 'Đã hoàn thành!';
+                    document.getElementById('question-completed-text').textContent = `${totalQuestions}/${totalQuestions} câu hỏi`;
+                    document.getElementById('question-status-text').textContent = 'Hoàn thành!';
+                    document.getElementById('question-status-text').className = 'status-text completed';
+
+                    showToast('Khảo sát đã được gửi thành công!', 'success');
+                }
+            } catch (e) {
+                showToast('Lỗi khi gửi: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        async function init() {
+            try {
+                const [survey, response] = await Promise.all([
+                    API.getSurvey(SURVEY_ID),
+                    API.getResponse(SURVEY_ID)
+                ]);
+
+                surveyData = survey;
+                responseData = response;
+                answers = response.answers || {};
+                sectionProgress = response.section_progress || {};
+
+                renderSurvey(survey);
+
+                setInterval(() => {
+                    if (!isSubmitted && Object.keys(collectAnswers()).length > 0) {
+                        saveDraft();
+                    }
+                }, 30000);
+
+                if (Object.keys(answers).length > 0) {
+                    showToast('Đã khôi phục dữ liệu đã lưu', 'info');
+                }
+
+            } catch (error) {
+                console.error('Init error:', error);
+                showToast('Lỗi: ' + error.message, 'error');
+                document.getElementById('loading-state').innerHTML = `
+                    <p style="color:#dc2626;font-weight:600">Không thể tải khảo sát</p>
+                    <p style="font-size:13px;color:#dc2626;margin-top:6px">${escapeHtml(error.message)}</p>
+                    <button onclick="location.reload()" style="margin-top:18px;padding:10px 22px;background:#0054a4;color:white;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer">
+                        Thử lại
+                    </button>
+                `;
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
     </script>
   </body>
 </html>
