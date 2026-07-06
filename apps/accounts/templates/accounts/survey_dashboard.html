@@ -244,6 +244,10 @@
                 margin: 10px;
                 padding: 16px;
             }
+            .header-actions {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -258,9 +262,9 @@
     <header class="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div class="max-w-5xl mx-auto px-3 py-2 flex items-center justify-between gap-3 flex-wrap">
             <div class="flex items-center gap-3">
-                <div class="p-1.5 rounded hover:bg-gray-100 transition-colors" aria-label="Trang chủ">
+                <a href="{% url 'accounts:home' %}?choose_group=true" class="p-1.5 rounded hover:bg-gray-100 transition-colors" aria-label="Trang chủ">
                     <i data-lucide="home" style="width:18px;height:18px;color:#6b7280"></i>
-                </div>
+                </a>
                 <div>
                     <h1 class="text-base font-semibold text-gray-900">Bảng điều khiển khảo sát</h1>
                     <p class="text-sm text-gray-500">
@@ -270,12 +274,11 @@
                     </p>
                 </div>
             </div>
-            <div class="flex items-center gap-3 text-sm text-gray-500">
+            <div class="flex items-center gap-3 text-sm text-gray-500 flex-wrap header-actions">
                 <i data-lucide="mail" style="width:14px;height:14px"></i>
                 <span id="user-email">{{ participant.email|default:"Chưa có email" }}</span>
-                <button onclick="openUpdateModal()" class="btn-back" disabled>
-                    <i data-lucide="settings" style="width:14px;height:14px"></i> Cập nhật thông tin
-                </button>
+                
+                
                 <a href="{% url 'accounts:logout' %}" class="btn-back text-red-500 hover:bg-red-50 border-red-200">
                     <i data-lucide="log-out" style="width:14px;height:14px"></i> Đăng xuất
                 </a>
@@ -293,6 +296,32 @@
             {{ message }}
         </div>
         {% endif %}
+
+        <!-- Nhóm đối tượng hiện tại -->
+        <div class="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                        <i data-lucide="users" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-medium text-blue-700 uppercase tracking-wide">Nhóm đối tượng hiện tại</span>
+                        <div class="text-sm font-semibold text-blue-900">
+                            {{ target_group_name|default:"Chưa có nhóm" }}
+                            {% if target_group_code %}
+                            <span class="text-xs font-normal text-blue-600 ml-1">({{ target_group_code }})</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs text-blue-600">
+                        <i data-lucide="file-text" class="w-3 h-3 inline"></i>
+                        {{ progresses|length|default:0 }} biểu mẫu
+                    </span>
+                </div>
+            </div>
+        </div>
 
         <!-- Thống kê -->
         <section class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" aria-label="Thống kê">
@@ -359,11 +388,19 @@
                                         {% endif %}
                                     </span>
                                 </div>
-                                <span class="text-xs text-gray-400">Mã: {{ progress.form_code }}</span>
+                                <!-- SỬA: Hiển thị đúng mã biểu mẫu -->
+                                <span class="text-xs text-gray-400">
+                                    Mã: 
+                                    {% if progress.survey and progress.survey.code %}
+                                        {{ progress.survey.code }}
+                                    {% else %}
+                                        {{ progress.form_code }}
+                                    {% endif %}
+                                </span>
                             </div>
 
                             <!-- Progress bar -->
-                            <div class="flex items-center gap-2 w-32 flex-shrink-0">
+                            <div class="flex items-center gap-2 w-32 flex-shrink-0 progress-wrapper">
                                 <div class="progress-thin flex-1">
                                     <div class="progress-thin-fill 
                                         {% if progress.progress_percent >= 100 %}bg-emerald-500
@@ -376,14 +413,16 @@
                             </div>
 
                             <!-- Nút hành động -->
-                            <div class="text-right flex-shrink-0">
+                            <div class="text-right flex-shrink-0 btn-wrapper">
                                 {% if progress.status == 'completed' %}
                                     <button class="btn-review" disabled>
                                         Đã hoàn thành
                                     </button>
+                                    {% if progress.response %}
                                     <a href="{% url 'accounts:export_response_pdf' progress.response.id %}" class="btn-continue" style="background:#2563eb; margin-left:4px;" target="_blank">
                                         Tải về
                                     </a>
+                                    {% endif %}
                                 {% elif progress.status == 'in_progress' %}
                                     <a href="{% url 'accounts:survey_dashboard_continue' progress.id %}" class="btn-continue">
                                         Tiếp tục
@@ -398,23 +437,23 @@
                     {% endfor %}
                 </div>
 
-                <!-- Hướng dẫn -->
-                <div class="mt-4 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-start gap-3">
-                    <i data-lucide="info" style="width:18px;height:18px;color:#2563eb;flex-shrink:0;margin-top:1px"></i>
-                    <div>
-                        <p class="text-sm text-blue-800">
-                            <strong>Lưu ý:</strong> Bạn có thể làm từng bài một và quay lại bất kỳ lúc nào.
-                            Dữ liệu sẽ được tự động lưu sau mỗi câu trả lời.
-                        </p>
-                        <p class="text-xs text-blue-600 mt-0.5">* Bài đã hoàn thành sẽ không thể làm lại.</p>
-                    </div>
+<!-- Hướng dẫn -->
+            <div class="mt-4 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 flex items-start gap-3">
+                <i data-lucide="info" style="width:18px;height:18px;color:#2563eb;flex-shrink:0;margin-top:1px"></i>
+                <div>
+                    <p class="text-sm text-blue-800">
+                        <strong>Lưu ý:</strong> Dữ liệu được tự động lưu. Vui lòng <strong>không đăng xuất</strong> khi đang làm bài để tránh mất tiến độ.
+                    </p>
+                    <p class="text-xs text-blue-600 mt-0.5">* Bài đã hoàn thành sẽ không thể làm lại.</p>
                 </div>
+            </div>
             {% else %}
                 <!-- Trạng thái trống -->
                 <div class="empty-state bg-white border border-gray-200 rounded-lg">
                     <div class="icon"><i data-lucide="inbox"></i></div>
                     <h5>Chưa có biểu mẫu nào</h5>
-                    <p>Bạn chưa được gán biểu mẫu khảo sát nào. Vui lòng liên hệ quản trị viên để được hỗ trợ.</p>
+                    <p>Bạn chưa được gán biểu mẫu khảo sát nào cho nhóm này. Vui lòng liên hệ quản trị viên để được hỗ trợ.</p>
+
                 </div>
             {% endif %}
         </section>
@@ -588,7 +627,6 @@
                 if (data.success) {
                     showToast('Cập nhật thông tin thành công!');
                     closeUpdateModal();
-                    // Cập nhật lại UI
                     document.getElementById('participant-name').textContent = data.data.full_name;
                     document.getElementById('user-email').textContent = data.data.email;
                     document.getElementById('participant-agency').textContent = data.data.organization || 'Chưa có đơn vị';

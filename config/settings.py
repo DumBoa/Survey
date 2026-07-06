@@ -135,8 +135,13 @@ STATIC_URL = 'static/'
 # AUTHENTICATION - THÊM VÀO
 # ============================================
 
+# settings.py
+
 AUTH_USER_MODEL = 'accounts.User'
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/accounts/'
+
+SURVEY_LOGIN_URL = '/accounts/'
+ADMIN_LOGIN_URL = '/accounts/login/'

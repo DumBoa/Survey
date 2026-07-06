@@ -7,28 +7,48 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
+from django.db import transaction
 import json
+import logging
 
+import re
 from .models import User, Organization
 from apps.analytics.models import TargetGroup
 from apps.survey.models import Survey, SurveyParticipant, SurveyProgress, Response
+logger = logging.getLogger(__name__)
 
 
 # ============================================
-# TRANG CHỦ
+# TRANG CHỦ - REDIRECT THEO LUỒNG MỚI
 # ============================================
 
 def accounts_main_render(request):
     """
-    Trang chủ của accounts - redirect dựa trên trạng thái đăng nhập
+    Trang chủ của accounts - hiển thị congkhaosat_main.html
+    Nếu đã đăng nhập và là admin thì redirect sang analytics
     """
     if request.user.is_authenticated:
         if is_admin_user(request.user):
             return redirect('/analytics/')
-        return redirect('/accounts/survey-dashboard/')
-    # Chưa đăng nhập -> vào trang user login
-    return redirect('/accounts/user-login/')
-
+        
+        # Nếu có tham số choose_group=true, hiển thị trang chọn nhóm (bỏ qua bước login)
+        if request.GET.get('choose_group') == 'true':
+            return render(request, 'accounts/congkhaosat_main.html', {
+                'skip_login': True,
+                'force_choose_group': True
+            })
+        
+        # Nếu user đã có SĐT và không có tham số đặc biệt, redirect đến dashboard
+        if request.user.phone_number:
+            return redirect('/accounts/survey-dashboard/')
+        
+        # User chưa có SĐT, hiển thị trang chọn nhóm (bỏ qua bước login)
+        return render(request, 'accounts/congkhaosat_main.html', {
+            'skip_login': True
+        })
+    
+    # Chưa đăng nhập -> vào congkhaosat_main (có bước login)
+    return render(request, 'accounts/congkhaosat_main.html')
 
 # ============================================
 # HÀM TIỆN ÍCH
@@ -52,16 +72,14 @@ def get_redirect_url_based_on_role(user):
 
 @login_required
 def logout_view(request):
-    """Đăng xuất và quay về trang login"""
+    """Đăng xuất và quay về trang chủ accounts"""
     logout(request)
-    return redirect('/accounts/user-login/')
+    return redirect('/accounts/')  # Về congkhaosat_main
 
 
 # ============================================
 # LOGIN ADMIN - Dành cho Quản trị viên
 # ============================================
-
-# apps/accounts/views.py - Sửa hàm login_view
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
@@ -92,17 +110,13 @@ def login_view(request):
                 'message': 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!'
             }, status=400)
         
-        # Debug log
-        print(f"Admin login attempt: username={username}")
-        
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            # Kiểm tra nếu không phải admin thì không cho đăng nhập ở đây
             if not is_admin_user(user):
                 return JsonResponse({
                     'success': False,
-                    'message': 'Tài khoản này không có quyền Quản trị. Vui lòng sử dụng trang đăng nhập dành cho User tại /accounts/user-login/'
+                    'message': 'Tài khoản này không có quyền Quản trị. Vui lòng sử dụng trang đăng nhập dành cho User.'
                 }, status=403)
             
             login(request, user)
@@ -118,7 +132,6 @@ def login_view(request):
                 'redirect_url': '/analytics/'
             })
         else:
-            print(f"Authentication failed for username: {username}")
             return JsonResponse({
                 'success': False,
                 'message': 'Sai tên đăng nhập hoặc mật khẩu!'
@@ -126,208 +139,657 @@ def login_view(request):
 
 
 # ============================================
-# LOGIN USER - Dành cho Người khảo sát
+# API LOGIN CHO CỔNG KHẢO SÁT (congkhaosat_main)
 # ============================================
 
-# apps/accounts/views.py - Sửa hàm user_login_view
-
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["POST"])
 @csrf_exempt
-def user_login_view(request):
+def congkhaosat_login_api(request):
     """
-    Trang đăng nhập dành cho User (người khảo sát)
+    API đăng nhập cho cổng khảo sát (Bước 1)
     """
-    if request.method == 'GET':
-        if request.user.is_authenticated:
-            if is_admin_user(request.user):
-                return redirect('/analytics/')
-            return redirect('/accounts/survey-dashboard/')
-        return render(request, 'accounts/user_login.html')
+    try:
+        data = json.loads(request.body)
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        remember = data.get('remember', False)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Dữ liệu không hợp lệ!'
+        }, status=400)
     
-    elif request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            username = data.get('username', '').strip()
-            password = data.get('password', '')
-            remember = data.get('remember', False)
-        except json.JSONDecodeError:
+    if not username or not password:
+        return JsonResponse({
+            'success': False,
+            'message': 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!'
+        }, status=400)
+    
+    user = authenticate(request, username=username, password=password)
+    
+    if user is not None:
+        if is_admin_user(user):
             return JsonResponse({
                 'success': False,
-                'message': 'Dữ liệu không hợp lệ!'
-            }, status=400)
+                'message': 'Tài khoản này là Quản trị viên. Vui lòng sử dụng trang đăng nhập dành cho Admin.'
+            }, status=403)
         
-        if not username or not password:
-            return JsonResponse({
-                'success': False,
-                'message': 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!'
-            }, status=400)
+        login(request, user)
         
-        # Debug log
-        print(f"User login attempt: username={username}")
-        
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            # Kiểm tra nếu là admin thì không cho đăng nhập ở đây
-            if is_admin_user(user):
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Tài khoản này là Quản trị viên. Vui lòng sử dụng trang đăng nhập dành cho Admin tại /accounts/login/'
-                }, status=403)
-            
-            login(request, user)
-            
-            if not remember:
-                request.session.set_expiry(0)
-            else:
-                request.session.set_expiry(1209600)
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Đăng nhập thành công!',
-                'redirect_url': '/accounts/survey-dashboard/'
-            })
+        if not remember:
+            request.session.set_expiry(0)
         else:
-            # Debug log
-            print(f"Authentication failed for username: {username}")
-            return JsonResponse({
-                'success': False,
-                'message': 'Sai tên đăng nhập hoặc mật khẩu!'
-            }, status=401)
+            request.session.set_expiry(1209600)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Đăng nhập thành công!',
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'full_name': user.get_full_name() or user.username,
+                'email': user.email or '',
+                'phone': user.phone_number or '',
+                'position': user.position or '',
+                'organization': user.organization.name if user.organization else '',
+                'organization_id': user.organization.id if user.organization else None,
+            }
+        })
+    else:
+        return JsonResponse({
+            'success': False,
+            'message': 'Sai tên đăng nhập hoặc mật khẩu!'
+        }, status=401)
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def congkhaosat_logout_api(request):
+    """
+    API đăng xuất cho cổng khảo sát
+    """
+    logout(request)
+    return JsonResponse({'success': True})
+
+
+@require_http_methods(["GET"])
+def congkhaosat_check_auth(request):
+    """
+    Kiểm tra trạng thái đăng nhập cho cổng khảo sát
+    """
+    if request.user.is_authenticated and not is_admin_user(request.user):
+        return JsonResponse({
+            'logged_in': True,
+            'user': {
+                'id': request.user.id,
+                'username': request.user.username,
+                'full_name': request.user.get_full_name() or request.user.username,
+                'email': request.user.email or '',
+                'phone': request.user.phone_number or '',
+                'position': request.user.position or '',
+                'organization': request.user.organization.name if request.user.organization else '',
+                'organization_id': request.user.organization.id if request.user.organization else None,
+            }
+        })
+    return JsonResponse({'logged_in': False})
 
 
 # ============================================
-# DASHBOARD USER - Dành cho người khảo sát
+# API XÁC MINH SỐ ĐIỆN THOẠI (MỚI)
 # ============================================
 
-# apps/accounts/views.py - Hàm survey_dashboard
+# apps/accounts/views.py
+
+import re  # Thêm import re ở đầu file
+
+def validate_phone_number(phone):
+    """
+    Validate số điện thoại Việt Nam
+    - 10 hoặc 11 số
+    - Bắt đầu bằng 0 hoặc 84
+    - Đầu số hợp lệ: 09, 08, 07, 03, 05, 02
+    """
+    if not phone:
+        return False, "Vui lòng nhập số điện thoại"
+    
+    # Xóa khoảng trắng và ký tự đặc biệt
+    phone = re.sub(r'[\s\-\(\)\.]', '', phone)
+    
+    # Kiểm tra chỉ chứa số
+    if not phone.isdigit():
+        return False, "Số điện thoại không hợp lệ"
+    
+    # Kiểm tra độ dài (10 hoặc 11 số)
+    if len(phone) not in [10, 11]:
+        return False, "Số điện thoại không hợp lệ"
+    
+    # Kiểm tra đầu số hợp lệ
+    valid_prefixes = ['09', '08', '07', '03', '05', '02', '01']
+    if not any(phone.startswith(prefix) for prefix in valid_prefixes):
+        return False, "Đầu số điện thoại không hợp lệ"
+    
+    return True, phone
+
 
 @login_required
-def survey_dashboard(request):
+@require_http_methods(["POST"])
+@csrf_exempt
+def congkhaosat_verify_phone(request):
     """
-    Dashboard của người khảo sát
-    Hiển thị danh sách biểu mẫu được gán dựa trên TargetGroup của user
+    API xác minh số điện thoại - Bước 3
     """
-    user = request.user
-    
-    # Nếu là admin, chuyển sang analytics
-    if is_admin_user(user):
-        return redirect('/analytics/')
-    
-    # Lấy hoặc tạo SurveyParticipant cho user
-    participant = SurveyParticipant.objects.filter(
-        user=user,
-        status='draft'
-    ).order_by('-created_at').first()
-    
-    # Nếu chưa có participant, tạo mới với thông tin từ User
-    if not participant:
-        # Tìm survey đang active
+    try:
+        data = json.loads(request.body)
+        phone_number = data.get('phone_number', '').strip()
+        target_group_id = data.get('target_group_id')
+        
+        user = request.user
+        
+        # Validate phone number
+        is_valid, result = validate_phone_number(phone_number)
+        if not is_valid:
+            return JsonResponse({
+                'success': False,
+                'message': result
+            }, status=400)
+        
+        phone_number = result  # Lấy SĐT đã được format
+        
+        if not target_group_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Thiếu thông tin nhóm đối tượng!'
+            }, status=400)
+        
+        # Lấy target group
+        try:
+            target_group = TargetGroup.objects.get(id=target_group_id, is_active=True)
+        except TargetGroup.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Không tìm thấy nhóm đối tượng!'
+            }, status=404)
+        
+        # Lưu target_group_code vào session
+        request.session['current_target_group_code'] = target_group.code
+        
+        # Lấy danh sách form từ group
+        assigned_forms = target_group.forms or []
+        
+        # Kiểm tra user hiện tại đã có SĐT này chưa
+        if not user.phone_number:
+            # Kiểm tra SĐT này đã được đăng ký với user khác chưa
+            existing_user = User.objects.filter(phone_number=phone_number).exclude(id=user.id).first()
+            if existing_user:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Số điện thoại {phone_number} đã được đăng ký với tài khoản khác. Vui lòng liên hệ quản trị viên!'
+                }, status=400)
+            
+            user.phone_number = phone_number
+            user.save()
+            logger.info(f"Updated user phone number: {phone_number}")
+        else:
+            # User đã có SĐT, kiểm tra xem có đang nhập SĐT khác không
+            if user.phone_number != phone_number:
+                # Kiểm tra SĐT mới đã được đăng ký với user khác chưa
+                existing_user = User.objects.filter(phone_number=phone_number).exclude(id=user.id).first()
+                if existing_user:
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Số điện thoại {phone_number} đã được đăng ký với tài khoản khác. Vui lòng liên hệ quản trị viên!'
+                    }, status=400)
+                
+                # Cập nhật SĐT mới
+                user.phone_number = phone_number
+                user.save()
+                logger.info(f"Updated user phone number from {user.phone_number} to {phone_number}")
+        
+        # Lấy survey active đầu tiên
         active_survey = Survey.objects.filter(status='active').order_by('-created_at').first()
         
         if not active_survey:
-            return render(request, 'accounts/survey_dashboard.html', {
-                'message': 'Hiện tại chưa có đợt khảo sát nào đang hoạt động.',
-                'participant': None,
-                'progresses': [],
-                'total': 0,
-                'completed': 0,
-                'in_progress': 0,
-                'not_started': 0,
-                'overall_progress': 0,
-                'can_update_info': True,
+            return JsonResponse({
+                'success': False,
+                'message': 'Hiện chưa có đợt khảo sát nào đang hoạt động!'
+            }, status=400)
+        
+        # Tìm participant theo user, SĐT và target_group_code
+        participant = SurveyParticipant.objects.filter(
+            user=user,
+            phone=phone_number,
+            target_group_code=target_group.code,
+            status='draft'
+        ).first()
+        
+        with transaction.atomic():
+            if participant:
+                # Cập nhật participant cũ
+                participant.assigned_forms = assigned_forms
+                participant.target_group_name = target_group.name
+                participant.survey = active_survey
+                participant.session_key = request.session.session_key or ''
+                participant.ip_address = request.META.get('REMOTE_ADDR')
+                participant.user_agent = request.META.get('HTTP_USER_AGENT', '')
+                participant.save()
+                
+                # Lấy danh sách progress hiện có
+                existing_progresses = SurveyProgress.objects.filter(participant=participant)
+                existing_form_codes = set(progress.form_code for progress in existing_progresses)
+                
+                # Tạo progress mới cho các form chưa có
+                for form_code in assigned_forms:
+                    if form_code not in existing_form_codes:
+                        survey = Survey.objects.filter(code=form_code, status='active').first()
+                        if survey:
+                            SurveyProgress.objects.create(
+                                participant=participant,
+                                survey=survey,
+                                form_code=form_code,
+                                status='not_started'
+                            )
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Đã tìm thấy dữ liệu khảo sát của bạn!',
+                    'is_existing': True,
+                    'participant_id': participant.id,
+                    'progress_count': SurveyProgress.objects.filter(participant=participant).count()
+                })
+            else:
+                # Tạo participant mới
+                participant = SurveyParticipant.objects.create(
+                    survey=active_survey,
+                    user=user,
+                    full_name=user.get_full_name() or user.username,
+                    email=user.email or '',
+                    phone=phone_number,
+                    position=user.position or '',
+                    department=user.organization.name if user.organization else '',
+                    agency=user.organization.name if user.organization else '',
+                    assigned_forms=assigned_forms,
+                    target_group_code=target_group.code,
+                    target_group_name=target_group.name,
+                    status='draft',
+                    session_key=request.session.session_key or '',
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                )
+                
+                # Tạo progress cho từng form
+                for form_code in assigned_forms:
+                    survey = Survey.objects.filter(code=form_code, status='active').first()
+                    if survey:
+                        SurveyProgress.objects.create(
+                            participant=participant,
+                            survey=survey,
+                            form_code=form_code,
+                            status='not_started'
+                        )
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Tạo mới dữ liệu khảo sát thành công!',
+                    'is_existing': False,
+                    'participant_id': participant.id,
+                    'progress_count': len(assigned_forms)
+                })
+        
+    except Exception as e:
+        logger.error(f"Error verifying phone: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+# ============================================
+# API LẤY KHẢO SÁT THEO NHÓM ĐỐI TƯỢNG
+# ============================================
+
+# apps/accounts/views.py
+
+@login_required
+def get_surveys_by_group_api(request, group_id):
+    """API lấy danh sách khảo sát theo nhóm - Phân biệt theo session_key"""
+    try:
+        user = request.user
+        session_key = request.session.session_key
+        
+        # Lấy group
+        try:
+            group = TargetGroup.objects.get(id=group_id, is_active=True)
+        except TargetGroup.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Không tìm thấy nhóm đối tượng'
+            }, status=404)
+        
+        # Lấy danh sách form codes từ group
+        form_codes = group.forms or []
+        
+        if not form_codes:
+            return JsonResponse({
+                'success': True,
+                'data': [],
+                'message': 'Nhóm này chưa có biểu mẫu nào'
             })
         
-        # ============================================================
-        # LẤY DANH SÁCH BIỂU MẪU TỪ TARGET GROUP CỦA USER
-        # ============================================================
-        assigned_forms = []
+        # Lấy danh sách survey từ form codes
+        surveys = Survey.objects.filter(
+            code__in=form_codes,
+            status='active'
+        ).order_by('code')
         
-        # Lấy các nhóm đối tượng mà user thuộc về
-        target_groups = user.target_groups.filter(is_active=True)
-        
-        if target_groups.exists():
-            # Duyệt từng nhóm và lấy danh sách biểu mẫu
-            for group in target_groups:
-                if group.forms:
-                    assigned_forms.extend(group.forms)
-            # Loại bỏ trùng lặp
-            assigned_forms = list(set(assigned_forms))
-        else:
-            # FALLBACK: Nếu user chưa được gán nhóm, lấy tất cả forms từ tất cả nhóm
-            all_groups = TargetGroup.objects.filter(is_active=True)
-            for group in all_groups:
-                if group.forms:
-                    assigned_forms.extend(group.forms)
-            assigned_forms = list(set(assigned_forms))
-        
-        # Tạo participant mới
-        participant = SurveyParticipant.objects.create(
-            survey=active_survey,
+        # Lấy participant theo user + session_key
+        participant = SurveyParticipant.objects.filter(
             user=user,
-            full_name=user.get_full_name() or user.username,
-            email=user.email or '',
-            phone=user.phone_number or '',
-            position=user.position or '',
-            department=user.organization.name if user.organization else '',
-            agency=user.organization.name if user.organization else '',
-            assigned_forms=assigned_forms,
-            status='draft',
-            session_key=request.session.session_key or '',
-            ip_address=request.META.get('REMOTE_ADDR'),
-            user_agent=request.META.get('HTTP_USER_AGENT', ''),
-        )
+            session_key=session_key,
+            target_group_code=group.code,
+            status='draft'
+        ).order_by('-created_at').first()
+        
+        if not participant:
+            return JsonResponse({
+                'success': True,
+                'data': [],
+                'message': 'Chưa có dữ liệu participant cho session này'
+            })
+        
+        # Lấy progress cho từng survey
+        data = []
+        for survey in surveys:
+            progress = SurveyProgress.objects.filter(
+                participant=participant,
+                form_code=survey.code
+            ).first()
+            
+            if not progress:
+                progress = SurveyProgress.objects.create(
+                    participant=participant,
+                    survey=survey,
+                    form_code=survey.code,
+                    status='not_started'
+                )
+            
+            # Tính tiến độ
+            progress_percent = 0
+            status = progress.status
+            
+            if progress.response:
+                answers = progress.response.answers or {}
+                total_questions = 0
+                answered = 0
+                
+                if survey:
+                    for section in survey.sections.all():
+                        for question in section.questions.all():
+                            if question.question_type and question.question_type.code not in ['title', 'paragraph']:
+                                total_questions += 1
+                                if str(question.id) in answers:
+                                    answered += 1
+                    
+                    if total_questions > 0:
+                        progress_percent = round((answered / total_questions) * 100)
+                        if progress_percent >= 100 and status != 'completed':
+                            status = 'completed'
+                            progress.status = 'completed'
+                            progress.completed_at = timezone.now()
+                            progress.save()
+                        elif progress_percent > 0 and status == 'not_started':
+                            status = 'in_progress'
+                            progress.status = 'in_progress'
+                            progress.save()
+            
+            data.append({
+                'id': survey.id,
+                'code': survey.code,
+                'title': survey.title,
+                'description': survey.description or '',
+                'question_count': survey.get_question_count() if hasattr(survey, 'get_question_count') else 0,
+                'status': status,
+                'progress_id': progress.id,
+                'progress_percent': progress_percent,
+            })
+        
+        return JsonResponse({
+            'success': True,
+            'data': data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in get_surveys_by_group_api: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+# ============================================
+# API BẮT ĐẦU KHẢO SÁT (SAU KHI NHẬP THÔNG TIN CÁ NHÂN)
+# ============================================
+
+@login_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def congkhaosat_start_survey(request):
+    """
+    API bắt đầu khảo sát sau khi nhập thông tin cá nhân
+    """
+    try:
+        data = json.loads(request.body)
+        survey_id = data.get('survey_id')
+        progress_id = data.get('progress_id')
+        full_name = data.get('full_name', '').strip()
+        email = data.get('email', '').strip()
+        phone = data.get('phone', '').strip()
+        position = data.get('position', '').strip()
+        department = data.get('department', '').strip()
+        target_group_id = data.get('target_group_id')
+        
+        user = request.user
+        
+        # Validate
+        if not survey_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Thiếu ID khảo sát'
+            }, status=400)
+        
+        if not full_name or not email or not phone or not position:
+            return JsonResponse({
+                'success': False,
+                'message': 'Vui lòng điền đầy đủ thông tin cá nhân'
+            }, status=400)
+        
+        # Lấy survey
+        try:
+            survey = Survey.objects.get(id=survey_id, status='active')
+        except Survey.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Không tìm thấy khảo sát'
+            }, status=404)
+        
+        # Lấy hoặc tạo participant
+        participant = SurveyParticipant.objects.filter(
+            user=user,
+            phone=phone,
+            status='draft'
+        ).order_by('-created_at').first()
+        
+        if not participant:
+            participant = SurveyParticipant.objects.create(
+                survey=survey,
+                user=user,
+                full_name=full_name,
+                email=email,
+                phone=phone,
+                position=position,
+                department=department or user.organization.name if user.organization else '',
+                agency=user.organization.name if user.organization else '',
+                assigned_forms=[survey.code],
+                status='draft',
+                session_key=request.session.session_key or '',
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+            )
+        else:
+            # Cập nhật thông tin cá nhân cho participant
+            participant.full_name = full_name
+            participant.email = email
+            participant.phone = phone
+            participant.position = position
+            if department:
+                participant.department = department
+            participant.save()
+        
+        # Lấy hoặc tạo progress
+        if progress_id:
+            try:
+                progress = SurveyProgress.objects.get(id=progress_id)
+            except SurveyProgress.DoesNotExist:
+                progress = None
+        else:
+            progress = SurveyProgress.objects.filter(
+                participant=participant,
+                form_code=survey.code
+            ).first()
+        
+        if not progress:
+            progress = SurveyProgress.objects.create(
+                participant=participant,
+                survey=survey,
+                form_code=survey.code,
+                status='in_progress',
+                started_at=timezone.now()
+            )
+        
+        # Tạo response nếu chưa có
+        if not progress.response:
+            response = Response.objects.create(
+                survey=survey,
+                status='draft',
+                answers={},
+                section_progress={},
+                user=user,
+                respondent_name=full_name,
+                respondent_email=email,
+                respondent_phone=phone,
+                respondent_position=position,
+                respondent_department=department or user.organization.name if user.organization else '',
+                respondent_ip=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            progress.response = response
+            progress.status = 'in_progress'
+            progress.started_at = timezone.now()
+            progress.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Bắt đầu khảo sát thành công!',
+            'redirect_url': f'/survey/public/{survey.id}/?progress_id={progress.id}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error in congkhaosat_start_survey: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+# ============================================
+# SURVEY DASHBOARD (Giữ nguyên)
+# ============================================
+
+# apps/accounts/views.py
+
+@login_required
+def survey_dashboard(request):
+    """Dashboard của người khảo sát - Phân biệt theo session_key"""
+    user = request.user
     
-    # Nếu vẫn chưa có participant, báo lỗi
+    if is_admin_user(user):
+        return redirect('/analytics/')
+    
+    # Lấy target group code từ session
+    target_group_code = request.session.get('current_target_group_code')
+    
+    # Lấy session_key
+    session_key = request.session.session_key
+    
+    logger.info(f"Dashboard - User: {user.username}, Session: {session_key}, TargetGroupCode: {target_group_code}")
+    
+    # LẤY PARTICIPANT THEO USER + SESSION_KEY + TARGET_GROUP_CODE
+    participant = None
+    
+    if target_group_code and session_key:
+        participant = SurveyParticipant.objects.filter(
+            user=user,
+            session_key=session_key,
+            target_group_code=target_group_code,
+            status='draft'
+        ).order_by('-created_at').first()
+        logger.info(f"Found participant by session + target: {participant.id if participant else 'None'}")
+    
+    # Nếu chưa có, lấy participant mới nhất của session này
+    if not participant and session_key:
+        participant = SurveyParticipant.objects.filter(
+            user=user,
+            session_key=session_key,
+            status='draft'
+        ).order_by('-created_at').first()
+        logger.info(f"Found latest participant by session: {participant.id if participant else 'None'}")
+    
+    # Nếu chưa có participant, render trang với thông báo
     if not participant:
+        # Render dashboard với thông báo chưa có dữ liệu
         return render(request, 'accounts/survey_dashboard.html', {
-            'message': 'Không thể xác định thông tin khảo sát. Vui lòng liên hệ quản trị viên.',
-            'participant': None,
-            'progresses': [],
-            'total': 0,
-            'completed': 0,
-            'in_progress': 0,
-            'not_started': 0,
-            'overall_progress': 0,
-            'can_update_info': True,
+            'error': 'Bạn chưa chọn nhóm đối tượng. Vui lòng quay lại trang chủ để chọn nhóm.',
+            'no_participant': True,
+            'user': user,
         })
     
-    # Lấy danh sách biểu mẫu được gán từ participant
+    # Lưu target_group_code vào session nếu chưa có
+    if not target_group_code and participant.target_group_code:
+        request.session['current_target_group_code'] = participant.target_group_code
+        target_group_code = participant.target_group_code
+        logger.info(f"Set session target_group_code from participant: {target_group_code}")
+    
+    # Lấy danh sách progress
+    progress_list = []
     assigned_forms = participant.assigned_forms or []
     
-    if not assigned_forms:
-        return render(request, 'accounts/survey_dashboard.html', {
-            'participant': participant,
-            'message': 'Bạn chưa được gán biểu mẫu nào. Vui lòng liên hệ quản trị viên.',
-            'progresses': [],
-            'total': 0,
-            'completed': 0,
-            'in_progress': 0,
-            'not_started': 0,
-            'overall_progress': 0,
-            'can_update_info': True,
-        })
+    logger.info(f"Assigned forms for participant {participant.id}: {assigned_forms}")
     
-    # Lấy hoặc tạo progress cho từng biểu mẫu
-    progress_list = []
     for form_code in assigned_forms:
-        progress, created = SurveyProgress.objects.get_or_create(
+        # Lấy hoặc tạo progress
+        progress = SurveyProgress.objects.filter(
             participant=participant,
-            form_code=form_code,
-            defaults={
-                'status': 'not_started',
-                'survey': Survey.objects.filter(code=form_code).first()
-            }
-        )
+            form_code=form_code
+        ).first()
         
-        # Nếu đã có survey, gán vào
+        if not progress:
+            survey_obj = Survey.objects.filter(code=form_code, status='active').first()
+            progress = SurveyProgress.objects.create(
+                participant=participant,
+                survey=survey_obj,
+                form_code=form_code,
+                status='not_started'
+            )
+        
+        # Đảm bảo survey được gán
         if not progress.survey:
             survey_obj = Survey.objects.filter(code=form_code, status='active').first()
             if survey_obj:
                 progress.survey = survey_obj
                 progress.save()
         
-        # Cập nhật tiến độ từ response nếu có
+        # Tính tiến độ
         if progress.response:
             answers = progress.response.answers or {}
             total_questions = 0
@@ -343,7 +805,6 @@ def survey_dashboard(request):
                 
                 if total_questions > 0:
                     progress.progress_percent = round((answered / total_questions) * 100)
-                    # Nếu đã hoàn thành 100% và status chưa phải completed
                     if progress.progress_percent >= 100 and progress.status != 'completed':
                         progress.status = 'completed'
                         progress.completed_at = timezone.now()
@@ -351,11 +812,10 @@ def survey_dashboard(request):
         
         progress_list.append(progress)
     
-    # Sắp xếp: Đang làm > Chưa làm > Hoàn thành
+    # Sắp xếp
     status_order = {'in_progress': 0, 'not_started': 1, 'completed': 2}
     progress_list.sort(key=lambda p: status_order.get(p.status, 3))
     
-    # Thống kê chung
     total = len(progress_list)
     completed = sum(1 for p in progress_list if p.status == 'completed')
     in_progress = sum(1 for p in progress_list if p.status == 'in_progress')
@@ -372,84 +832,12 @@ def survey_dashboard(request):
         'overall_progress': overall_progress,
         'can_update_info': True,
         'user': user,
+        'target_group_name': participant.target_group_name or 'Chưa có nhóm',
+        'target_group_code': participant.target_group_code or '',
+        'session_key': session_key,
     }
     
     return render(request, 'accounts/survey_dashboard.html', context)
-
-
-# ============================================
-# CẬP NHẬT THÔNG TIN USER
-# ============================================
-
-@login_required
-@require_http_methods(["POST"])
-@csrf_exempt
-def update_user_info(request):
-    """
-    API cập nhật thông tin cá nhân của user
-    """
-    try:
-        data = json.loads(request.body)
-        user = request.user
-        
-        if 'full_name' in data:
-            full_name = data['full_name'].strip()
-            name_parts = full_name.split()
-            user.first_name = name_parts[-1] if name_parts else ''
-            user.last_name = ' '.join(name_parts[:-1]) if len(name_parts) > 1 else ''
-        
-        if 'email' in data:
-            user.email = data['email'].strip()
-        
-        if 'phone' in data:
-            user.phone_number = data['phone'].strip()
-        
-        if 'position' in data:
-            user.position = data['position'].strip()
-        
-        if 'organization_id' in data and data['organization_id']:
-            try:
-                org = Organization.objects.get(id=data['organization_id'])
-                user.organization = org
-            except Organization.DoesNotExist:
-                pass
-        
-        user.save()
-        
-        # Cập nhật participant nếu có
-        participant = SurveyParticipant.objects.filter(
-            user=user,
-            status='draft'
-        ).first()
-        
-        if participant:
-            participant.full_name = user.get_full_name() or user.username
-            participant.email = user.email or ''
-            participant.phone = user.phone_number or ''
-            participant.position = user.position or ''
-            if user.organization:
-                participant.department = user.organization.name
-                participant.agency = user.organization.name
-            participant.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Cập nhật thông tin thành công!',
-            'data': {
-                'full_name': user.get_full_name() or user.username,
-                'email': user.email,
-                'phone': user.phone_number,
-                'position': user.position,
-                'organization': user.organization.name if user.organization else '',
-                'organization_id': user.organization.id if user.organization else None,
-            }
-        })
-        
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
 
 
 # ============================================
@@ -596,10 +984,13 @@ def get_survey_forms_api(request):
             'success': False,
             'error': str(e)
         }, status=500)
-# apps/accounts/views.py - Sửa lại hàm export_response_pdf
+
+
+# ============================================
+# EXPORT PDF
+# ============================================
 
 import io
-import logging
 import os
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -615,12 +1006,9 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from django.conf import settings
-import os
 
 logger = logging.getLogger(__name__)
 
-
-# apps/accounts/views.py - Sửa lại phần xử lý grid trong export_response_pdf
 
 @login_required(login_url='/accounts/login/')
 def export_response_pdf(request, response_id):
@@ -633,16 +1021,13 @@ def export_response_pdf(request, response_id):
         
         response = get_object_or_404(Response, id=response_id)
         
-        # Kiểm tra quyền: chỉ user sở hữu mới được tải
         if response.user != request.user:
             return HttpResponse('Bạn không có quyền truy cập!', status=403)
         
         survey = response.survey
         answers = response.answers or {}
         
-        # ============================================================
-        # ĐĂNG KÝ FONT HỖ TRỢ TIẾNG VIỆT
-        # ============================================================
+        # Đăng ký font
         font_paths = [
             "C:/Windows/Fonts/arial.ttf",
             "C:/Windows/Fonts/times.ttf",
@@ -671,10 +1056,8 @@ def export_response_pdf(request, response_id):
         if not font_available:
             logger.warning("Không tìm thấy font hỗ trợ Tiếng Việt, sử dụng font mặc định")
         
-        # Tạo buffer cho PDF
         buffer = io.BytesIO()
         
-        # Tạo document
         doc = SimpleDocTemplate(
             buffer,
             pagesize=A4,
@@ -684,7 +1067,6 @@ def export_response_pdf(request, response_id):
             bottomMargin=20*mm,
         )
         
-        # Styles
         styles = getSampleStyleSheet()
         
         title_style = ParagraphStyle(
@@ -738,7 +1120,6 @@ def export_response_pdf(request, response_id):
             encoding='utf-8'
         )
         
-        # Xây dựng nội dung
         story = []
         
         # Tiêu đề
@@ -749,8 +1130,8 @@ def export_response_pdf(request, response_id):
         
         # Thông tin người trả lời
         user_info = [
-            ['Họ và tên:', response.user.get_full_name() if response.user else 'Chưa có'],
-            ['Email:', response.respondent_email or 'Chưa có'],
+            ['Họ và tên:', response.respondent_name or response.user.get_full_name() or 'Chưa có'],
+            ['Email:', response.respondent_email or response.user.email or 'Chưa có'],
             ['Thời gian nộp:', response.submitted_at.strftime('%H:%M %d/%m/%Y') if response.submitted_at else 'Chưa nộp'],
             ['Thời gian làm bài:', f"{response.time_taken} giây" if response.time_taken else 'Chưa có'],
         ]
@@ -775,7 +1156,6 @@ def export_response_pdf(request, response_id):
         question_counter = 0
         
         for section in sections:
-            # Tiêu đề section
             story.append(Paragraph(f"<b>{section.title}</b>", heading_style))
             if section.description:
                 story.append(Paragraph(section.description, info_style))
@@ -787,37 +1167,26 @@ def export_response_pdf(request, response_id):
                 q_id = str(question.id)
                 answer = answers.get(q_id, '')
                 
-                # Bỏ qua các câu hỏi không phải dạng câu hỏi thật
                 if question.question_type and question.question_type.code in ['title', 'paragraph']:
                     continue
                 
-                # Câu hỏi
                 q_text = f"{question_counter}. {question.title}"
                 story.append(Paragraph(q_text, question_style))
                 
-                # ============================================================
-                # XỬ LÝ CÂU TRẢ LỜI - ĐẶC BIỆT LÀ GRID
-                # ============================================================
                 if answer:
-                    # Kiểm tra nếu answer là dict và có type='grid'
                     if isinstance(answer, dict) and answer.get('type') == 'grid':
                         grid_data = answer.get('data', [])
                         
                         if grid_data and len(grid_data) > 0:
-                            # Xác định số cột từ hàng đầu tiên
                             num_cols = len(grid_data[0]) if grid_data else 0
                             
                             if num_cols > 0:
-                                # Tạo bảng grid
                                 grid_table_data = []
                                 
-                                # Header - lấy từ config của question hoặc tạo mặc định
                                 headers = ['Tiêu chí']
-                                # Lấy header từ question config nếu có
                                 if question.config and question.config.get('criteria_label'):
                                     headers = [question.config.get('criteria_label', 'Tiêu chí')]
                                 
-                                # Thêm các cột từ scale
                                 if question.config and question.config.get('scale'):
                                     for item in question.config.get('scale', []):
                                         if isinstance(item, dict):
@@ -825,17 +1194,14 @@ def export_response_pdf(request, response_id):
                                         else:
                                             headers.append(str(item))
                                 else:
-                                    # Tạo header mặc định
                                     for i in range(1, num_cols):
                                         headers.append(str(i))
                                 
-                                # Đảm bảo số header khớp với số cột
                                 while len(headers) < num_cols:
                                     headers.append(str(len(headers)))
                                 
                                 grid_table_data.append(headers)
                                 
-                                # Data rows
                                 for row in grid_data:
                                     row_data = []
                                     for cell in row:
@@ -845,8 +1211,7 @@ def export_response_pdf(request, response_id):
                                             row_data.append(str(cell))
                                     grid_table_data.append(row_data)
                                 
-                                # Tính width cho từng cột
-                                col_widths = [50*mm]  # Cột tiêu chí rộng hơn
+                                col_widths = [50*mm]
                                 for i in range(1, num_cols):
                                     col_widths.append(20*mm)
                                 
@@ -869,7 +1234,6 @@ def export_response_pdf(request, response_id):
                         else:
                             story.append(Paragraph("<i>Không có dữ liệu</i>", answer_style))
                     
-                    # Xử lý answer là list (multi-choice)
                     elif isinstance(answer, list):
                         answer_text = ', '.join(str(a) for a in answer if a)
                         if answer_text:
@@ -877,9 +1241,7 @@ def export_response_pdf(request, response_id):
                         else:
                             story.append(Paragraph("<i>Chưa trả lời</i>", answer_style))
                     
-                    # Xử lý answer là dict khác (không phải grid)
                     elif isinstance(answer, dict):
-                        # Nếu là dict thường, hiển thị dạng key: value
                         if answer:
                             answer_text = ', '.join(f"{k}: {v}" for k, v in answer.items() if v)
                             if answer_text:
@@ -889,7 +1251,6 @@ def export_response_pdf(request, response_id):
                         else:
                             story.append(Paragraph("<i>Chưa trả lời</i>", answer_style))
                     
-                    # Xử lý answer là string hoặc number
                     else:
                         if str(answer).strip():
                             story.append(Paragraph(str(answer), answer_style))
@@ -911,14 +1272,11 @@ def export_response_pdf(request, response_id):
             info_style
         ))
         
-        # Build PDF
         doc.build(story)
         
-        # Lấy dữ liệu từ buffer
         pdf_data = buffer.getvalue()
         buffer.close()
         
-        # Tạo response
         response_pdf = HttpResponse(content_type='application/pdf')
         response_pdf['Content-Disposition'] = f'attachment; filename="khao_sat_{survey.code}_{response.id}.pdf"'
         response_pdf.write(pdf_data)
@@ -930,3 +1288,231 @@ def export_response_pdf(request, response_id):
         import traceback
         traceback.print_exc()
         return HttpResponse(f"Lỗi khi xuất PDF: {str(e)}", status=500)
+
+
+# ============================================
+# API TẠO PARTICIPANT (Bước 3 - Xác nhận)
+# ============================================
+
+# apps/accounts/views.py
+
+# apps/accounts/views.py
+
+# apps/accounts/views.py
+
+@login_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def congkhaosat_create_participant(request):
+    """API tạo participant sau khi xác nhận - Lưu session_key"""
+    try:
+        data = json.loads(request.body)
+        target_group_id = data.get('target_group_id')
+        organization_id = data.get('organization_id')
+        
+        user = request.user
+        
+        if not target_group_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Thiếu thông tin nhóm đối tượng'
+            }, status=400)
+        
+        try:
+            target_group = TargetGroup.objects.get(id=target_group_id, is_active=True)
+        except TargetGroup.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Không tìm thấy nhóm đối tượng'
+            }, status=404)
+        
+        organization = None
+        if organization_id:
+            try:
+                organization = Organization.objects.get(id=organization_id)
+            except Organization.DoesNotExist:
+                pass
+        
+        assigned_forms = target_group.forms or []
+        active_survey = Survey.objects.filter(status='active').order_by('-created_at').first()
+        
+        # Lấy session_key
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
+        
+        logger.info(f"Create participant - User: {user.username}, Session: {session_key}, TargetGroup: {target_group.code}")
+        
+        # Lưu target_group_code vào session
+        request.session['current_target_group_code'] = target_group.code
+        
+        # TÌM PARTICIPANT THEO USER + SESSION_KEY + TARGET_GROUP_CODE
+        existing_participant = SurveyParticipant.objects.filter(
+            user=user,
+            session_key=session_key,
+            target_group_code=target_group.code,
+            status='draft'
+        ).first()
+        
+        if existing_participant:
+            logger.info(f"Found existing participant: {existing_participant.id}")
+            existing_participant.assigned_forms = assigned_forms
+            existing_participant.target_group_name = target_group.name
+            existing_participant.department = organization.name if organization else ''
+            existing_participant.agency = organization.name if organization else ''
+            existing_participant.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Cập nhật participant thành công',
+                'participant_id': existing_participant.id
+            })
+        
+        # Tạo participant mới với session_key
+        participant = SurveyParticipant.objects.create(
+            survey=active_survey,
+            user=user,
+            full_name=user.get_full_name() or user.username,
+            email=user.email or '',
+            phone='',  # Không cần SĐT
+            position=user.position or '',
+            department=organization.name if organization else '',
+            agency=organization.name if organization else '',
+            assigned_forms=assigned_forms,
+            target_group_code=target_group.code,
+            target_group_name=target_group.name,
+            status='draft',
+            session_key=session_key,  # ← LƯU SESSION_KEY
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT', ''),
+        )
+        logger.info(f"Created new participant: {participant.id} with session: {session_key}")
+        
+        # Tạo progress cho từng form
+        for form_code in assigned_forms:
+            survey = Survey.objects.filter(code=form_code, status='active').first()
+            if survey:
+                SurveyProgress.objects.create(
+                    participant=participant,
+                    survey=survey,
+                    form_code=form_code,
+                    status='not_started'
+                )
+                logger.info(f"Created progress for form: {form_code}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Tạo participant thành công',
+            'participant_id': participant.id
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating participant: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+# apps/accounts/views.py
+
+@login_required
+@require_http_methods(["POST"])
+@csrf_exempt
+def switch_target_group_api(request):
+    """
+    API chuyển đổi nhóm đối tượng
+    """
+    try:
+        data = json.loads(request.body)
+        target_group_id = data.get('target_group_id')
+        
+        user = request.user
+        
+        if not target_group_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Thiếu thông tin nhóm đối tượng'
+            }, status=400)
+        
+        try:
+            target_group = TargetGroup.objects.get(id=target_group_id, is_active=True)
+        except TargetGroup.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Không tìm thấy nhóm đối tượng'
+            }, status=404)
+        
+        # Lưu target_group_code vào session
+        request.session['current_target_group_code'] = target_group.code
+        logger.info(f"Switch group - User: {user.username}, New group: {target_group.code}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Đã chuyển sang nhóm "{target_group.name}"',
+            'target_group_code': target_group.code
+        })
+        
+    except Exception as e:
+        logger.error(f"Error switching target group: {e}")
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+
+# apps/accounts/views.py
+
+@login_required
+def get_user_target_groups_api(request):
+    """
+    API lấy danh sách nhóm đối tượng mà user đã tham gia
+    """
+    try:
+        user = request.user
+        
+        if not user.phone_number:
+            return JsonResponse({
+                'success': True,
+                'data': []
+            })
+        
+        # Lấy tất cả participant của user
+        participants = SurveyParticipant.objects.filter(
+            user=user,
+            phone=user.phone_number
+        ).order_by('-created_at')
+        
+        groups_data = []
+        seen_group_codes = set()
+        current_group_code = request.session.get('current_target_group_code')
+        
+        for p in participants:
+            if p.target_group_code and p.target_group_code not in seen_group_codes:
+                seen_group_codes.add(p.target_group_code)
+                
+                # Tìm TargetGroup để lấy id
+                target_group = TargetGroup.objects.filter(code=p.target_group_code).first()
+                
+                groups_data.append({
+                    'id': target_group.id if target_group else None,
+                    'code': p.target_group_code,
+                    'name': p.target_group_name or p.target_group_code,
+                    'form_count': len(p.assigned_forms or []),
+                    'is_current': p.target_group_code == current_group_code
+                })
+        
+        logger.info(f"User target groups - User: {user.username}, Groups: {len(groups_data)}")
+        
+        return JsonResponse({
+            'success': True,
+            'data': groups_data
+        })
+    except Exception as e:
+        logger.error(f"Error getting user target groups: {e}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

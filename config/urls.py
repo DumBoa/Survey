@@ -5,14 +5,19 @@ from django.shortcuts import redirect
 from apps.accounts.views import is_admin_user
 
 
+# config/urls.py
+
 def root_redirect(request):
-    """Redirect dựa trên trạng thái đăng nhập và role"""
+    """
+    Redirect dựa trên trạng thái đăng nhập và role
+    """
     if request.user.is_authenticated:
         if is_admin_user(request.user):
             return redirect('/analytics/')
+        # User thường -> vào dashboard
         return redirect('/accounts/survey-dashboard/')
-    # Chưa đăng nhập -> vào trang user login
-    return redirect('/accounts/user-login/')
+    # Chưa đăng nhập -> vào cổng khảo sát
+    return redirect('/accounts/')
 
 
 urlpatterns = [
