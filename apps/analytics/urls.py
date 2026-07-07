@@ -59,4 +59,8 @@ urlpatterns = [
     path('api/organizations/<int:org_id>/update/', views.organization_update_api, name='api_organization_update'),
     path('api/organizations/<int:org_id>/delete/', views.organization_delete_api, name='api_organization_delete'),
     path('api/organizations/options/', views.organization_options_api, name='api_organization_options'),
+    path('api/organizations/stats/', views.organization_stats_api, name='api_organization_stats'),
+    path('api/organizations/bulk-delete/', views.organization_bulk_delete_api, name='api_organization_bulk_delete'),
+    path('api/organizations/<int:org_id>/toggle-status/', views.organization_toggle_status_api, name='api_organization_toggle_status'),
+    path('api/organizations/survey-summary/', views.organization_survey_summary_api, name='api_organization_survey_summary'),
 ]

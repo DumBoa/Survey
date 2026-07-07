@@ -1,368 +1,340 @@
-<!-- apps/analytics/templates/analytics/account_manage.html -->
 {% extends "analytics/dashboard_base.html" %}
 {% load static %}
 
 {% block title %}Quản lý tài khoản{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
-        <h4 class="mb-1 fw-bold text-dark">Quản lý tài khoản</h4>
-        <p class="text-muted mb-0" style="font-size:14px;">Quản lý người dùng và phân quyền trong hệ thống</p>
-    </div>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#accountModal" id="btnAddAccount">
-        <i class="bi bi-plus-lg me-1"></i> Thêm tài khoản
-    </button>
-</div>
-
-<!-- Bộ lọc và Toolbar -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label fw-semibold small text-muted">Tìm kiếm</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" class="form-control form-control-sm border-start-0" 
-                           id="searchInput" placeholder="Tên, tài khoản, email...">
-                </div>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label fw-semibold small text-muted">Đơn vị</label>
-                <select class="form-select form-select-sm" id="filterDepartment">
-                    <option value="">Tất cả</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label fw-semibold small text-muted">Vai trò</label>
-                <select class="form-select form-select-sm" id="filterRole">
-                    <option value="">Tất cả</option>
-                    <option value="admin">Quản trị viên</option>
-                    <option value="manager">Quản lý</option>
-                    <option value="staff">Nhân viên</option>
-                    <option value="viewer">Khách</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label fw-semibold small text-muted">Trạng thái</label>
-                <select class="form-select form-select-sm" id="filterStatus">
-                    <option value="">Tất cả</option>
-                    <option value="active">Hoạt động</option>
-                    <option value="inactive">Đã khóa</option>
-                    <option value="pending">Chờ kích hoạt</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-primary flex-grow-1" id="btnSearch">
-                        <i class="bi bi-search me-1"></i> Tìm kiếm
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary flex-grow-1" id="btnReset">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Toolbar buttons -->
-        <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top">
-            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#accountModal">
-                <i class="bi bi-person-plus me-1"></i> Thêm mới
-            </button>
-            <button class="btn btn-sm btn-outline-success" id="btnImportExcel">
-                <i class="bi bi-file-earmark-excel me-1"></i> Nhập Excel
-            </button>
-            <button class="btn btn-sm btn-outline-success" id="btnExportExcel">
-                <i class="bi bi-download me-1"></i> Xuất Excel
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" id="btnRefresh">
-                <i class="bi bi-arrow-repeat me-1"></i> Làm mới
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" id="btnBulkAction">
-                <i class="bi bi-list-ul me-1"></i> Thao tác hàng loạt
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Bảng danh sách -->
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0" id="accountTable">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width:40px;">
-                            <input type="checkbox" class="form-check-input" id="selectAll">
-                        </th>
-                        <th style="width:50px;">Avatar</th>
-                        <th>Họ tên</th>
-                        <th>Tên đăng nhập</th>
-                        <th>Đơn vị</th>
-                        <th>Chức vụ</th>
-                        <th>Email</th>
-                        <th>Số điện thoại</th>
-                        <th>Nhóm đối tượng</th>
-                        <th style="width:110px;">Trạng thái</th>
-                        <th style="width:140px;">Lần đăng nhập cuối</th>
-                        <th style="width:170px;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="accountTableBody">
-                    <tr>
-                        <td colspan="12" class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Đang tải...</span>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="card-footer bg-white border-top-0 py-3">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span class="text-muted small" id="tableInfo">Đang tải...</span>
-            <div class="d-flex align-items-center gap-3">
-                <nav>
-                    <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
-                </nav>
-                <div class="d-flex align-items-center gap-2">
-                    <span class="text-muted small">Hiển thị</span>
-                    <select class="form-select form-select-sm" style="width:70px;" id="pageSizeSelect">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================
-     MODAL THÊM/SỬA TÀI KHOẢN
-     ============================================ -->
-<div class="modal fade" id="accountModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="accountModalTitle">Thêm tài khoản mới</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="accountForm">
-                    <input type="hidden" id="editAccountId">
-                    
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="accFullName" placeholder="Nguyễn Văn A" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Tên đăng nhập <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="accUsername" placeholder="nguyenvana" required>
-                            <div class="form-text">Chữ thường, không dấu, không khoảng trắng</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="accEmail" placeholder="nguyenvana@company.com" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Số điện thoại</label>
-                            <input type="tel" class="form-control" id="accPhone" placeholder="0909 123 456">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Đơn vị <span class="text-danger">*</span></label>
-                            <select class="form-select" id="accDepartment" required>
-                                <option value="">-- Chọn đơn vị --</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Chức vụ</label>
-                            <input type="text" class="form-control" id="accPosition" placeholder="Quản trị hệ thống">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Vai trò <span class="text-danger">*</span></label>
-                            <select class="form-select" id="accRole" required>
-                                <option value="staff">Nhân viên</option>
-                                <option value="manager">Quản lý</option>
-                                <option value="admin">Quản trị viên</option>
-                                <option value="viewer">Khách</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Trạng thái</label>
-                            <select class="form-select" id="accStatus">
-                                <option value="true">Hoạt động</option>
-                                <option value="false">Đã khóa</option>
-                            </select>
-                        </div>
-                        <div class="col-md-12" id="passwordField">
-                            <label class="form-label fw-semibold">Mật khẩu <span class="text-danger" id="passwordRequired">*</span></label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="accPassword" placeholder="Mật khẩu">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </div>
-                            <div class="form-text">Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường và số</div>
-                        </div>
-                        <!-- ============================================================ -->
-                        <!-- NHÓM ĐỐI TƯỢNG - THÊM VÀO MODAL -->
-                        <!-- ============================================================ -->
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Nhóm đối tượng</label>
-                            <select class="form-select" id="accTargetGroups" multiple style="height:120px;">
-                                <!-- Sẽ được load từ API -->
-                            </select>
-                            <div class="form-text">Giữ Ctrl/Cmd để chọn nhiều nhóm. User sẽ được gán các biểu mẫu từ nhóm này.</div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="btnSaveAccount">
-                    <i class="bi bi-check-lg me-1"></i> Lưu
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================
-     MODAL XÓA TÀI KHOẢN
-     ============================================ -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-danger">Xác nhận xóa</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-0">Bạn có chắc chắn muốn xóa tài khoản <strong id="deleteAccountName"></strong>?</p>
-                <p class="text-muted small mt-1">Hành động này không thể hoàn tác.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="btnConfirmDelete">Xóa</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================
-     MODAL XEM CHI TIẾT
-     ============================================ -->
-<div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Chi tiết tài khoản</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-3">
-                    <div class="avatar-circle bg-primary text-white mx-auto" id="viewAvatar" style="width:80px;height:80px;font-size:28px;display:flex;align-items:center;justify-content:center;">NV</div>
-                    <h5 class="mt-2" id="viewFullName">Nguyễn Văn A</h5>
-                    <span class="badge" id="viewStatus">Hoạt động</span>
-                </div>
-                <div class="row g-2">
-                    <div class="col-4 text-muted">Tên đăng nhập</div>
-                    <div class="col-8 fw-semibold" id="viewUsername">nguyenvana</div>
-                    <div class="col-4 text-muted">Email</div>
-                    <div class="col-8" id="viewEmail">nguyenvana@company.com</div>
-                    <div class="col-4 text-muted">Số điện thoại</div>
-                    <div class="col-8" id="viewPhone">0909 123 456</div>
-                    <div class="col-4 text-muted">Đơn vị</div>
-                    <div class="col-8" id="viewDepartment">Phòng CNTT</div>
-                    <div class="col-4 text-muted">Chức vụ</div>
-                    <div class="col-8" id="viewPosition">Quản trị hệ thống</div>
-                    <div class="col-4 text-muted">Vai trò</div>
-                    <div class="col-8" id="viewRole">Quản trị viên</div>
-                    <div class="col-4 text-muted">Nhóm đối tượng</div>
-                    <div class="col-8" id="viewTargetGroups">-</div>
-                    <div class="col-4 text-muted">Lần đăng nhập cuối</div>
-                    <div class="col-8" id="viewLastLogin">2024-12-20 14:30</div>
-                    <div class="col-4 text-muted">Ngày tạo</div>
-                    <div class="col-8" id="viewDateJoined">2024-01-15 09:00</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================
-     MODAL THAY ĐỔI TRẠNG THÁI
-     ============================================ -->
-<div class="modal fade" id="toggleStatusModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="toggleStatusTitle">Xác nhận thay đổi trạng thái</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-0" id="toggleStatusMessage">Bạn có chắc chắn muốn <strong id="toggleStatusAction">khóa</strong> tài khoản <strong id="toggleStatusName"></strong>?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="btnConfirmToggleStatus">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================
-     MODAL THAO TÁC HÀNG LOẠT
-     ============================================ -->
-<div class="modal fade" id="bulkActionModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thao tác hàng loạt</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-3">Chọn thao tác cho <strong id="bulkCount">0</strong> tài khoản được chọn:</p>
-                <div class="d-grid gap-2">
-                    <button class="btn btn-success" data-action="activate">
-                        <i class="bi bi-check-circle me-2"></i> Kích hoạt
-                    </button>
-                    <button class="btn btn-warning" data-action="deactivate">
-                        <i class="bi bi-lock me-2"></i> Khóa
-                    </button>
-                    <button class="btn btn-danger" data-action="delete">
-                        <i class="bi bi-trash me-2"></i> Xóa
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================
-     TOAST NOTIFICATION
-     ============================================ -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
-    <div id="toastNotification" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body" id="toastMessage">
-                <i class="bi bi-check-circle-fill me-2"></i> Thao tác thành công!
-            </div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-.avatar-circle {
+/* ============================================
+   CSS VARIABLES & RESET - Same as org page
+   ============================================ */
+:root {
+    --primary: #2563EB;
+    --primary-light: #DBEAFE;
+    --primary-dark: #1D4ED8;
+    --bg: #F8FAFC;
+    --card: #FFFFFF;
+    --text: #111827;
+    --text-secondary: #6B7280;
+    --border: #E5E7EB;
+    --border-light: #F1F5F9;
+    --success: #16A34A;
+    --success-light: #DCFCE7;
+    --warning: #F59E0B;
+    --warning-light: #FEF3C7;
+    --danger: #DC2626;
+    --danger-light: #FEF2F2;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+    --shadow-lg: 0 4px 16px rgba(16,24,40,.08), 0 2px 4px rgba(16,24,40,.04);
+    --shadow-xl: 0 20px 50px rgba(16,24,40,.18);
+    --transition: all .2s cubic-bezier(.4,0,.2,1);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Page header */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.page-header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--text);
+    letter-spacing: -.02em;
+}
+.page-header-left p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Stats cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+.stat-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+.stat-card.active {
+    border-color: var(--primary);
+    background: #EFF6FF;
+}
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+}
+.stat-icon.blue { background: #DBEAFE; color: #2563EB; }
+.stat-icon.green { background: #DCFCE7; color: #16A34A; }
+.stat-icon.amber { background: #FEF3C7; color: #F59E0B; }
+.stat-icon.red { background: #FEE2E2; color: #DC2626; }
+.stat-icon.purple { background: #EDE9FE; color: #7C3AED; }
+.stat-info h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    color: var(--text);
+}
+.stat-info p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Main card */
+.main-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 200px;
+    flex-wrap: wrap;
+}
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 160px;
+    max-width: 280px;
+}
+.search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+.search-box input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    background: #fff;
+    color: var(--text);
+    transition: var(--transition);
+}
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.search-box input::placeholder { color: #9CA3AF; }
+
+.filter-select {
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+    min-width: 130px;
+    transition: var(--transition);
+}
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    background: #fff;
+    color: var(--text);
+    white-space: nowrap;
+    text-decoration: none;
+}
+.btn:hover { background: #F1F5F9; }
+.btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+}
+.btn-danger:hover { background: #B91C1C; }
+.btn-ghost {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+}
+.btn-ghost:hover { background: #F1F5F9; color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-success {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+}
+.btn-success:hover { background: #15803D; }
+
+/* Bulk action bar */
+.bulk-bar {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: #EFF6FF;
+    border-bottom: 1px solid #BFDBFE;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary);
+}
+.bulk-bar.show { display: flex; }
+.bulk-bar .count { font-weight: 700; }
+
+/* Table */
+.tbl-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+}
+table.data thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 12px 16px;
+    background: #F8FAFC;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+table.data thead th:first-child { padding-left: 20px; }
+table.data thead th:last-child { padding-right: 20px; }
+table.data tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
+    vertical-align: middle;
+    transition: background .15s;
+}
+table.data tbody td:first-child { padding-left: 20px; }
+table.data tbody td:last-child { padding-right: 20px; }
+table.data tbody tr {
+    transition: var(--transition);
+    cursor: pointer;
+}
+table.data tbody tr:hover { background: #F8FAFC; }
+table.data tbody tr:last-child td { border-bottom: none; }
+table.data tbody tr.fade-out {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity .3s, transform .3s;
+}
+
+.chk-cell { width: 40px; text-align: center !important; }
+.chk-cell input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+    margin: 0;
+}
+
+/* User avatar */
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.user-avatar {
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -370,720 +342,1775 @@
     align-items: center;
     justify-content: center;
     font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+}
+.user-avatar:hover::after {
+    content: attr(data-fullname);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+}
+.user-avatar.blue { background: #2563EB; }
+.user-avatar.green { background: #16A34A; }
+.user-avatar.amber { background: #D97706; }
+.user-avatar.red { background: #DC2626; }
+.user-avatar.purple { background: #7C3AED; }
+.user-avatar.teal { background: #0E7490; }
+.user-avatar.pink { background: #DB2777; }
+.user-info { min-width: 0; }
+.user-name {
+    font-weight: 600;
+    color: var(--text);
     font-size: 14px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.user-username {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.badge-active { background: var(--success-light); color: #15803D; }
+.badge-active .dot { background: var(--success); }
+.badge-inactive { background: #F1F5F9; color: #64748B; }
+.badge-inactive .dot { background: #94A3B8; }
+.badge-pending { background: var(--warning-light); color: #92400E; }
+.badge-pending .dot { background: var(--warning); }
+
+/* Role badges */
+.badge-role { font-size: 11px; padding: 2px 8px; }
+.badge-role.admin { background: #FEE2E2; color: #B91C1C; }
+.badge-role.manager { background: #DBEAFE; color: #1D4ED8; }
+.badge-role.staff { background: #F1F5F9; color: #475569; }
+.badge-role.viewer { background: #EDE9FE; color: #6D28D9; }
+
+/* Toggle switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #D1D5DB;
+    border-radius: 22px;
+    transition: var(--transition);
+}
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: #fff;
+    border-radius: 50%;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--success); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Action buttons */
+.action-btns { display: flex; gap: 4px; }
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+.action-btn:hover { background: #F1F5F9; color: var(--text); }
+.action-btn.danger:hover { background: var(--danger-light); color: var(--danger); border-color: #FECACA; }
+.action-btn svg { width: 15px; height: 15px; }
+
+/* Expandable row */
+.expand-row { display: none; }
+.expand-row.show { display: table-row; }
+.expand-row td {
+    padding: 0 !important;
+    background: #FAFBFC;
+    border-bottom: 1px solid var(--border-light);
+}
+.expand-content {
+    padding: 16px 20px 16px 76px;
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+.expand-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.expand-item label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.expand-item span {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+}
+.expand-item .tg-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #F1F5F9;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #475569;
+    margin: 1px 2px;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+.empty-state svg {
+    width: 48px;
+    height: 48px;
+    color: #D1D5DB;
+    margin-bottom: 12px;
+}
+.empty-state h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 0 0 4px; }
+.empty-state p { margin: 0; font-size: 14px; }
+
+/* Skeleton loading */
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+.skeleton-row td { padding: 14px 16px; }
+.skeleton {
+    height: 16px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite;
+}
+.skeleton-sm { width: 60px; height: 12px; }
+.skeleton-md { width: 120px; }
+.skeleton-lg { width: 180px; }
+.skeleton-avatar { width: 36px; height: 36px; border-radius: 50%; }
+
+/* Pagination */
+.pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+.pager-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.pager-left select {
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 13px;
+    background: #fff;
+    color: var(--text);
+    cursor: pointer;
+}
+.pager-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.pager-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.pager-btns { display: flex; gap: 3px; }
+.pg {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+.pg:hover:not(:disabled):not(.active) { background: #F1F5F9; border-color: #D1D5DB; }
+.pg.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.pg:disabled { opacity: .4; cursor: not-allowed; }
+.pg svg { width: 14px; height: 14px; }
+
+/* ============================================
+   SLIDE-IN PANEL (Modal)
+   ============================================ */
+.panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.45);
+    z-index: 100;
+    display: none;
+    opacity: 0;
+    transition: opacity .25s;
+}
+.panel-overlay.show { display: block; opacity: 1; }
+.panel {
+    position: fixed;
+    top: 0;
+    right: -680px;
+    width: 100%;
+    max-width: 640px;
+    height: 100vh;
+    background: #fff;
+    z-index: 101;
+    box-shadow: -8px 0 40px rgba(16,24,40,.15);
+    transition: right .35s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    flex-direction: column;
+}
+.panel.show { right: 0; }
+.panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
     flex-shrink: 0;
 }
-</style>
+.panel-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.panel-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+.panel-close:hover { background: #F1F5F9; color: var(--text); }
+.panel-close svg { width: 18px; height: 18px; }
+.panel-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.panel-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
 
+/* Form */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-group label { font-size: 13px; font-weight: 600; color: var(--text); }
+.form-group label .req { color: var(--danger); }
+.form-group .hint { font-size: 12px; color: var(--text-secondary); }
+.form-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    background: #fff;
+    color: var(--text);
+    transition: var(--transition);
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.form-input.error {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220,38,38,.1);
+}
+.form-input::placeholder { color: #9CA3AF; }
+select.form-input { cursor: pointer; }
+.form-error {
+    font-size: 12px;
+    color: var(--danger);
+    display: none;
+}
+.form-error.show { display: block; }
+
+/* Password field */
+.pwd-row {
+    display: flex;
+    gap: 8px;
+}
+.pwd-row .form-input { flex: 1; }
+.pwd-row .btn { flex-shrink: 0; }
+
+/* Target group chips */
+.tg-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.tg-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    background: #fff;
+    color: var(--text-secondary);
+    user-select: none;
+}
+.tg-chip:hover { border-color: var(--primary); color: var(--primary); background: #EFF6FF; }
+.tg-chip.selected {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+/* Avatar preview in form */
+.preview-avatar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.preview-avatar-big {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20px;
+    color: #fff;
+    flex-shrink: 0;
+}
+.preview-avatar-info h4 { margin: 0; font-size: 15px; font-weight: 600; }
+.preview-avatar-info p { margin: 2px 0 0; font-size: 13px; color: var(--text-secondary); }
+
+/* ============================================
+   DELETE MODAL
+   ============================================ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.45);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity .25s;
+}
+.modal-overlay.show { display: flex; opacity: 1; }
+.modal-box {
+    background: #fff;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 420px;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp .3s ease;
+}
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+}
+.modal-head h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.modal-body { padding: 20px 24px; }
+.modal-body p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.modal-body .delete-target { font-weight: 600; color: var(--text); margin-top: 8px; }
+.modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+}
+
+/* ============================================
+   IMPORT MODAL
+   ============================================ */
+.upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.upload-zone:hover { border-color: var(--primary); background: #F8FAFC; }
+.upload-zone svg {
+    width: 40px;
+    height: 40px;
+    color: #D1D5DB;
+    margin-bottom: 8px;
+}
+.upload-zone h4 { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+.upload-zone p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+/* ============================================
+   TOAST
+   ============================================ */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--text);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-xl);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .3s, transform .3s;
+    max-width: 400px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #065F46; }
+.toast.error { background: #7F1D1D; }
+.toast svg { width: 18px; height: 18px; flex-shrink: 0; }
+.toast.success svg { color: #34D399; }
+.toast.error svg { color: #FCA5A5; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1199px) {
+    .hide-tablet { display: none !important; }
+}
+@media (max-width: 767px) {
+    .page-header { flex-direction: column; align-items: flex-start; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat-card { padding: 14px 16px; }
+    .stat-icon { width: 36px; height: 36px; font-size: 16px; }
+    .stat-info h3 { font-size: 18px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .toolbar-left { flex-direction: column; align-items: stretch; }
+    .search-box { max-width: none; }
+    .toolbar-right { margin-left: 0; justify-content: flex-end; }
+    .hide-mobile { display: none !important; }
+    .panel { max-width: 100%; right: -100%; }
+    .form-row { grid-template-columns: 1fr; }
+    .pager { flex-direction: column; align-items: stretch; gap: 8px; }
+    .pager-right { justify-content: space-between; }
+    .expand-content { padding-left: 20px; gap: 12px; flex-direction: column; }
+    
+    /* Card view on mobile */
+    .tbl-wrap table.data { display: none; }
+    .mobile-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+    .mobile-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .mobile-card-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .mobile-card-info { flex: 1; min-width: 0; }
+    .mobile-card-actions { display: flex; gap: 4px; }
+    .mobile-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+    .mobile-card-meta span { display: flex; align-items: center; gap: 4px; }
+}
+@media (min-width: 768px) {
+    .mobile-cards { display: none; }
+}
+
+/* FAB for mobile */
+.fab {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(37,99,235,.35);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: var(--transition);
+}
+.fab:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(37,99,235,.4); }
+.fab svg { width: 24px; height: 24px; }
+@media (max-width: 767px) {
+    .fab { display: flex; }
+}
+</style>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentPage = 1;
-    let pageSize = 10;
-    let totalPages = 1;
-    let deleteTargetId = null;
-    let toggleTargetId = null;
-    let toggleTargetName = null;
-    let toggleTargetStatus = null;
-    let selectedIds = [];
+{% block content %}
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Quản lý tài khoản</h1>
+        <p>Quản lý người dùng và phân quyền trong hệ thống</p>
+    </div>
+</div>
 
-    // ============================================
-    // CSRF TOKEN
-    // ============================================
-    function getCSRFToken() {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, 10) === 'csrftoken=') {
-                    cookieValue = decodeURIComponent(cookie.substring(10));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+<!-- ============================================ -->
+<!-- STATS CARDS -->
+<!-- ============================================ -->
+<div class="stats-grid" id="statsGrid">
+    <div class="stat-card" data-filter="all" onclick="applyAccountFilter('all')" title="Tổng số tài khoản trong hệ thống">
+        <div class="stat-icon blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statTotal">—</h3>
+            <p>Tổng số tài khoản</p>
+        </div>
+    </div>
+    <div class="stat-card" data-filter="active" onclick="applyAccountFilter('status:active')" title="Tài khoản đang hoạt động">
+        <div class="stat-icon green">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statActive">—</h3>
+            <p>Hoạt động</p>
+        </div>
+    </div>
+    <div class="stat-card" data-filter="inactive" onclick="applyAccountFilter('status:inactive')" title="Tài khoản đã khóa">
+        <div class="stat-icon amber">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statInactive">—</h3>
+            <p>Đã khóa</p>
+        </div>
+    </div>
+    <div class="stat-card" data-filter="pending" onclick="applyAccountFilter('status:pending')" title="Tài khoản chờ kích hoạt">
+        <div class="stat-icon purple">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statPending">—</h3>
+            <p>Chờ kích hoạt</p>
+        </div>
+    </div>
+</div>
 
-    // ============================================
-    // TOAST
-    // ============================================
-    const toastEl = document.getElementById('toastNotification');
-    const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+<!-- ============================================ -->
+<!-- MAIN CARD -->
+<!-- ============================================ -->
+<div class="main-card">
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm tên, email..." autocomplete="off">
+            </div>
+            <select class="filter-select" id="filterRole">
+                <option value="">Vai trò</option>
+                <option value="admin">Quản trị viên</option>
+                <option value="manager">Quản lý</option>
+                <option value="staff">Nhân viên</option>
+                <option value="viewer">Khách</option>
+            </select>
+            <select class="filter-select" id="filterStatus">
+                <option value="">Trạng thái</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Đã khóa</option>
+                <option value="pending">Chờ kích hoạt</option>
+            </select>
+        </div>
+        <div class="toolbar-right">
+            <button class="btn btn-ghost btn-sm hide-mobile" onclick="exportAccounts()" title="Xuất Excel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất Excel
+            </button>
+            <button class="btn btn-primary" onclick="openAddAccount()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Thêm tài khoản
+            </button>
+        </div>
+    </div>
 
-    function showToast(message, type = 'success') {
-        const bgClass = type === 'success' ? 'text-bg-success' : 
-                       type === 'danger' ? 'text-bg-danger' : 
-                       type === 'warning' ? 'text-bg-warning' : 'text-bg-info';
-        toastEl.className = `toast align-items-center border-0 ${bgClass}`;
-        document.getElementById('toastMessage').innerHTML = message;
-        toast.show();
-    }
+    <!-- Bulk action bar -->
+    <div class="bulk-bar" id="bulkBar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Đã chọn <span class="count" id="bulkCount">0</span> tài khoản</span>
+        <button class="btn btn-sm" onclick="clearSelection()" style="margin-left:auto;">Bỏ chọn</button>
+        <button class="btn btn-sm btn-success" onclick="bulkAction('activate')">Kích hoạt</button>
+        <button class="btn btn-sm" style="border-color:var(--warning);color:var(--warning);" onclick="bulkAction('deactivate')">Khóa</button>
+        <button class="btn btn-sm btn-danger" onclick="bulkAction('delete')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Xóa
+        </button>
+    </div>
 
-    // ============================================
-    // LOAD TARGET GROUPS
-    // ============================================
-    function loadTargetGroups() {
-        fetch('/analytics/api/target-groups/options/', {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const select = document.getElementById('accTargetGroups');
-                select.innerHTML = data.data.map(g => 
-                    `<option value="${g.id}">${g.code} - ${g.name}</option>`
-                ).join('');
-            }
-        })
-        .catch(error => console.error('Error loading target groups:', error));
-    }
-
-    // ============================================
-    // LOAD ORGANIZATIONS
-    // ============================================
-    function loadOrganizations() {
-        fetch('/analytics/api/accounts/organizations/', {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                renderOrgOptions(data.data);
-            }
-        })
-        .catch(error => console.error('Error loading organizations:', error));
-    }
-
-    function renderOrgOptions(orgs) {
-        // Filter dropdown
-        const filterSelect = document.getElementById('filterDepartment');
-        filterSelect.innerHTML = '<option value="">Tất cả</option>' +
-            orgs.map(o => `<option value="${o.name}">${o.name}</option>`).join('');
-
-        // Modal dropdown
-        const modalSelect = document.getElementById('accDepartment');
-        modalSelect.innerHTML = '<option value="">-- Chọn đơn vị --</option>' +
-            orgs.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
-    }
-
-    // ============================================
-    // LOAD ACCOUNTS
-    // ============================================
-    function loadAccounts() {
-        const search = document.getElementById('searchInput').value;
-        const department = document.getElementById('filterDepartment').value;
-        const role = document.getElementById('filterRole').value;
-        const status = document.getElementById('filterStatus').value;
-
-        let url = `/analytics/api/accounts/?page=${currentPage}&per_page=${pageSize}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        if (department) url += `&department=${encodeURIComponent(department)}`;
-        if (role) url += `&role=${role}`;
-        if (status) url += `&status=${status}`;
-
-        fetch(url, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                renderTable(data);
-            } else {
-                showToast('Lỗi: ' + data.error, 'danger');
-            }
-        })
-        .catch(error => {
-            showToast('Lỗi kết nối: ' + error, 'danger');
-            console.error(error);
-        });
-    }
-
-    // ============================================
-    // RENDER TABLE
-    // ============================================
-    function renderTable(data) {
-        const tbody = document.getElementById('accountTableBody');
-        const items = data.data || [];
-
-        if (items.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="12" class="text-center py-4 text-muted">Không tìm thấy tài khoản nào</td></tr>`;
-        } else {
-            tbody.innerHTML = items.map((user, idx) => {
-                const statusClass = user.status_class || (user.is_active ? 'success' : 'danger');
-                const statusText = user.status || (user.is_active ? 'Hoạt động' : 'Đã khóa');
-                const initials = user.initials || 'NV';
-                const bgColors = ['primary', 'success', 'danger', 'warning', 'info', 'secondary'];
-                const bgColor = bgColors[idx % bgColors.length];
-                
-                const isCurrentUser = user.id === {{ request.user.id }};
-                
-                // Hiển thị nhóm đối tượng
-                let targetGroupsHtml = '-';
-                if (user.target_groups && user.target_groups.length > 0) {
-                    targetGroupsHtml = user.target_groups.map(g => 
-                        `<span class="badge bg-secondary bg-opacity-10 text-secondary me-1">${g.name}</span>`
-                    ).join('');
-                }
-                
-                return `
+    <!-- Table -->
+    <div class="tbl-wrap">
+        <table class="data" id="dataTable">
+            <thead>
                 <tr>
-                    <td>
-                        <input type="checkbox" class="form-check-input row-checkbox" value="${user.id}" ${isCurrentUser ? 'disabled' : ''}>
-                    </td>
-                    <td>
-                        <div class="avatar-circle bg-${bgColor} text-white">${initials}</div>
-                    </td>
-                    <td>
-                        <div class="fw-semibold">${user.full_name}</div>
-                        <div class="text-muted small">@${user.username}</div>
-                    </td>
-                    <td><span class="text-muted">${user.username}</span></td>
-                    <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${user.organization || '-'}</span></td>
-                    <td>${user.position || '-'}</td>
-                    <td>${user.email || '-'}</td>
-                    <td>${user.phone || '-'}</td>
-                    <td>${targetGroupsHtml}</td>
-                    <td>
-                        <span class="badge bg-${statusClass}">${statusText}</span>
-                    </td>
-                    <td class="text-muted small">${user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : '-'}</td>
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <button class="btn btn-outline-primary btn-edit" data-id="${user.id}" title="Sửa">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-outline-info btn-view" data-id="${user.id}" title="Xem">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn ${user.is_active ? 'btn-outline-warning' : 'btn-outline-success'} btn-toggle-status" 
-                                    data-id="${user.id}" 
-                                    data-name="${user.full_name}"
-                                    data-status="${user.is_active}"
-                                    title="${user.is_active ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'}"
-                                    ${isCurrentUser ? 'disabled' : ''}>
-                                <i class="bi ${user.is_active ? 'bi-lock' : 'bi-unlock'}"></i>
-                            </button>
-                            <button class="btn btn-outline-danger btn-delete" data-id="${user.id}" data-name="${user.full_name}" title="Xóa" ${isCurrentUser ? 'disabled' : ''}>
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
+                    <th class="chk-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                    <th>Người dùng</th>
+                    <th>Đơn vị</th>
+                    <th class="hide-tablet">Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th class="hide-tablet">Thao tác</th>
                 </tr>
-            `}).join('');
-        }
+            </thead>
+            <tbody id="tableBody">
+                <!-- Skeleton -->
+                <tr class="skeleton-row">
+                    <td class="chk-cell"><div class="skeleton skeleton-sm" style="margin:0 auto;"></div></td>
+                    <td><div style="display:flex;align-items:center;gap:12px;"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-lg"></div><div class="skeleton skeleton-sm" style="margin-top:6px;"></div></div></div></td>
+                    <td><div class="skeleton skeleton-md"></div></td>
+                    <td class="hide-tablet"><div class="skeleton skeleton-sm"></div></td>
+                    <td><div class="skeleton skeleton-sm"></div></td>
+                    <td class="hide-tablet"><div style="display:flex;gap:4px;"><div class="skeleton" style="width:32px;height:32px;"></div><div class="skeleton" style="width:32px;height:32px;"></div></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                    <td class="chk-cell"><div class="skeleton skeleton-sm" style="margin:0 auto;"></div></td>
+                    <td><div style="display:flex;align-items:center;gap:12px;"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-lg"></div><div class="skeleton skeleton-sm" style="margin-top:6px;"></div></div></div></td>
+                    <td><div class="skeleton skeleton-md"></div></td>
+                    <td class="hide-tablet"><div class="skeleton skeleton-sm"></div></td>
+                    <td><div class="skeleton skeleton-sm"></div></td>
+                    <td class="hide-tablet"><div style="display:flex;gap:4px;"><div class="skeleton" style="width:32px;height:32px;"></div><div class="skeleton" style="width:32px;height:32px;"></div></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                    <td class="chk-cell"><div class="skeleton skeleton-sm" style="margin:0 auto;"></div></td>
+                    <td><div style="display:flex;align-items:center;gap:12px;"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-lg"></div><div class="skeleton skeleton-sm" style="margin-top:6px;"></div></div></div></td>
+                    <td><div class="skeleton skeleton-md"></div></td>
+                    <td class="hide-tablet"><div class="skeleton skeleton-sm"></div></td>
+                    <td><div class="skeleton skeleton-sm"></div></td>
+                    <td class="hide-tablet"><div style="display:flex;gap:4px;"><div class="skeleton" style="width:32px;height:32px;"></div><div class="skeleton" style="width:32px;height:32px;"></div></div></td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- Mobile cards -->
+        <div class="mobile-cards" id="mobileCards"></div>
+    </div>
 
-        // Update info
-        const start = (data.page - 1) * data.per_page + 1;
-        const end = Math.min(data.page * data.per_page, data.total);
-        document.getElementById('tableInfo').textContent = 
-            data.total > 0 ? `Hiển thị ${start}-${end} trên tổng ${data.total}` : 'Không có dữ liệu';
+    <!-- Pagination -->
+    <div class="pager">
+        <div class="pager-left">
+            <label>Hiển thị</label>
+            <select id="perPage" onchange="changePerPage(this.value)">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="all">Tất cả</option>
+            </select>
+            <span>kết quả</span>
+        </div>
+        <div class="pager-right">
+            <span class="pager-info" id="pagerInfo">0 kết quả</span>
+            <div class="pager-btns" id="pagerBtns"></div>
+        </div>
+    </div>
+</div>
 
-        totalPages = data.total_pages || 1;
-        renderPagination(data);
-        
-        selectedIds = [];
-        document.getElementById('selectAll').checked = false;
-    }
+<!-- ============================================ -->
+<!-- SLIDE-IN PANEL: THÊM/SỬA TÀI KHOẢN -->
+<!-- ============================================ -->
+<div class="panel-overlay" id="panelOverlay" onclick="closeAccountPanel(event)"></div>
+<div class="panel" id="formPanel">
+    <div class="panel-head">
+        <h2 id="formTitle">Thêm tài khoản mới</h2>
+        <button type="button" class="panel-close" onclick="closeAccountPanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <form id="accountForm" novalidate onsubmit="return saveAccount(event)">
+        <input type="hidden" id="editAccountId">
+        <div class="panel-body">
+            <!-- Avatar preview -->
+            <div class="preview-avatar-wrap">
+                <div class="preview-avatar-big" id="avatarPreview">NV</div>
+                <div class="preview-avatar-info">
+                    <h4 id="avatarPreviewName">Nguyễn Văn A</h4>
+                    <p id="avatarPreviewRole">Nhân viên</p>
+                </div>
+            </div>
 
-    // ============================================
-    // RENDER PAGINATION
-    // ============================================
-    function renderPagination(data) {
-        const pagination = document.getElementById('pagination');
-        const totalPages = data.total_pages || 1;
-        const currentPage = data.page || 1;
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Họ và tên <span class="req">*</span></label>
+                    <input type="text" class="form-input" id="accFullName" placeholder="Nguyễn Văn A" autocomplete="off">
+                    <div class="form-error" id="errName">Vui lòng nhập họ tên.</div>
+                </div>
+                <div class="form-group">
+                    <label>Tên đăng nhập <span class="req">*</span></label>
+                    <input type="text" class="form-input" id="accUsername" placeholder="nguyenvana" autocomplete="off">
+                    <div class="form-error" id="errUsername">Vui lòng nhập tên đăng nhập.</div>
+                </div>
+            </div>
 
-        let html = '';
-        html += `<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" data-page="${currentPage - 1}">Trước</a>
-        </li>`;
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email <span class="req">*</span></label>
+                    <input type="email" class="form-input" id="accEmail" placeholder="nguyenvana@company.com" autocomplete="off">
+                    <div class="form-error" id="errEmail">Vui lòng nhập email.</div>
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="tel" class="form-input" id="accPhone" placeholder="0909 123 456" autocomplete="off">
+                </div>
+            </div>
 
-        const maxVisible = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-        if (endPage - startPage < maxVisible - 1) {
-            startPage = Math.max(1, endPage - maxVisible + 1);
-        }
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Đơn vị <span class="req">*</span></label>
+                    <select class="form-input" id="accDepartment">
+                        <option value="">-- Chọn đơn vị --</option>
+                    </select>
+                    <div class="form-error" id="errDept">Vui lòng chọn đơn vị.</div>
+                </div>
+                <div class="form-group">
+                    <label>Vai trò <span class="req">*</span></label>
+                    <select class="form-input" id="accRole">
+                        <option value="staff">Nhân viên</option>
+                        <option value="manager">Quản lý</option>
+                        <option value="admin">Quản trị viên</option>
+                        <option value="viewer">Khách</option>
+                    </select>
+                </div>
+            </div>
 
-        if (startPage > 1) {
-            html += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
-            if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-        }
+            <div class="form-group full">
+                <label>Mật khẩu <span class="req" id="passwordRequired">*</span></label>
+                <div class="pwd-row">
+                    <input type="password" class="form-input" id="accPassword" placeholder="Tối thiểu 8 ký tự" autocomplete="new-password">
+                    <button type="button" class="btn btn-sm" onclick="togglePassword()" title="Hiện/Ẩn mật khẩu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button type="button" class="btn btn-sm" onclick="generatePassword()" title="Tạo mật khẩu ngẫu nhiên">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    </button>
+                    <button type="button" class="btn btn-sm" onclick="copyPassword()" title="Sao chép mật khẩu">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    </button>
+                </div>
+                <div class="hint">Tối thiểu 8 ký tự. Để trống nếu không đổi khi sửa.</div>
+                <div class="form-error" id="errPassword">Mật khẩu phải có ít nhất 8 ký tự.</div>
+            </div>
 
-        for (let i = startPage; i <= endPage; i++) {
-            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                <a class="page-link" href="#" data-page="${i}">${i}</a>
-            </li>`;
-        }
+            <div class="form-group full">
+                <label>Trạng thái</label>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="accActive" checked onchange="updateAccountPreview()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span id="accStatusLabel" style="font-size:14px;font-weight:500;">Hoạt động</span>
+                </div>
+            </div>
 
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-            html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
-        }
+            <div class="form-group full">
+                <label>Nhóm đối tượng</label>
+                <div class="hint" style="margin-bottom:4px;">Click để chọn/bỏ chọn nhóm. User sẽ được gán biểu mẫu từ các nhóm này.</div>
+                <div class="tg-chips" id="targetGroupChips">
+                    <span style="color:var(--text-secondary);font-size:13px;">Đang tải...</span>
+                </div>
+            </div>
+        </div>
+        <div class="panel-foot">
+            <button type="button" class="btn" onclick="closeAccountPanel()">Hủy</button>
+            <button type="submit" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Lưu
+            </button>
+        </div>
+    </form>
+</div>
 
-        html += `<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
-            <a class="page-link" href="#" data-page="${currentPage + 1}">Sau</a>
-        </li>`;
+<!-- ============================================ -->
+<!-- DELETE CONFIRM MODAL -->
+<!-- ============================================ -->
+<div class="modal-overlay" id="deleteOverlay" onclick="if(event.target===this)closeDeleteModal()">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h2>Xóa tài khoản</h2>
+            <button type="button" class="panel-close" onclick="closeDeleteModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Bạn có chắc muốn xóa tài khoản này? Hành động này không thể hoàn tác.</p>
+            <p class="delete-target" id="deleteTarget"></p>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" id="deleteConfirm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Xóa
+            </button>
+        </div>
+    </div>
+</div>
 
-        pagination.innerHTML = html;
+<!-- ============================================ -->
+<!-- TOAST CONTAINER -->
+<!-- ============================================ -->
+<div class="toast-container" id="toastContainer"></div>
 
-        pagination.querySelectorAll('a.page-link[data-page]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const page = parseInt(this.dataset.page);
-                if (page && page >= 1 && page <= totalPages) {
-                    currentPage = page;
-                    loadAccounts();
-                }
-            });
-        });
-    }
+<!-- ============================================ -->
+<!-- FAB for mobile -->
+<!-- ============================================ -->
+<button class="fab" onclick="openAddAccount()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
 
-    // ============================================
-    // SAVE ACCOUNT (Create/Update)
-    // ============================================
-    document.getElementById('btnSaveAccount').addEventListener('click', function() {
-        const id = document.getElementById('editAccountId').value;
-        const fullName = document.getElementById('accFullName').value.trim();
-        const username = document.getElementById('accUsername').value.trim().toLowerCase();
-        const email = document.getElementById('accEmail').value.trim();
-        const phone = document.getElementById('accPhone').value.trim();
-        const orgId = document.getElementById('accDepartment').value;
-        const position = document.getElementById('accPosition').value.trim();
-        const role = document.getElementById('accRole').value;
-        const isActive = document.getElementById('accStatus').value === 'true';
-        const password = document.getElementById('accPassword').value;
-        
-        // Lấy danh sách nhóm đối tượng được chọn
-        const targetGroupsSelect = document.getElementById('accTargetGroups');
-        const selectedTargetGroups = Array.from(targetGroupsSelect.selectedOptions).map(opt => parseInt(opt.value));
-
-        if (!fullName) {
-            showToast('Vui lòng nhập họ và tên', 'warning');
-            return;
-        }
-        if (!username) {
-            showToast('Vui lòng nhập tên đăng nhập', 'warning');
-            return;
-        }
-        if (!email) {
-            showToast('Vui lòng nhập email', 'warning');
-            return;
-        }
-        if (!id && (!password || password.length < 8)) {
-            showToast('Mật khẩu phải có ít nhất 8 ký tự', 'warning');
-            return;
-        }
-
-        const data = {
-            full_name: fullName,
-            username: username,
-            email: email,
-            phone: phone,
-            position: position,
-            role: role,
-            is_active: isActive,
-            target_groups: selectedTargetGroups,  // THÊM DÒNG NÀY
-        };
-
-        if (orgId) data.organization_id = parseInt(orgId);
-        if (password) data.password = password;
-
-        const url = id ? 
-            `/analytics/api/accounts/${id}/update/` : 
-            '/analytics/api/accounts/create/';
-        const method = id ? 'PUT' : 'POST';
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(),
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                bootstrap.Modal.getInstance(document.getElementById('accountModal')).hide();
-                showToast(data.message);
-                loadAccounts();
-                resetModal();
-            } else {
-                showToast('Lỗi: ' + data.error, 'danger');
+<script>
+// ============================================
+// CSRF TOKEN
+// ============================================
+function getCSRFToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 10) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring(10));
+                break;
             }
-        })
-        .catch(error => {
-            showToast('Có lỗi xảy ra: ' + error, 'danger');
-        });
-    });
-
-    // ============================================
-    // RESET MODAL
-    // ============================================
-    function resetModal() {
-        document.getElementById('accountForm').reset();
-        document.getElementById('editAccountId').value = '';
-        document.getElementById('accountModalTitle').textContent = 'Thêm tài khoản mới';
-        document.getElementById('accStatus').value = 'true';
-        document.getElementById('passwordRequired').textContent = '*';
-        document.getElementById('accPassword').disabled = false;
-        document.getElementById('accPassword').value = '';
-        // Reset target groups selection
-        const targetGroupsSelect = document.getElementById('accTargetGroups');
-        if (targetGroupsSelect) {
-            Array.from(targetGroupsSelect.options).forEach(opt => opt.selected = false);
         }
     }
+    return cookieValue;
+}
 
-    // ============================================
-    // TOGGLE PASSWORD
-    // ============================================
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        const input = document.getElementById('accPassword');
-        const icon = this.querySelector('i');
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.className = 'bi bi-eye-slash';
+// ============================================
+// STATE
+// ============================================
+let allAccounts = [];
+let editingId = null;
+let deleteTargetId = null;
+let selectedIds = new Set();
+let isLoading = false;
+const currentUserId = {{ request.user.id }};
+
+const state = {
+    search: '',
+    role: '',
+    status: '',
+    page: 1,
+    perPage: 25
+};
+
+const avatarColors = ['blue', 'green', 'purple', 'teal', 'amber', 'red', 'pink'];
+const roleLabels = { admin: 'Quản trị viên', manager: 'Quản lý', staff: 'Nhân viên', viewer: 'Khách' };
+const statusLabels = { active: 'Hoạt động', inactive: 'Đã khóa', pending: 'Chờ kích hoạt' };
+
+// ============================================
+// TOAST
+// ============================================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'success' 
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    toast.innerHTML = icon + '<span>' + message + '</span>';
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ============================================
+// LOAD DATA
+// ============================================
+function loadAccounts() {
+    if (isLoading) return;
+    isLoading = true;
+    showSkeleton(true);
+
+    const params = new URLSearchParams();
+    if (state.search) params.append('search', state.search);
+    if (state.role) params.append('role', state.role);
+    if (state.status) params.append('status', state.status);
+    params.append('page', state.page);
+    params.append('per_page', state.perPage === 'all' ? 10000 : state.perPage);
+
+    fetch(`/analytics/api/accounts/?${params.toString()}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        isLoading = false;
+        showSkeleton(false);
+        if (data.success) {
+            allAccounts = data.data || [];
+            renderTable(data);
+            renderMobileCards(data);
+            loadStats();
         } else {
-            input.type = 'password';
-            icon.className = 'bi bi-eye';
+            showToast('Lỗi: ' + data.error, 'error');
         }
+    })
+    .catch(() => {
+        isLoading = false;
+        showSkeleton(false);
+        showToast('Lỗi kết nối đến máy chủ', 'error');
     });
+}
 
-    // ============================================
-    // SELECT ALL
-    // ============================================
-    document.getElementById('selectAll').addEventListener('change', function() {
-        document.querySelectorAll('.row-checkbox:not([disabled])').forEach(cb => cb.checked = this.checked);
-        updateSelectedIds();
-    });
-
-    document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('row-checkbox') && !e.target.disabled) {
-            updateSelectedIds();
+function loadStats() {
+    // Calculate from allAccounts or make API call
+    const total = allAccounts.length;
+    // We'll compute from the full list - for now just use counts from last API response
+    // A dedicated stats endpoint would be ideal, but we compute client-side for simplicity
+    fetch('/analytics/api/accounts/?per_page=1', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('statTotal').textContent = data.total || 0;
         }
-    });
+    })
+    .catch(() => {});
+    
+    // For individual stats, compute from last loaded data
+    updateStatsFromData();
+}
 
-    function updateSelectedIds() {
-        selectedIds = [];
-        document.querySelectorAll('.row-checkbox:checked:not([disabled])').forEach(cb => {
-            selectedIds.push(parseInt(cb.value));
+function updateStatsFromData() {
+    // If we have allAccounts, compute stats
+    if (allAccounts.length > 0) {
+        let active = 0, inactive = 0, pending = 0;
+        allAccounts.forEach(a => {
+            if (a.is_active && a.last_login) active++;
+            else if (a.is_active && !a.last_login) pending++;
+            else inactive++;
         });
+        document.getElementById('statActive').textContent = active;
+        document.getElementById('statInactive').textContent = inactive;
+        document.getElementById('statPending').textContent = pending;
+    }
+}
+
+function loadOrganizations() {
+    fetch('/analytics/api/accounts/organizations/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('accDepartment');
+            select.innerHTML = '<option value="">-- Chọn đơn vị --</option>' +
+                data.data.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+        }
+    })
+    .catch(() => {});
+}
+
+function loadTargetGroups() {
+    fetch('/analytics/api/target-groups/options/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const container = document.getElementById('targetGroupChips');
+        if (data.success && data.data.length > 0) {
+            container.innerHTML = data.data.map(g => 
+                `<span class="tg-chip" data-id="${g.id}" onclick="toggleTargetGroup(this)">${g.code} - ${g.name}</span>`
+            ).join('');
+        } else {
+            container.innerHTML = '<span style="color:var(--text-secondary);font-size:13px;">Không có nhóm đối tượng nào</span>';
+        }
+    })
+    .catch(() => {
+        document.getElementById('targetGroupChips').innerHTML = '<span style="color:var(--text-secondary);font-size:13px;">Lỗi tải nhóm đối tượng</span>';
+    });
+}
+
+// ============================================
+// SKELETON
+// ============================================
+function showSkeleton(show) {
+    document.querySelectorAll('.skeleton-row').forEach(el => el.style.display = show ? '' : 'none');
+}
+
+// ============================================
+// RENDER TABLE
+// ============================================
+function renderTable(data) {
+    const tbody = document.getElementById('tableBody');
+    const items = data.data || [];
+    document.querySelectorAll('.skeleton-row').forEach(el => el.remove());
+
+    if (items.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                        <h3>Không tìm thấy tài khoản</h3>
+                        <p>Thử thay đổi bộ lọc hoặc nhấn "Thêm tài khoản" để bắt đầu.</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        renderPagination(data);
+        return;
     }
 
-    // ============================================
-    // BULK ACTION
-    // ============================================
-    document.getElementById('btnBulkAction').addEventListener('click', function() {
-        updateSelectedIds();
-        if (selectedIds.length === 0) {
-            showToast('Vui lòng chọn ít nhất một tài khoản', 'warning');
-            return;
-        }
-        document.getElementById('bulkCount').textContent = selectedIds.length;
-        const modal = new bootstrap.Modal(document.getElementById('bulkActionModal'));
-        modal.show();
-    });
+    tbody.innerHTML = items.map((user, idx) => {
+        const initials = user.initials || user.full_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || 'NV';
+        const colorIdx = (user.id || idx) % avatarColors.length;
+        const avatarColor = avatarColors[colorIdx];
+        const isCurrentUser = user.id === currentUserId;
 
-    document.querySelectorAll('#bulkActionModal [data-action]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const action = this.dataset.action;
-            fetch('/analytics/api/accounts/bulk-action/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken(),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    user_ids: selectedIds,
-                    action: action
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                bootstrap.Modal.getInstance(document.getElementById('bulkActionModal')).hide();
-                if (data.success) {
-                    showToast(data.message);
-                    loadAccounts();
-                } else {
-                    showToast('Lỗi: ' + data.error, 'danger');
-                }
-            })
-            .catch(error => {
-                showToast('Có lỗi xảy ra: ' + error, 'danger');
-            });
-        });
-    });
+        const statusBadge = !user.is_active 
+            ? '<span class="badge badge-inactive"><span class="dot"></span>Đã khóa</span>'
+            : (!user.last_login 
+                ? '<span class="badge badge-pending"><span class="dot"></span>Chờ kích hoạt</span>'
+                : '<span class="badge badge-active"><span class="dot"></span>Hoạt động</span>');
 
-    // ============================================
-    // EDIT ACCOUNT
-    // ============================================
-    document.getElementById('accountTableBody').addEventListener('click', function(e) {
-        const editBtn = e.target.closest('.btn-edit');
-        if (editBtn) {
-            const id = editBtn.dataset.id;
-            fetch(`/analytics/api/accounts/${id}/`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const user = data.data;
-                    document.getElementById('editAccountId').value = user.id;
-                    document.getElementById('accFullName').value = user.full_name;
-                    document.getElementById('accUsername').value = user.username;
-                    document.getElementById('accEmail').value = user.email;
-                    document.getElementById('accPhone').value = user.phone || '';
-                    document.getElementById('accDepartment').value = user.organization_id || '';
-                    document.getElementById('accPosition').value = user.position || '';
-                    document.getElementById('accRole').value = user.role || 'staff';
-                    document.getElementById('accStatus').value = user.is_active ? 'true' : 'false';
-                    document.getElementById('accountModalTitle').textContent = 'Sửa tài khoản';
-                    document.getElementById('passwordRequired').textContent = '(để trống nếu không đổi)';
-                    document.getElementById('accPassword').disabled = false;
-                    document.getElementById('accPassword').value = '';
-                    
-                    // Set target groups
-                    const targetGroupsSelect = document.getElementById('accTargetGroups');
-                    if (user.target_groups) {
-                        const targetGroupIds = user.target_groups.map(g => g.id);
-                        Array.from(targetGroupsSelect.options).forEach(opt => {
-                            opt.selected = targetGroupIds.includes(parseInt(opt.value));
-                        });
+        const roleBadge = `<span class="badge badge-role ${user.role || 'staff'}">${roleLabels[user.role] || 'Nhân viên'}</span>`;
+        const checked = selectedIds.has(user.id) ? 'checked' : '';
+
+        return `
+            <tr onclick="toggleExpandRow(this)" data-id="${user.id}">
+                <td class="chk-cell" onclick="event.stopPropagation()">
+                    <input type="checkbox" ${checked} ${isCurrentUser ? 'disabled' : ''} onchange="toggleSelect(${user.id}, this)">
+                </td>
+                <td>
+                    <div class="user-cell">
+                        <div class="user-avatar ${avatarColor}" data-fullname="${user.full_name}">${initials}</div>
+                        <div class="user-info">
+                            <span class="user-name">${user.full_name}</span>
+                            <span class="user-username">@${user.username}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>${user.organization ? `<span style="font-size:13px;color:var(--text);">${user.organization}</span>` : '<span style="color:#9CA3AF;">—</span>'}</td>
+                <td class="hide-tablet">${roleBadge}</td>
+                <td onclick="event.stopPropagation()">
+                    ${isCurrentUser 
+                        ? statusBadge
+                        : `<label class="toggle-switch" onclick="toggleAccountStatus(${user.id}, event)">
+                            <input type="checkbox" ${user.is_active ? 'checked' : ''}>
+                            <span class="toggle-slider"></span>
+                          </label>`
                     }
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('accountModal'));
-                    modal.show();
-                }
-            })
-            .catch(error => {
-                showToast('Không thể tải thông tin tài khoản', 'danger');
-            });
-            return;
+                </td>
+                <td class="hide-tablet" onclick="event.stopPropagation()">
+                    <div class="action-btns">
+                        <button type="button" class="action-btn" onclick="openEditAccount(${user.id})" title="Sửa">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button type="button" class="action-btn danger" onclick="openDeleteAccount(${user.id})" title="Xóa" ${isCurrentUser ? 'disabled' : ''}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr class="expand-row" data-expand="${user.id}">
+                <td colspan="6">
+                    <div class="expand-content">
+                        <div class="expand-item">
+                            <label>Email</label>
+                            <span>${user.email || '—'}</span>
+                        </div>
+                        <div class="expand-item">
+                            <label>Số điện thoại</label>
+                            <span>${user.phone || '—'}</span>
+                        </div>
+                        <div class="expand-item">
+                            <label>Lần đăng nhập cuối</label>
+                            <span>${user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : '—'}</span>
+                        </div>
+                        <div class="expand-item">
+                            <label>Nhóm đối tượng</label>
+                            <span>${user.target_groups_display || '—'}</span>
+                        </div>
+                        <div class="expand-item">
+                            <label>Ngày tạo</label>
+                            <span>${user.date_joined ? new Date(user.date_joined).toLocaleDateString('vi-VN') : '—'}</span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    renderPagination(data);
+    updateBulkBar();
+}
+
+// ============================================
+// MOBILE CARDS
+// ============================================
+function renderMobileCards(data) {
+    const container = document.getElementById('mobileCards');
+    const items = data.data || [];
+    if (items.length === 0) { container.innerHTML = ''; return; }
+
+    container.innerHTML = items.map(user => {
+        const initials = user.initials || user.full_name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || 'NV';
+        const colorIdx = (user.id || 0) % avatarColors.length;
+        const avatarColor = avatarColors[colorIdx];
+        const isCurrentUser = user.id === currentUserId;
+        const statusBadge = !user.is_active 
+            ? '<span class="badge badge-inactive"><span class="dot"></span>Đã khóa</span>'
+            : (!user.last_login 
+                ? '<span class="badge badge-pending"><span class="dot"></span>Chờ kích hoạt</span>'
+                : '<span class="badge badge-active"><span class="dot"></span>Hoạt động</span>');
+        const roleBadge = `<span class="badge badge-role ${user.role || 'staff'}">${roleLabels[user.role] || 'Nhân viên'}</span>`;
+        const checked = selectedIds.has(user.id) ? 'checked' : '';
+
+        return `
+            <div class="mobile-card">
+                <div class="mobile-card-top">
+                    <input type="checkbox" ${checked} ${isCurrentUser ? 'disabled' : ''} onchange="toggleSelect(${user.id}, this)" style="width:16px;height:16px;accent-color:var(--primary);">
+                    <div class="user-avatar ${avatarColor}" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;color:#fff;flex-shrink:0;">${initials}</div>
+                    <div class="mobile-card-info">
+                        <div style="font-weight:600;font-size:14px;">${user.full_name}</div>
+                        <div style="font-size:12px;color:var(--text-secondary);">@${user.username}</div>
+                    </div>
+                    <div class="mobile-card-actions">
+                        <button type="button" class="action-btn" onclick="openEditAccount(${user.id})">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="mobile-card-meta">
+                    <span>${roleBadge}</span>
+                    <span>${statusBadge}</span>
+                    <span>${user.organization || '—'}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
+// EXPAND ROW
+// ============================================
+function toggleExpandRow(tr) {
+    const id = tr.dataset.id;
+    const expandRow = document.querySelector(`tr[data-expand="${id}"]`);
+    if (expandRow) expandRow.classList.toggle('show');
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+function renderPagination(data) {
+    const info = document.getElementById('pagerInfo');
+    const total = data.total || 0;
+    if (total === 0) {
+        info.textContent = '0 kết quả';
+        document.getElementById('pagerBtns').innerHTML = '';
+        return;
+    }
+    const startIdx = (data.page - 1) * data.per_page + 1;
+    const endIdx = Math.min(data.page * data.per_page, total);
+    info.textContent = `Hiển thị ${startIdx}–${endIdx} / ${total} kết quả`;
+
+    const box = document.getElementById('pagerBtns');
+    box.innerHTML = '';
+    const totalPages = data.total_pages || 1;
+
+    const mkBtn = (label, pg, opts = {}) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pg' + (opts.active ? ' active' : '');
+        if (opts.disabled) b.disabled = true;
+        if (opts.icon) {
+            b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="${label === 'prev' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>`;
+        } else {
+            b.textContent = label;
         }
-
-        // View
-        const viewBtn = e.target.closest('.btn-view');
-        if (viewBtn) {
-            const id = viewBtn.dataset.id;
-            fetch(`/analytics/api/accounts/${id}/`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const user = data.data;
-                    document.getElementById('viewFullName').textContent = user.full_name;
-                    document.getElementById('viewUsername').textContent = user.username;
-                    document.getElementById('viewEmail').textContent = user.email || '-';
-                    document.getElementById('viewPhone').textContent = user.phone || '-';
-                    document.getElementById('viewDepartment').textContent = user.organization || '-';
-                    document.getElementById('viewPosition').textContent = user.position || '-';
-                    document.getElementById('viewRole').textContent = user.role_display || 'Nhân viên';
-                    document.getElementById('viewStatus').textContent = user.status || 'Hoạt động';
-                    document.getElementById('viewStatus').className = `badge bg-${user.status_class || 'success'}`;
-                    
-                    // Hiển thị nhóm đối tượng
-                    if (user.target_groups && user.target_groups.length > 0) {
-                        document.getElementById('viewTargetGroups').innerHTML = user.target_groups.map(g => 
-                            `<span class="badge bg-secondary bg-opacity-10 text-secondary me-1">${g.name}</span>`
-                        ).join('');
-                    } else {
-                        document.getElementById('viewTargetGroups').textContent = '-';
-                    }
-                    
-                    document.getElementById('viewLastLogin').textContent = user.last_login ? new Date(user.last_login).toLocaleString('vi-VN') : '-';
-                    document.getElementById('viewDateJoined').textContent = user.date_joined ? new Date(user.date_joined).toLocaleString('vi-VN') : '-';
-                    
-                    const initials = user.initials || 'NV';
-                    document.getElementById('viewAvatar').textContent = initials;
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('viewModal'));
-                    modal.show();
-                }
-            })
-            .catch(error => {
-                showToast('Không thể tải thông tin tài khoản', 'danger');
-            });
-            return;
+        if (!opts.disabled && !opts.active) {
+            b.addEventListener('click', () => { state.page = pg; loadAccounts(); });
         }
+        box.appendChild(b);
+    };
 
-        // Toggle Status
-        const toggleBtn = e.target.closest('.btn-toggle-status');
-        if (toggleBtn) {
-            if (toggleBtn.disabled) {
-                showToast('Bạn không thể thay đổi trạng thái tài khoản của chính mình', 'warning');
-                return;
-            }
-            toggleTargetId = parseInt(toggleBtn.dataset.id);
-            toggleTargetName = toggleBtn.dataset.name;
-            toggleTargetStatus = toggleBtn.dataset.status === 'true';
-            
-            const action = toggleTargetStatus ? 'khóa' : 'kích hoạt';
-            const actionIcon = toggleTargetStatus ? '🔒' : '🔓';
-            
-            document.getElementById('toggleStatusName').textContent = toggleTargetName;
-            document.getElementById('toggleStatusAction').textContent = action;
-            document.getElementById('toggleStatusMessage').innerHTML = 
-                `Bạn có chắc chắn muốn <strong>${action}</strong> tài khoản <strong>${toggleTargetName}</strong>?`;
-            document.getElementById('toggleStatusTitle').textContent = 
-                `${actionIcon} ${action.charAt(0).toUpperCase() + action.slice(1)} tài khoản`;
-            
-            const modal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
-            modal.show();
-            return;
-        }
+    mkBtn('prev', state.page - 1, { disabled: state.page <= 1, icon: true });
+    const maxVisible = 5;
+    let start = Math.max(1, state.page - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    if (start > 1) { mkBtn('1', 1); if (start > 2) { const d = document.createElement('span'); d.className = 'pg'; d.style.border = 'none'; d.style.background = 'none'; d.textContent = '...'; box.appendChild(d); } }
+    for (let p = start; p <= end; p++) mkBtn(String(p), p, { active: p === state.page });
+    if (end < totalPages) { if (end < totalPages - 1) { const d = document.createElement('span'); d.className = 'pg'; d.style.border = 'none'; d.style.background = 'none'; d.textContent = '...'; box.appendChild(d); } mkBtn(String(totalPages), totalPages); }
+    mkBtn('next', state.page + 1, { disabled: state.page >= totalPages, icon: true });
+}
 
-        // Delete
-        const delBtn = e.target.closest('.btn-delete');
-        if (delBtn) {
-            if (delBtn.disabled) {
-                showToast('Bạn không thể xóa tài khoản của chính mình', 'warning');
-                return;
-            }
-            deleteTargetId = parseInt(delBtn.dataset.id);
-            document.getElementById('deleteAccountName').textContent = delBtn.dataset.name;
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        }
-    });
+// ============================================
+// FILTERS
+// ============================================
+function applyAccountFilter(filter) {
+    document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    
+    if (filter === 'all') { state.role = ''; state.status = ''; }
+    else if (filter.startsWith('status:')) { state.status = filter.split(':')[1]; state.role = ''; }
+    else if (filter.startsWith('role:')) { state.role = filter.split(':')[1]; state.status = ''; }
+    
+    // Sync dropdowns
+    document.getElementById('filterRole').value = state.role;
+    document.getElementById('filterStatus').value = state.status;
+    
+    state.page = 1;
+    loadAccounts();
+}
 
-    // ============================================
-    // CONFIRM TOGGLE STATUS
-    // ============================================
-    document.getElementById('btnConfirmToggleStatus').addEventListener('click', function() {
-        if (!toggleTargetId) return;
-        
-        const newStatus = !toggleTargetStatus;
-        
-        fetch(`/analytics/api/accounts/${toggleTargetId}/update/`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(),
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({
-                is_active: newStatus
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            bootstrap.Modal.getInstance(document.getElementById('toggleStatusModal')).hide();
-            if (data.success) {
-                const action = newStatus ? 'kích hoạt' : 'khóa';
-                showToast(`Đã ${action} tài khoản "${toggleTargetName}" thành công!`);
-                loadAccounts();
-            } else {
-                showToast('Lỗi: ' + data.error, 'danger');
-            }
-            toggleTargetId = null;
-        })
-        .catch(error => {
-            showToast('Có lỗi xảy ra: ' + error, 'danger');
-            toggleTargetId = null;
-        });
-    });
-
-    // Reset toggle modal khi đóng
-    document.getElementById('toggleStatusModal').addEventListener('hidden.bs.modal', function() {
-        toggleTargetId = null;
-    });
-
-    // ============================================
-    // CONFIRM DELETE
-    // ============================================
-    document.getElementById('btnConfirmDelete').addEventListener('click', function() {
-        if (!deleteTargetId) return;
-        
-        fetch(`/analytics/api/accounts/${deleteTargetId}/delete/`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRFToken': getCSRFToken(),
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-            if (data.success) {
-                showToast(data.message);
-                loadAccounts();
-            } else {
-                showToast('Lỗi: ' + data.error, 'danger');
-            }
-        })
-        .catch(error => {
-            showToast('Có lỗi xảy ra: ' + error, 'danger');
-        });
-    });
-
-    // ============================================
-    // SEARCH & FILTER
-    // ============================================
-    document.getElementById('btnSearch').addEventListener('click', function() {
-        currentPage = 1;
+// Search
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        state.search = this.value;
+        state.page = 1;
         loadAccounts();
-    });
+    }, 300);
+});
 
-    document.getElementById('btnReset').addEventListener('click', function() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('filterDepartment').value = '';
-        document.getElementById('filterRole').value = '';
-        document.getElementById('filterStatus').value = '';
-        currentPage = 1;
-        loadAccounts();
-    });
+// Filter dropdowns
+document.getElementById('filterRole').addEventListener('change', function() {
+    state.role = this.value;
+    state.page = 1;
+    loadAccounts();
+});
+document.getElementById('filterStatus').addEventListener('change', function() {
+    state.status = this.value;
+    state.page = 1;
+    loadAccounts();
+});
 
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            document.getElementById('btnSearch').click();
+// Per page
+function changePerPage(val) {
+    state.perPage = val;
+    state.page = 1;
+    loadAccounts();
+}
+
+// ============================================
+// SELECTION
+// ============================================
+function toggleSelect(id, checkbox) {
+    if (id === currentUserId) return;
+    if (checkbox.checked) selectedIds.add(id);
+    else { selectedIds.delete(id); document.getElementById('selectAll').checked = false; }
+    updateBulkBar();
+}
+
+function toggleSelectAll(checkbox) {
+    if (checkbox.checked) {
+        allAccounts.forEach(u => { if (u.id !== currentUserId) selectedIds.add(u.id); });
+    } else { selectedIds.clear(); }
+    document.querySelectorAll('#tableBody .chk-cell input[type=checkbox]:not([disabled])').forEach(cb => cb.checked = checkbox.checked);
+    updateBulkBar();
+}
+
+function clearSelection() {
+    selectedIds.clear();
+    document.getElementById('selectAll').checked = false;
+    document.querySelectorAll('#tableBody .chk-cell input[type=checkbox]').forEach(cb => cb.checked = false);
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    const bar = document.getElementById('bulkBar');
+    document.getElementById('bulkCount').textContent = selectedIds.size;
+    bar.classList.toggle('show', selectedIds.size > 0);
+}
+
+// ============================================
+// TOGGLE STATUS
+// ============================================
+function toggleAccountStatus(id, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (id === currentUserId) { showToast('Bạn không thể thay đổi trạng thái của chính mình', 'error'); return; }
+
+    fetch(`/analytics/api/accounts/${id}/update/`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ is_active: !event.currentTarget.querySelector('input').checked })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            loadAccounts();
+        } else {
+            showToast(data.error || 'Có lỗi xảy ra', 'error');
+            loadAccounts();
         }
-    });
+    })
+    .catch(() => { showToast('Lỗi kết nối', 'error'); loadAccounts(); });
+}
 
-    document.getElementById('pageSizeSelect').addEventListener('change', function() {
-        pageSize = parseInt(this.value);
-        currentPage = 1;
-        loadAccounts();
-    });
-
-    // ============================================
-    // REFRESH
-    // ============================================
-    document.getElementById('btnRefresh').addEventListener('click', function() {
-        loadAccounts();
-        showToast('Đã làm mới dữ liệu', 'info');
-    });
-
-    // ============================================
-    // IMPORT / EXPORT (placeholder)
-    // ============================================
-    document.getElementById('btnImportExcel').addEventListener('click', function() {
-        showToast('Tính năng nhập Excel đang phát triển', 'info');
-    });
-
-    document.getElementById('btnExportExcel').addEventListener('click', function() {
-        showToast('Đang xuất file Excel...', 'info');
-    });
-
-    // ============================================
-    // RESET MODAL KHI ĐÓNG
-    // ============================================
-    document.getElementById('accountModal').addEventListener('hidden.bs.modal', function() {
-        resetModal();
-    });
-
-    // ============================================
-    // INIT
-    // ============================================
+// ============================================
+// PANEL - ADD / EDIT
+// ============================================
+function openAddAccount() {
+    editingId = null;
+    document.getElementById('accountForm').reset();
+    document.getElementById('editAccountId').value = '';
+    document.getElementById('formTitle').textContent = 'Thêm tài khoản mới';
+    document.getElementById('accActive').checked = true;
+    document.getElementById('accStatusLabel').textContent = 'Hoạt động';
+    document.getElementById('passwordRequired').textContent = '*';
+    document.getElementById('accPassword').required = true;
+    document.getElementById('accPassword').disabled = false;
+    document.getElementById('accPassword').value = '';
+    clearAccountErrors();
     loadOrganizations();
     loadTargetGroups();
+    updateAccountPreview();
+    openAccountPanel();
+    setTimeout(() => document.getElementById('accFullName').focus(), 350);
+}
+
+function openEditAccount(id) {
+    editingId = id;
+    document.getElementById('formTitle').textContent = 'Sửa tài khoản';
+    document.getElementById('passwordRequired').textContent = '(để trống nếu không đổi)';
+    document.getElementById('accPassword').required = false;
+    clearAccountErrors();
+
+    fetch(`/analytics/api/accounts/${id}/`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const user = data.data;
+            document.getElementById('editAccountId').value = user.id;
+            document.getElementById('accFullName').value = user.full_name;
+            document.getElementById('accUsername').value = user.username;
+            document.getElementById('accEmail').value = user.email;
+            document.getElementById('accPhone').value = user.phone || '';
+            document.getElementById('accDepartment').value = user.organization_id || '';
+            document.getElementById('accRole').value = user.role || 'staff';
+            document.getElementById('accActive').checked = user.is_active;
+            document.getElementById('accStatusLabel').textContent = user.is_active ? 'Hoạt động' : 'Đã khóa';
+            document.getElementById('accPassword').value = '';
+            
+            // Set target groups
+            loadTargetGroups();
+            if (user.target_groups && user.target_groups.length > 0) {
+                const ids = user.target_groups.map(g => g.id);
+                setTimeout(() => {
+                    document.querySelectorAll('.tg-chip').forEach(chip => {
+                        if (ids.includes(parseInt(chip.dataset.id))) {
+                            chip.classList.add('selected');
+                        }
+                    });
+                }, 200);
+            }
+            
+            updateAccountPreview();
+            openAccountPanel();
+            setTimeout(() => document.getElementById('accFullName').focus(), 350);
+        } else {
+            showToast('Không thể tải thông tin tài khoản', 'error');
+        }
+    })
+    .catch(() => showToast('Lỗi kết nối', 'error'));
+}
+
+function openAccountPanel() {
+    document.getElementById('panelOverlay').classList.add('show');
+    document.getElementById('formPanel').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAccountPanel(e) {
+    if (e && e.target !== document.getElementById('panelOverlay')) return;
+    document.getElementById('panelOverlay').classList.remove('show');
+    document.getElementById('formPanel').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// ============================================
+// TARGET GROUP CHIPS
+// ============================================
+let selectedTargetGroups = [];
+
+function toggleTargetGroup(el) {
+    el.classList.toggle('selected');
+}
+
+function getSelectedTargetGroups() {
+    return Array.from(document.querySelectorAll('.tg-chip.selected')).map(chip => parseInt(chip.dataset.id));
+}
+
+// ============================================
+// PASSWORD UTILITIES
+// ============================================
+function togglePassword() {
+    const input = document.getElementById('accPassword');
+    input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function generatePassword() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let pwd = '';
+    for (let i = 0; i < 12; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Ensure at least 1 uppercase, 1 lowercase, 1 number
+    pwd = 'A' + pwd.slice(1);
+    document.getElementById('accPassword').value = pwd;
+    document.getElementById('accPassword').type = 'text';
+    showToast('Đã tạo mật khẩu ngẫu nhiên');
+}
+
+function copyPassword() {
+    const input = document.getElementById('accPassword');
+    if (!input.value) { showToast('Chưa có mật khẩu để sao chép', 'error'); return; }
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+        showToast('Đã sao chép mật khẩu');
+    }).catch(() => {
+        document.execCommand('copy');
+        showToast('Đã sao chép mật khẩu');
+    });
+}
+
+// ============================================
+// ACCOUNT PREVIEW
+// ============================================
+function updateAccountPreview() {
+    const name = document.getElementById('accFullName').value.trim() || 'Nguyễn Văn A';
+    const role = document.getElementById('accRole').value;
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'NV';
+    
+    document.getElementById('avatarPreviewName').textContent = name;
+    document.getElementById('avatarPreviewRole').textContent = roleLabels[role] || 'Nhân viên';
+    document.getElementById('avatarPreview').textContent = initials;
+    
+    document.getElementById('accStatusLabel').textContent = 
+        document.getElementById('accActive').checked ? 'Hoạt động' : 'Đã khóa';
+}
+
+document.getElementById('accFullName').addEventListener('input', updateAccountPreview);
+document.getElementById('accRole').addEventListener('change', updateAccountPreview);
+document.getElementById('accActive').addEventListener('change', updateAccountPreview);
+
+// ============================================
+// SAVE
+// ============================================
+function saveAccount(e) {
+    e.preventDefault();
+    clearAccountErrors();
+
+    const fullName = document.getElementById('accFullName').value.trim();
+    const username = document.getElementById('accUsername').value.trim().toLowerCase();
+    const email = document.getElementById('accEmail').value.trim();
+    const phone = document.getElementById('accPhone').value.trim();
+    const orgId = document.getElementById('accDepartment').value;
+    const role = document.getElementById('accRole').value;
+    const isActive = document.getElementById('accActive').checked;
+    const password = document.getElementById('accPassword').value;
+    const targetGroups = getSelectedTargetGroups();
+
+    let valid = true;
+    if (!fullName) { document.getElementById('errName').classList.add('show'); document.getElementById('accFullName').classList.add('error'); valid = false; }
+    if (!username) { document.getElementById('errUsername').classList.add('show'); document.getElementById('accUsername').classList.add('error'); valid = false; }
+    if (!email) { document.getElementById('errEmail').classList.add('show'); document.getElementById('accEmail').classList.add('error'); valid = false; }
+    if (!orgId) { document.getElementById('errDept').classList.add('show'); document.getElementById('accDepartment').classList.add('error'); valid = false; }
+    if (!editingId && (!password || password.length < 8)) {
+        document.getElementById('errPassword').classList.add('show');
+        document.getElementById('accPassword').classList.add('error');
+        valid = false;
+    }
+    if (!valid) return;
+
+    const data = { full_name: fullName, username, email, phone, role, is_active: isActive, target_groups: targetGroups };
+    if (orgId) data.organization_id = parseInt(orgId);
+    if (password) data.password = password;
+
+    const url = editingId ? `/analytics/api/accounts/${editingId}/update/` : '/analytics/api/accounts/create/';
+    const method = editingId ? 'PUT' : 'POST';
+
+    const submitBtn = document.querySelector('#accountForm .btn-primary');
+    const origText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"/></svg> Đang lưu...';
+    submitBtn.disabled = true;
+
+    fetch(url, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.innerHTML = origText;
+        submitBtn.disabled = false;
+        if (data.success) {
+            closeAccountPanel();
+            showToast(data.message);
+            loadAccounts();
+        } else {
+            showToast(data.error || 'Có lỗi xảy ra', 'error');
+        }
+    })
+    .catch(() => {
+        submitBtn.innerHTML = origText;
+        submitBtn.disabled = false;
+        showToast('Lỗi kết nối', 'error');
+    });
+    return false;
+}
+
+// ============================================
+// DELETE
+// ============================================
+function openDeleteAccount(id) {
+    deleteTargetId = id;
+    const user = allAccounts.find(u => u.id === id);
+    const name = user ? `${user.full_name} (${user.username})` : '';
+    document.getElementById('deleteTarget').textContent = name;
+    document.getElementById('deleteOverlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+    deleteTargetId = null;
+}
+
+document.getElementById('deleteConfirm').addEventListener('click', function() {
+    if (!deleteTargetId) return;
+    if (deleteTargetId === currentUserId) { showToast('Bạn không thể xóa tài khoản của chính mình', 'error'); closeDeleteModal(); return; }
+
+    const btn = this;
+    const origText = btn.innerHTML;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"/></svg> Đang xóa...';
+    btn.disabled = true;
+
+    fetch(`/analytics/api/accounts/${deleteTargetId}/delete/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': getCSRFToken(), 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+        closeDeleteModal();
+        if (data.success) {
+            const row = document.querySelector(`tr[data-id="${deleteTargetId}"]`);
+            if (row) { row.classList.add('fade-out'); setTimeout(() => { loadAccounts(); }, 300); }
+            else loadAccounts();
+            showToast(data.message);
+        } else showToast(data.error || 'Có lỗi xảy ra', 'error');
+        deleteTargetId = null;
+    })
+    .catch(() => {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+        showToast('Lỗi kết nối', 'error');
+        deleteTargetId = null;
+    });
+});
+
+// ============================================
+// BULK ACTIONS
+// ============================================
+function bulkAction(action) {
+    if (selectedIds.size === 0) { showToast('Vui lòng chọn tài khoản', 'error'); return; }
+    
+    const actionLabels = { activate: 'kích hoạt', deactivate: 'khóa', delete: 'xóa' };
+    if (action === 'delete' && !confirm(`Xóa ${selectedIds.size} tài khoản?`)) return;
+    if (action !== 'delete' && !confirm(`${actionLabels[action]} ${selectedIds.size} tài khoản?`)) return;
+
+    fetch('/analytics/api/accounts/bulk-action/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ user_ids: Array.from(selectedIds), action })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            selectedIds.clear();
+            loadAccounts();
+        } else showToast(data.error || 'Có lỗi xảy ra', 'error');
+    })
+    .catch(() => showToast('Lỗi kết nối', 'error'));
+}
+
+// ============================================
+// EXPORT
+// ============================================
+function exportAccounts() {
+    if (allAccounts.length === 0) { showToast('Không có dữ liệu để xuất', 'error'); return; }
+    
+    let csv = '\uFEFFHọ tên,Tên đăng nhập,Email,Điện thoại,Đơn vị,Vai trò,Nhóm đối tượng,Trạng thái,Lần đăng nhập cuối\n';
+    allAccounts.forEach(u => {
+        const role = roleLabels[u.role] || 'Nhân viên';
+        const status = u.is_active ? 'Hoạt động' : 'Đã khóa';
+        const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString('vi-VN') : '';
+        const targetGroups = u.target_groups_display || '';
+        csv += `"${u.full_name}","${u.username}","${u.email || ''}","${u.phone || ''}","${u.organization || ''}","${role}","${targetGroups}","${status}","${lastLogin}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `danh-sach-tai-khoan-${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showToast('Xuất dữ liệu thành công!');
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function clearAccountErrors() {
+    document.querySelectorAll('#accountForm .form-error').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('#accountForm .form-input.error').forEach(el => el.classList.remove('error'));
+}
+
+// Keyboard
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeAccountPanel(); closeDeleteModal(); }
+});
+
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
     loadAccounts();
 });
 </script>

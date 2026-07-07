@@ -1,196 +1,580 @@
-<!-- apps/analytics/templates/analytics/organization_manage.html -->
 {% extends "analytics/dashboard_base.html" %}
 {% load static %}
 
 {% block title %}Quản lý đơn vị{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ============================================
+   CSS VARIABLES & RESET
+   ============================================ */
 :root {
+    --primary: #2563EB;
+    --primary-light: #DBEAFE;
+    --primary-dark: #1D4ED8;
     --bg: #F8FAFC;
     --card: #FFFFFF;
-    --primary: #2563EB;
-    --success: #16A34A;
-    --warning: #F59E0B;
-    --danger: #DC2626;
     --text: #111827;
-    --muted: #6B7280;
+    --text-secondary: #6B7280;
     --border: #E5E7EB;
+    --border-light: #F1F5F9;
+    --success: #16A34A;
+    --success-light: #DCFCE7;
+    --warning: #F59E0B;
+    --warning-light: #FEF3C7;
+    --danger: #DC2626;
+    --danger-light: #FEF2F2;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+    --shadow-lg: 0 4px 16px rgba(16,24,40,.08), 0 2px 4px rgba(16,24,40,.04);
+    --shadow-xl: 0 20px 50px rgba(16,24,40,.18);
+    --transition: all .2s cubic-bezier(.4,0,.2,1);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.list-card {
+/* Level badge colors */
+.lv-city { background: #EDE9FE; color: #7C3AED; }
+.lv-dept { background: #DBEAFE; color: #2563EB; }
+.lv-district { background: #CFFAFE; color: #0E7490; }
+.lv-ward { background: #DCFCE7; color: #16A34A; }
+.lv-unit { background: #FEF3C7; color: #F59E0B; }
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ============================================
+   PAGE HEADER
+   ============================================ */
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.page-header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--text);
+    letter-spacing: -.02em;
+}
+.page-header-left p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* ============================================
+   STATS CARDS
+   ============================================ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.stat-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
     overflow: hidden;
 }
+.stat-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+.stat-card.active {
+    border-color: var(--primary);
+    background: #EFF6FF;
+}
+.stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+}
+.stat-icon.blue { background: #DBEAFE; color: #2563EB; }
+.stat-icon.green { background: #DCFCE7; color: #16A34A; }
+.stat-icon.amber { background: #FEF3C7; color: #F59E0B; }
+.stat-icon.purple { background: #EDE9FE; color: #7C3AED; }
+.stat-icon.teal { background: #CFFAFE; color: #0E7490; }
+.stat-info h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    color: var(--text);
+}
+.stat-info p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ============================================
+   MAIN CARD
+   ============================================ */
+.main-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* ============================================
+   TOOLBAR
+   ============================================ */
 .toolbar {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 20px 24px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
+}
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 200px;
 }
 .search-box {
     position: relative;
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
+    max-width: 360px;
 }
-.search-box i {
+.search-box svg {
     position: absolute;
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    color: var(--muted);
+    width: 16px;
+    height: 16px;
+    color: var(--text-secondary);
+    pointer-events: none;
 }
 .search-box input {
     width: 100%;
-    padding: 9px 12px 9px 38px;
+    padding: 8px 12px 8px 36px;
     border: 1px solid var(--border);
-    border-radius: 9px;
-    font-family: inherit;
-    font-size: 15px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
     background: #fff;
     color: var(--text);
+    transition: var(--transition);
 }
 .search-box input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(37,99,235,.12);
 }
-.filter-select {
-    padding: 9px 12px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    font-family: inherit;
-    font-size: 15px;
-    background: #fff;
-    color: var(--text);
-    cursor: pointer;
-    min-width: 160px;
+.search-box input::placeholder { color: #9CA3AF; }
+
+/* Filter chips */
+.filter-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
 }
-.filter-select:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-.tool-btn {
+.chip {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 9px 16px;
-    border: none;
-    background: var(--primary);
-    border-radius: 9px;
-    color: #fff;
-    font-family: inherit;
-    font-size: 15px;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
+    transition: var(--transition);
+    background: #fff;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    user-select: none;
 }
-.tool-btn:hover {
-    background: #1D4ED8;
+.chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: #EFF6FF;
 }
-.tool-btn i {
-    width: 16px;
-    height: 16px;
+.chip.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
 }
+.chip .chip-close {
+    width: 14px;
+    height: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 10px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: .7;
+}
+.chip.active .chip-close { opacity: 1; }
+.chip .chip-close:hover { opacity: 1; }
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    background: #fff;
+    color: var(--text);
+    white-space: nowrap;
+    text-decoration: none;
+}
+.btn:hover { background: #F1F5F9; }
+.btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+}
+.btn-danger:hover { background: #B91C1C; }
+.btn-ghost {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 6px 10px;
+}
+.btn-ghost:hover { background: #F1F5F9; color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+
+/* Bulk action bar */
+.bulk-bar {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: #EFF6FF;
+    border-bottom: 1px solid #BFDBFE;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary);
+}
+.bulk-bar.show { display: flex; }
+.bulk-bar .count { font-weight: 700; }
+
+/* ============================================
+   TABLE
+   ============================================ */
 .tbl-wrap {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 table.data {
     width: 100%;
     border-collapse: collapse;
-    min-width: 820px;
+    min-width: 900px;
 }
-table.data th {
+table.data thead th {
     text-align: left;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: .03em;
-    padding: 12px 24px;
+    letter-spacing: .04em;
+    padding: 12px 16px;
     background: #F8FAFC;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
-table.data td {
-    padding: 14px 24px;
-    border-bottom: 1px solid var(--border);
-    font-size: 15px;
+table.data thead th:first-child { padding-left: 20px; }
+table.data thead th:last-child { padding-right: 20px; }
+table.data tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
     vertical-align: middle;
+    transition: background .15s;
 }
-table.data tbody tr:hover {
-    background: #F8FAFC;
+table.data tbody td:first-child { padding-left: 20px; }
+table.data tbody td:last-child { padding-right: 20px; }
+table.data tbody tr {
+    transition: var(--transition);
+    cursor: pointer;
 }
-table.data tbody tr:last-child td {
-    border-bottom: none;
+table.data tbody tr:hover { background: #F8FAFC; }
+table.data tbody tr:last-child td { border-bottom: none; }
+table.data tbody tr.fade-out {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity .3s, transform .3s;
 }
+
+/* Checkbox */
+.chk-cell {
+    width: 40px;
+    text-align: center !important;
+}
+.chk-cell input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Unit name */
+.unit-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.unit-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.unit-avatar.city { background: #EDE9FE; }
+.unit-avatar.dept { background: #DBEAFE; }
+.unit-avatar.district { background: #CFFAFE; }
+.unit-avatar.ward { background: #DCFCE7; }
+.unit-avatar.unit { background: #FEF3C7; }
+.unit-info { min-width: 0; }
 .unit-name {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text);
+    font-size: 14px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .unit-code {
-    font-family: monospace;
-    color: var(--muted);
-    font-size: 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'SF Mono', 'Fira Code', monospace;
 }
-.col-stt {
-    color: var(--muted);
-    width: 56px;
-}
-.badge-pill {
+
+/* Badge */
+.badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 12px;
+    padding: 3px 10px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     white-space: nowrap;
 }
-.badge-pill .dot {
-    width: 7px;
-    height: 7px;
+.badge .dot {
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
 }
-.lv-city { background: #EDE9FE; color: #6D28D9; }
-.lv-dept { background: #DBEAFE; color: #1D4ED8; }
-.lv-district { background: #CFFAFE; color: #0E7490; }
-.lv-ward { background: #DCFCE7; color: #15803D; }
-.lv-unit { background: #FEF3C7; color: #B45309; }
-.st-active { background: #DCFCE7; color: #15803D; }
-.st-active .dot { background: var(--success); }
-.st-inactive { background: #F1F5F9; color: #64748B; }
-.st-inactive .dot { background: #94A3B8; }
-.icon-btn {
-    width: 34px;
-    height: 34px;
+.badge-active { background: var(--success-light); color: #15803D; }
+.badge-active .dot { background: var(--success); }
+.badge-inactive { background: #F1F5F9; color: #64748B; }
+.badge-inactive .dot { background: #94A3B8; }
+
+/* Toggle switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #D1D5DB;
+    border-radius: 22px;
+    transition: var(--transition);
+}
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: #fff;
+    border-radius: 50%;
+    transition: var(--transition);
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--success); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* Action buttons */
+.action-btns {
+    display: flex;
+    gap: 4px;
+}
+.action-btn {
+    width: 32px;
+    height: 32px;
     border: 1px solid var(--border);
     background: #fff;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--text);
-    margin-right: 6px;
+    color: var(--text-secondary);
+    transition: var(--transition);
 }
-.icon-btn:hover { background: #F1F5F9; }
-.icon-btn.danger { color: var(--danger); }
-.icon-btn.danger:hover { background: #FEF2F2; }
-.icon-btn i { width: 16px; height: 16px; }
-.empty-row td { text-align: center; color: var(--muted); padding: 44px 24px; font-size: 15px; }
+.action-btn:hover { background: #F1F5F9; color: var(--text); }
+.action-btn.danger:hover { background: var(--danger-light); color: var(--danger); border-color: #FECACA; }
+.action-btn svg { width: 15px; height: 15px; }
 
+/* Expandable row */
+.expand-row {
+    display: none;
+}
+.expand-row.show { display: table-row; }
+.expand-row td {
+    padding: 0 !important;
+    background: #FAFBFC;
+    border-bottom: 1px solid var(--border-light);
+}
+.expand-content {
+    padding: 16px 20px 16px 76px;
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+.expand-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.expand-item label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.expand-item span {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+}
+.empty-state svg {
+    width: 48px;
+    height: 48px;
+    color: #D1D5DB;
+    margin-bottom: 12px;
+}
+.empty-state h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 4px;
+}
+.empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Skeleton loading */
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+.skeleton-row td { padding: 14px 16px; }
+.skeleton {
+    height: 16px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite;
+}
+.skeleton-sm { width: 60px; height: 12px; }
+.skeleton-md { width: 120px; }
+.skeleton-lg { width: 200px; }
+.skeleton-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
 .pager {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 16px 24px;
+    padding: 14px 20px;
     border-top: 1px solid var(--border);
     flex-wrap: wrap;
 }
@@ -199,15 +583,17 @@ table.data tbody tr:last-child td {
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: var(--muted);
+    color: var(--text-secondary);
 }
 .pager-left select {
-    padding: 6px 8px;
+    padding: 5px 8px;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 13px;
     background: #fff;
+    color: var(--text);
+    cursor: pointer;
 }
 .pager-right {
     display: flex;
@@ -216,51 +602,282 @@ table.data tbody tr:last-child td {
 }
 .pager-info {
     font-size: 13px;
-    color: var(--muted);
+    color: var(--text-secondary);
+    white-space: nowrap;
 }
 .pager-btns {
     display: flex;
-    gap: 4px;
+    gap: 3px;
 }
 .pg {
-    min-width: 34px;
-    height: 34px;
+    min-width: 32px;
+    height: 32px;
     padding: 0 8px;
     border: 1px solid var(--border);
     background: #fff;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: var(--transition);
 }
-.pg:hover:not(:disabled) { background: #F1F5F9; }
+.pg:hover:not(:disabled):not(.active) { background: #F1F5F9; border-color: #D1D5DB; }
 .pg.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-.pg:disabled { opacity: .45; cursor: not-allowed; }
+.pg:disabled { opacity: .4; cursor: not-allowed; }
+.pg svg { width: 14px; height: 14px; }
 
-/* Modal */
-.modal-backdrop {
+/* ============================================
+   SLIDE-IN PANEL (Modal)
+   ============================================ */
+.panel-overlay {
     position: fixed;
     inset: 0;
     background: rgba(15,23,42,.45);
-    z-index: 60;
+    z-index: 100;
+    display: none;
+    opacity: 0;
+    transition: opacity .25s;
+}
+.panel-overlay.show {
+    display: block;
+    opacity: 1;
+}
+.panel {
+    position: fixed;
+    top: 0;
+    right: -640px;
+    width: 100%;
+    max-width: 600px;
+    height: 100vh;
+    background: #fff;
+    z-index: 101;
+    box-shadow: -8px 0 40px rgba(16,24,40,.15);
+    transition: right .35s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    flex-direction: column;
+}
+.panel.show { right: 0; }
+.panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.panel-head h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+.panel-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+.panel-close:hover { background: #F1F5F9; color: var(--text); }
+.panel-close svg { width: 18px; height: 18px; }
+.panel-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.panel-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+/* Form fields */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+.form-group label .req { color: var(--danger); }
+.form-group .hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.form-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    background: #fff;
+    color: var(--text);
+    transition: var(--transition);
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.form-input.error {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(220,38,38,.1);
+}
+.form-input::placeholder { color: #9CA3AF; }
+textarea.form-input { resize: vertical; min-height: 80px; }
+select.form-input { cursor: pointer; }
+.form-error {
+    font-size: 12px;
+    color: var(--danger);
+    display: none;
+}
+.form-error.show { display: block; }
+
+/* Level chips (radio style) */
+.level-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.level-chip {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    background: #fff;
+    color: var(--text-secondary);
+    user-select: none;
+}
+.level-chip:hover { border-color: var(--primary); color: var(--primary); }
+.level-chip.selected {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+}
+.level-chip.lv-city.selected { background: #7C3AED; border-color: #7C3AED; color: #fff; }
+.level-chip.lv-dept.selected { background: #2563EB; border-color: #2563EB; color: #fff; }
+.level-chip.lv-district.selected { background: #0E7490; border-color: #0E7490; color: #fff; }
+.level-chip.lv-ward.selected { background: #16A34A; border-color: #16A34A; color: #fff; }
+.level-chip.lv-unit.selected { background: #F59E0B; border-color: #F59E0B; color: #fff; }
+
+/* Toggle in form */
+.toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.toggle-row .toggle-switch { width: 44px; height: 24px; }
+.toggle-row .toggle-slider::before { width: 20px; height: 20px; }
+.toggle-row .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+.toggle-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+/* Live preview */
+.live-preview {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+.live-preview h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 10px;
+}
+.preview-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.preview-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.preview-info { min-width: 0; }
+.preview-name {
+    font-weight: 600;
+    font-size: 14px;
+    display: block;
+}
+.preview-code {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: monospace;
+}
+.preview-badge {
+    margin-left: auto;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ============================================
+   DELETE MODAL
+   ============================================ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.45);
+    z-index: 100;
     display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    opacity: 0;
+    transition: opacity .25s;
 }
-.modal-backdrop.show { display: flex; }
+.modal-overlay.show {
+    display: flex;
+    opacity: 1;
+}
 .modal-box {
     background: #fff;
-    border-radius: 16px;
+    border-radius: var(--radius);
     width: 100%;
-    max-width: 480px;
-    max-height: 92vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 50px rgba(16,24,40,.25);
+    max-width: 420px;
+    box-shadow: var(--shadow-xl);
+    animation: slideUp .3s ease;
+}
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 .modal-head {
     display: flex;
@@ -269,209 +886,301 @@ table.data tbody tr:last-child td {
     padding: 20px 24px;
     border-bottom: 1px solid var(--border);
 }
-.modal-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
-.modal-close {
-    border: none;
-    background: none;
-    cursor: pointer;
-    color: var(--muted);
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-}
-.modal-close:hover { background: #F1F5F9; }
-.modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-.field label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 6px;
-}
-.field .req { color: var(--danger); }
-.field input[type=text], .field select {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    font-family: inherit;
-    font-size: 15px;
-    background: #fff;
-    color: var(--text);
-}
-.field input[type=text]:focus, .field select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-}
-.field input.invalid { border-color: var(--danger); }
-.field-err {
-    color: var(--danger);
-    font-size: 13px;
-    margin-top: 5px;
-    display: none;
-}
-.field-err.show { display: block; }
-.checkbox-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.checkbox-row input {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--primary);
-}
-.checkbox-row label {
-    margin: 0;
-    font-weight: 500;
-    font-size: 15px;
-}
+.modal-head h2 { margin: 0; font-size: 17px; font-weight: 600; }
+.modal-body { padding: 20px 24px; }
+.modal-body p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
+.modal-body .delete-target { font-weight: 600; color: var(--text); margin-top: 8px; }
 .modal-foot {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    padding: 18px 24px;
+    padding: 16px 24px;
     border-top: 1px solid var(--border);
 }
-.btn-ghost {
-    padding: 9px 16px;
-    border: 1px solid var(--border);
-    background: #fff;
-    border-radius: 9px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-}
-.btn-ghost:hover { background: #F1F5F9; }
-.btn-fill {
-    padding: 9px 18px;
-    border: none;
-    background: var(--primary);
-    border-radius: 9px;
-    color: #fff;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-.btn-fill:hover { background: #1D4ED8; }
-.btn-danger {
-    padding: 9px 18px;
-    border: none;
-    background: var(--danger);
-    border-radius: 9px;
-    color: #fff;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-}
-.btn-danger:hover { background: #B91C1C; }
 
-/* Toast */
-.toast-note {
+/* ============================================
+   TOAST
+   ============================================ */
+.toast-container {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: var(--text);
-    color: #fff;
-    padding: 12px 18px;
-    border-radius: 10px;
-    font-size: 14px;
-    box-shadow: 0 8px 24px rgba(16,24,40,.18);
-    z-index: 80;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+}
+.toast {
     display: flex;
     align-items: center;
     gap: 10px;
+    padding: 12px 18px;
+    background: var(--text);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-xl);
+    pointer-events: auto;
     opacity: 0;
     transform: translateY(10px);
-    transition: opacity .25s, transform .25s;
-    pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    max-width: 400px;
 }
-.toast-note.show {
+.toast.show {
     opacity: 1;
     transform: translateY(0);
 }
-.toast-note.error { background: #7F1D1D; }
-.toast-note i { width: 18px; height: 18px; color: #4ADE80; }
-.toast-note.error i { color: #FCA5A5; }
+.toast.success { background: #065F46; }
+.toast.error { background: #7F1D1D; }
+.toast svg { width: 18px; height: 18px; flex-shrink: 0; }
+.toast.success svg { color: #34D399; }
+.toast.error svg { color: #FCA5A5; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1199px) {
+    .hide-tablet { display: none !important; }
+}
+@media (max-width: 767px) {
+    .page-header { flex-direction: column; align-items: flex-start; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .stat-card { padding: 14px 16px; }
+    .stat-icon { width: 36px; height: 36px; font-size: 16px; }
+    .stat-info h3 { font-size: 18px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .toolbar-left { flex-direction: column; }
+    .search-box { max-width: none; }
+    .toolbar-right { margin-left: 0; justify-content: flex-end; }
+    .hide-mobile { display: none !important; }
+    .panel { max-width: 100%; right: -100%; }
+    .pager { flex-direction: column; align-items: stretch; gap: 8px; }
+    .pager-right { justify-content: space-between; }
+    .expand-content { padding-left: 20px; gap: 16px; flex-direction: column; }
+    
+    /* Card view on mobile */
+    .tbl-wrap table.data { display: none; }
+    .mobile-cards { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+    .mobile-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .mobile-card-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .mobile-card-info { flex: 1; min-width: 0; }
+    .mobile-card-actions { display: flex; gap: 4px; }
+    .mobile-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+    .mobile-card-meta span { display: flex; align-items: center; gap: 4px; }
+}
+@media (min-width: 768px) {
+    .mobile-cards { display: none; }
+}
+
+/* FAB for mobile */
+.fab {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    box-shadow: 0 4px 16px rgba(37,99,235,.35);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: var(--transition);
+}
+.fab:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(37,99,235,.4); }
+.fab svg { width: 24px; height: 24px; }
+@media (max-width: 767px) {
+    .fab { display: flex; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-start mb-4">
-    <div>
-        <h4 class="mb-1 fw-bold text-dark">Quản lý đơn vị</h4>
-        <p class="text-muted mb-0" style="font-size:14px;">Quản lý tổ chức, cơ quan, đơn vị trong hệ thống</p>
+<div class="page-header">
+    <div class="page-header-left">
+        <h1>Quản lý đơn vị</h1>
+        <p>Quản lý tổ chức, cơ quan, đơn vị trong hệ thống</p>
     </div>
 </div>
 
-<!-- Danh sách đơn vị -->
-<div class="list-card">
+<!-- ============================================ -->
+<!-- STATS CARDS -->
+<!-- ============================================ -->
+<div class="stats-grid" id="statsGrid">
+    <div class="stat-card" data-filter="all" onclick="applyFilter('all')" title="Tổng số đơn vị trong hệ thống">
+        <div class="stat-icon blue">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statTotal">—</h3>
+            <p>Tổng số đơn vị</p>
+        </div>
+    </div>
+    <div class="stat-card" data-filter="active" onclick="applyFilter('status:active')" title="Đơn vị đang hoạt động">
+        <div class="stat-icon green">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statActive">—</h3>
+            <p>Đang hoạt động</p>
+        </div>
+    </div>
+    <div class="stat-card" data-filter="inactive" onclick="applyFilter('status:inactive')" title="Đơn vị tạm dừng">
+        <div class="stat-icon amber">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statInactive">—</h3>
+            <p>Tạm dừng</p>
+        </div>
+    </div>
+    <div class="stat-card" data-filter="department" onclick="applyFilter('level:department')" title="Đơn vị cấp Sở/Ngành">
+        <div class="stat-icon purple">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statDept">—</h3>
+            <p>Sở / Ngành</p>
+        </div>
+    </div>
+    <div class="stat-card" data-filter="district" onclick="applyFilter('level:district')" title="Đơn vị cấp Quận/Huyện">
+        <div class="stat-icon teal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="stat-info">
+            <h3 id="statDistrict">—</h3>
+            <p>Quận / Huyện</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================ -->
+<!-- MAIN CARD -->
+<!-- ============================================ -->
+<div class="main-card">
     <!-- Toolbar -->
     <div class="toolbar">
-        <div class="search-box">
-            <i class="bi bi-search"></i>
-            <input type="text" id="searchInput" placeholder="Tìm kiếm đơn vị...">
+        <div class="toolbar-left">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo mã, tên, cấp độ..." autocomplete="off">
+            </div>
+            <div class="filter-chips" id="filterChips">
+                <span class="chip active" data-filter="all" onclick="toggleChip(this, 'all')">Tất cả</span>
+                
+                <span class="chip" data-filter="level:department" onclick="toggleChip(this, 'level:department')"><i class="bi bi-building-gear"></i> Sở/Ngành</span>
+                <span class="chip" data-filter="level:district" onclick="toggleChip(this, 'level:district')"><i class="bi bi-geo-alt"></i> Quận/Huyện</span>
+                <span class="chip" data-filter="level:ward" onclick="toggleChip(this, 'level:ward')"><i class="bi bi-house-door"></i> Xã/Phường</span>
+                
+                <span class="chip" data-filter="status:active" onclick="toggleChip(this, 'status:active')"><i class="bi bi-circle-fill" style="font-size:8px;"></i> Hoạt động</span>
+                <span class="chip" data-filter="status:inactive" onclick="toggleChip(this, 'status:inactive')"><i class="bi bi-circle" style="font-size:8px;"></i> Tạm dừng</span>
+            </div>
         </div>
-        <select class="filter-select" id="levelFilter">
-            <option value="all">Tất cả cấp độ</option>
-            <option value="city">Thành phố</option>
-            <option value="department">Sở / Ngành</option>
-            <option value="district">Quận / Huyện</option>
-            <option value="ward">Xã / Phường</option>
-            <option value="unit">Đơn vị sự nghiệp</option>
-        </select>
-        <select class="filter-select" id="statusFilter">
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Tạm dừng</option>
-        </select>
-        <button class="tool-btn" id="addBtn">
-            <i class="bi bi-plus-lg"></i> Thêm đơn vị
+        <div class="toolbar-right">
+            <button class="btn btn-ghost btn-sm hide-mobile" onclick="exportExcel()" title="Xuất Excel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất Excel
+            </button>
+            <button class="btn btn-primary" onclick="openAdd()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Thêm đơn vị
+            </button>
+        </div>
+    </div>
+
+    <!-- Bulk action bar -->
+    <div class="bulk-bar" id="bulkBar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Đã chọn <span class="count" id="bulkCount">0</span> đơn vị</span>
+        <button class="btn btn-sm" onclick="clearSelection()" style="margin-left:auto;">Bỏ chọn</button>
+        <button class="btn btn-sm btn-danger" onclick="bulkDelete()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Xóa đã chọn
         </button>
     </div>
 
-    <!-- Bảng -->
+    <!-- Table -->
     <div class="tbl-wrap">
-        <table class="data">
+        <table class="data" id="dataTable">
             <thead>
                 <tr>
-                    <th class="col-stt">STT</th>
-                    <th>Mã</th>
-                    <th>Tên đơn vị</th>
+                    <th class="chk-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                    <th>Đơn vị</th>
                     <th>Cấp độ</th>
-                    <th>Đơn vị cha</th>
+                    <th class="hide-tablet">Đơn vị cha</th>
                     <th>Trạng thái</th>
-                    <th>Thao tác</th>
+                    <th class="hide-tablet">Thao tác</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <tr class="empty-row">
-                    <td colspan="7" class="text-center py-4 text-muted">Đang tải dữ liệu...</td>
+                <!-- Skeleton loading -->
+                <tr class="skeleton-row" id="skeletonRow">
+                    <td class="chk-cell"><div class="skeleton skeleton-sm" style="margin:0 auto;"></div></td>
+                    <td><div style="display:flex;align-items:center;gap:12px;"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-lg"></div><div class="skeleton skeleton-sm" style="margin-top:6px;"></div></div></div></td>
+                    <td><div class="skeleton skeleton-md"></div></td>
+                    <td class="hide-tablet"><div class="skeleton skeleton-md"></div></td>
+                    <td><div class="skeleton skeleton-sm"></div></td>
+                    <td class="hide-tablet"><div style="display:flex;gap:4px;"><div class="skeleton" style="width:32px;height:32px;"></div><div class="skeleton" style="width:32px;height:32px;"></div></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                    <td class="chk-cell"><div class="skeleton skeleton-sm" style="margin:0 auto;"></div></td>
+                    <td><div style="display:flex;align-items:center;gap:12px;"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-lg"></div><div class="skeleton skeleton-sm" style="margin-top:6px;"></div></div></div></td>
+                    <td><div class="skeleton skeleton-md"></div></td>
+                    <td class="hide-tablet"><div class="skeleton skeleton-md"></div></td>
+                    <td><div class="skeleton skeleton-sm"></div></td>
+                    <td class="hide-tablet"><div style="display:flex;gap:4px;"><div class="skeleton" style="width:32px;height:32px;"></div><div class="skeleton" style="width:32px;height:32px;"></div></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                    <td class="chk-cell"><div class="skeleton skeleton-sm" style="margin:0 auto;"></div></td>
+                    <td><div style="display:flex;align-items:center;gap:12px;"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-lg"></div><div class="skeleton skeleton-sm" style="margin-top:6px;"></div></div></div></td>
+                    <td><div class="skeleton skeleton-md"></div></td>
+                    <td class="hide-tablet"><div class="skeleton skeleton-md"></div></td>
+                    <td><div class="skeleton skeleton-sm"></div></td>
+                    <td class="hide-tablet"><div style="display:flex;gap:4px;"><div class="skeleton" style="width:32px;height:32px;"></div><div class="skeleton" style="width:32px;height:32px;"></div></div></td>
                 </tr>
             </tbody>
         </table>
+        <!-- Mobile cards -->
+        <div class="mobile-cards" id="mobileCards"></div>
     </div>
 
-    <!-- Phân trang -->
+    <!-- Pagination -->
     <div class="pager">
         <div class="pager-left">
-            <label>Số dòng mỗi trang:</label>
-            <select id="perPage">
+            <label>Hiển thị</label>
+            <select id="perPage" onchange="changePerPage(this.value)">
+                <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="25" selected>25</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
+                <option value="all">Tất cả</option>
             </select>
+            <span>kết quả</span>
         </div>
         <div class="pager-right">
             <span class="pager-info" id="pagerInfo">0 kết quả</span>
@@ -481,95 +1190,115 @@ table.data tbody tr:last-child td {
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL THÊM/SỬA ĐƠN VỊ -->
+<!-- SLIDE-IN PANEL: THÊM/SỬA ĐƠN VỊ -->
 <!-- ============================================ -->
-<div class="modal-backdrop" id="formModal">
-    <div class="modal-box">
-        <div class="modal-head">
-            <h2 id="formTitle">Thêm đơn vị mới</h2>
-            <button type="button" class="modal-close" id="formClose">
-                <i class="bi bi-x-lg"></i>
+<div class="panel-overlay" id="panelOverlay" onclick="closePanel(event)"></div>
+<div class="panel" id="formPanel">
+    <div class="panel-head">
+        <h2 id="formTitle">Thêm đơn vị mới</h2>
+        <button type="button" class="panel-close" onclick="closePanel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <form id="unitForm" novalidate onsubmit="return saveUnit(event)">
+        <div class="panel-body">
+            <div class="form-group">
+                <label>Mã đơn vị <span class="req">*</span></label>
+                <input type="text" class="form-input" id="fCode" placeholder="Để trống để tự động tạo (VD: DEPT-001)" autocomplete="off">
+                <div class="form-error" id="errCode">Vui lòng nhập mã đơn vị.</div>
+            </div>
+            <div class="form-group">
+                <label>Tên đơn vị <span class="req">*</span></label>
+                <input type="text" class="form-input" id="fName" placeholder="VD: Sở Nội vụ, UBND Quận 1..." autocomplete="off">
+                <div class="form-error" id="errName">Vui lòng nhập tên đơn vị.</div>
+            </div>
+            <div class="form-group">
+                <label>Cấp độ <span class="req">*</span></label>
+                <div class="level-chips" id="levelChips">
+                    
+                    <span class="level-chip lv-dept" data-value="department" onclick="selectLevel(this)"><i class="bi bi-building-gear"></i> Sở / Ngành</span>
+                    <span class="level-chip lv-district" data-value="district" onclick="selectLevel(this)"><i class="bi bi-geo-alt"></i> Quận / Huyện</span>
+                    <span class="level-chip lv-ward" data-value="ward" onclick="selectLevel(this)"><i class="bi bi-house-door"></i> Xã / Phường</span>
+                    <span class="level-chip lv-unit" data-value="unit" onclick="selectLevel(this)"><i class="bi bi-tools"></i> Đơn vị sự nghiệp</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Đơn vị cha</label>
+                <select class="form-input" id="fParent">
+                    <option value="">-- Không có --</option>
+                </select>
+                <div class="hint">Chọn đơn vị cấp trên nếu có</div>
+            </div>
+            <div class="form-group">
+                <label>Trạng thái</label>
+                <div class="toggle-row">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="fActive" checked onchange="updatePreview()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label" id="statusLabel">Hoạt động</span>
+                </div>
+            </div>
+            <div class="live-preview">
+                <h4>Xem trước</h4>
+                <div class="preview-card" id="previewCard">
+                    <div class="preview-avatar" id="previewAvatar" style="background:#DBEAFE;"><i class="bi bi-building-gear"></i></div>
+                    <div class="preview-info">
+                        <span class="preview-name" id="previewName">Tên đơn vị</span>
+                        <span class="preview-code" id="previewCode">MÃ-ĐƠN-VỊ</span>
+                    </div>
+                    <span class="preview-badge badge-active" id="previewBadge"><span class="dot"></span>Hoạt động</span>
+                </div>
+            </div>
+        </div>
+        <div class="panel-foot">
+            <button type="button" class="btn" onclick="closePanel()">Hủy</button>
+            <button type="submit" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Lưu
             </button>
         </div>
-        <form id="unitForm" novalidate>
-            <div class="modal-body">
-                <div class="field">
-                    <label>Mã đơn vị <span class="req">*</span></label>
-                    <input type="text" id="fCode" placeholder="VD: DEPT-001">
-                    <div class="field-err" id="errCode">Vui lòng nhập mã đơn vị.</div>
-                </div>
-                <div class="field">
-                    <label>Tên đơn vị <span class="req">*</span></label>
-                    <input type="text" id="fName" placeholder="VD: Sở Nội vụ">
-                    <div class="field-err" id="errName">Vui lòng nhập tên đơn vị.</div>
-                </div>
-                <div class="field">
-                    <label>Cấp độ <span class="req">*</span></label>
-                    <select id="fLevel">
-                        <option value="city">Thành phố</option>
-                        <option value="department">Sở / Ngành</option>
-                        <option value="district">Quận / Huyện</option>
-                        <option value="ward">Xã / Phường</option>
-                        <option value="unit">Đơn vị sự nghiệp</option>
-                    </select>
-                </div>
-                <div class="field">
-                    <label>Đơn vị cha</label>
-                    <select id="fParent">
-                        <option value="">-- Không có --</option>
-                    </select>
-                </div>
-                <div class="checkbox-row">
-                    <input type="checkbox" id="fActive" checked>
-                    <label for="fActive">Hoạt động</label>
-                </div>
-            </div>
-            <div class="modal-foot">
-                <button type="button" class="btn-ghost" id="formCancel">Hủy</button>
-                <button type="submit" class="btn-fill">
-                    <i class="bi bi-check-lg"></i> Lưu
-                </button>
-            </div>
-        </form>
-    </div>
+    </form>
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL XÓA ĐƠN VỊ -->
+<!-- DELETE CONFIRM MODAL -->
 <!-- ============================================ -->
-<div class="modal-backdrop" id="deleteModal">
-    <div class="modal-box" style="max-width:400px;">
+<div class="modal-overlay" id="deleteOverlay" onclick="if(event.target===this)closeDeleteModal()">
+    <div class="modal-box">
         <div class="modal-head">
             <h2>Xóa đơn vị</h2>
-            <button type="button" class="modal-close" id="deleteClose">
-                <i class="bi bi-x-lg"></i>
+            <button type="button" class="panel-close" onclick="closeDeleteModal()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
         <div class="modal-body">
-            <p style="margin:0; color:var(--muted);">Bạn có chắc muốn xóa đơn vị này? Hành động không thể hoàn tác.</p>
-            <p id="deleteTarget" style="margin:8px 0 0; font-weight:600;"></p>
+            <p>Bạn có chắc muốn xóa đơn vị này? Hành động này không thể hoàn tác.</p>
+            <p class="delete-target" id="deleteTarget"></p>
         </div>
         <div class="modal-foot">
-            <button type="button" class="btn-ghost" id="deleteCancel">Hủy</button>
-            <button type="button" class="btn-danger" id="deleteConfirm">
-                <i class="bi bi-trash3"></i> Xóa
+            <button type="button" class="btn" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" id="deleteConfirm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Xóa
             </button>
         </div>
     </div>
 </div>
 
-<!-- Toast -->
-<div class="toast-note" id="toast">
-    <i class="bi bi-check-circle-fill"></i>
-    <span id="toastMsg"></span>
-</div>
+<!-- ============================================ -->
+<!-- TOAST CONTAINER -->
+<!-- ============================================ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================ -->
+<!-- FAB for mobile -->
+<!-- ============================================ -->
+<button class="fab" onclick="openAdd()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    loadOrganizations();
-    loadParentOptions();
-});
-
 // ============================================
 // CSRF TOKEN
 // ============================================
@@ -594,7 +1323,11 @@ function getCSRFToken() {
 let allOrgs = [];
 let editingId = null;
 let deleteTargetId = null;
-let state = {
+let deleteTargetName = '';
+let selectedIds = new Set();
+let isLoading = false;
+
+const state = {
     search: '',
     level: 'all',
     status: 'all',
@@ -602,47 +1335,109 @@ let state = {
     perPage: 25
 };
 
+const levelLabels = {
+    city: 'Thành phố',
+    department: 'Sở / Ngành',
+    district: 'Quận / Huyện',
+    ward: 'Xã / Phường',
+    unit: 'Đơn vị sự nghiệp'
+};
+
+const levelIcons = {
+    city: '<i class="bi bi-buildings"></i>',
+    department: '<i class="bi bi-building-gear"></i>',
+    district: '<i class="bi bi-geo-alt"></i>',
+    ward: '<i class="bi bi-house-door"></i>',
+    unit: '<i class="bi bi-tools"></i>'
+};
+
+const levelColors = {
+    city: '#7C3AED',
+    department: '#2563EB',
+    district: '#0E7490',
+    ward: '#16A34A',
+    unit: '#F59E0B'
+};
+
 // ============================================
 // TOAST
 // ============================================
-let toastTimer;
-
-function showToast(message, isError = false) {
-    const toast = document.getElementById('toast');
-    const toastMsg = document.getElementById('toastMsg');
-    toastMsg.textContent = message;
-    toast.className = 'toast-note' + (isError ? ' error' : '');
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'success' 
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    
+    toast.innerHTML = icon + '<span>' + message + '</span>';
+    container.appendChild(toast);
+    
+    requestAnimationFrame(() => toast.classList.add('show'));
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
 // ============================================
 // LOAD DATA
 // ============================================
 function loadOrganizations() {
+    if (isLoading) return;
+    isLoading = true;
+    
+    showSkeleton(true);
+    
     const params = new URLSearchParams();
     if (state.search) params.append('search', state.search);
     if (state.level !== 'all') params.append('level', state.level);
     if (state.status !== 'all') params.append('status', state.status);
     params.append('page', state.page);
-    params.append('per_page', state.perPage);
+    params.append('per_page', state.perPage === 'all' ? 10000 : state.perPage);
 
     fetch(`/analytics/api/organizations/?${params.toString()}`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => response.json())
     .then(data => {
+        isLoading = false;
+        showSkeleton(false);
         if (data.success) {
-            allOrgs = data.data;
+            allOrgs = data.data || [];
             renderTable(data);
+            renderMobileCards(data);
         } else {
-            showToast('Lỗi: ' + data.error, true);
+            showToast('Lỗi: ' + data.error, 'error');
         }
     })
     .catch(error => {
-        showToast('Lỗi kết nối', true);
+        isLoading = false;
+        showSkeleton(false);
+        showToast('Lỗi kết nối đến máy chủ', 'error');
     });
+}
+
+function loadStats() {
+    fetch('/analytics/api/organizations/stats/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const s = data.data;
+            document.getElementById('statTotal').textContent = s.total;
+            document.getElementById('statActive').textContent = s.active;
+            document.getElementById('statInactive').textContent = s.inactive;
+            
+            const byLevel = s.by_level || {};
+            document.getElementById('statDept').textContent = (byLevel.department && byLevel.department.count) || 0;
+            document.getElementById('statDistrict').textContent = (byLevel.district && byLevel.district.count) || 0;
+        }
+    })
+    .catch(() => {});
 }
 
 function loadParentOptions(excludeId = null) {
@@ -661,7 +1456,15 @@ function loadParentOptions(excludeId = null) {
             });
         }
     })
-    .catch(error => console.error('Error loading parent options:', error));
+    .catch(() => {});
+}
+
+// ============================================
+// SKELETON
+// ============================================
+function showSkeleton(show) {
+    const skeletons = document.querySelectorAll('.skeleton-row');
+    skeletons.forEach(el => el.style.display = show ? '' : 'none');
 }
 
 // ============================================
@@ -671,49 +1474,152 @@ function renderTable(data) {
     const tbody = document.getElementById('tableBody');
     const items = data.data || [];
 
+    // Remove skeletons
+    document.querySelectorAll('.skeleton-row').forEach(el => el.remove());
+
     if (items.length === 0) {
         tbody.innerHTML = `
-            <tr class="empty-row">
-                <td colspan="7">Chưa có đơn vị nào. Nhấn "Thêm đơn vị" để bắt đầu.</td>
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                        <h3>Chưa có đơn vị nào</h3>
+                        <p>Nhấn "Thêm đơn vị" để bắt đầu.</p>
+                    </div>
+                </td>
             </tr>
         `;
+        renderPagination(data);
         return;
     }
 
-    const levelLabels = {
-        city: '<span class="badge-pill lv-city">Thành phố</span>',
-        department: '<span class="badge-pill lv-dept">Sở / Ngành</span>',
-        district: '<span class="badge-pill lv-district">Quận / Huyện</span>',
-        ward: '<span class="badge-pill lv-ward">Xã / Phường</span>',
-        unit: '<span class="badge-pill lv-unit">Đơn vị sự nghiệp</span>',
-    };
-
     tbody.innerHTML = items.map((org, idx) => {
+        const avatarClass = `unit-avatar ${org.level}`;
+        const icon = levelIcons[org.level] || '<i class="bi bi-building-gear"></i>';
         const statusHtml = org.is_active
-            ? '<span class="badge-pill st-active"><span class="dot"></span>Hoạt động</span>'
-            : '<span class="badge-pill st-inactive"><span class="dot"></span>Tạm dừng</span>';
+            ? '<span class="badge badge-active"><span class="dot"></span>Hoạt động</span>'
+            : '<span class="badge badge-inactive"><span class="dot"></span>Tạm dừng</span>';
+        const levelBadge = `<span class="badge lv-${org.level}">${levelIcons[org.level] || ''} ${levelLabels[org.level] || org.level}</span>`;
+        const checked = selectedIds.has(org.id) ? 'checked' : '';
 
         return `
-            <tr>
-                <td class="col-stt">${(data.page - 1) * data.per_page + idx + 1}</td>
-                <td class="unit-code">${org.code || '—'}</td>
-                <td class="unit-name">${org.name}</td>
-                <td>${levelLabels[org.level] || org.level}</td>
-                <td>${org.parent || '—'}</td>
-                <td>${statusHtml}</td>
+            <tr onclick="toggleExpand(this)" data-id="${org.id}">
+                <td class="chk-cell" onclick="event.stopPropagation()">
+                    <input type="checkbox" ${checked} onchange="toggleSelect(${org.id}, this)">
+                </td>
                 <td>
-                    <button type="button" class="icon-btn" onclick="openEdit(${org.id})" title="Sửa">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button type="button" class="icon-btn danger" onclick="openDelete(${org.id})" title="Xóa">
-                        <i class="bi bi-trash3"></i>
-                    </button>
+                    <div class="unit-cell">
+                    <div class="${avatarClass}">${icon}</div>
+                        <div class="unit-info">
+                            <span class="unit-name">${org.name}</span>
+                            <span class="unit-code">${org.code || '—'}</span>
+                        </div>
+                    </div>
+                </td>
+                <td>${levelBadge}</td>
+                <td class="hide-tablet">${org.parent || '<span style="color:#9CA3AF;">—</span>'}</td>
+                <td onclick="event.stopPropagation()">
+                    <label class="toggle-switch" onclick="toggleStatus(${org.id}, event)">
+                        <input type="checkbox" ${org.is_active ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </td>
+                <td class="hide-tablet" onclick="event.stopPropagation()">
+                    <div class="action-btns">
+                        <button type="button" class="action-btn" onclick="openEdit(${org.id})" title="Sửa">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button type="button" class="action-btn danger" onclick="openDelete(${org.id})" title="Xóa">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr class="expand-row" data-expand="${org.id}">
+                <td colspan="6">
+                    <div class="expand-content">
+                        <div class="expand-item">
+                            <label>Đơn vị cha</label>
+                            <span>${org.parent || 'Không có'}</span>
+                        </div>
+                        <div class="expand-item">
+                            <label>Ngày tạo</label>
+                            <span>${org.created_at ? new Date(org.created_at).toLocaleDateString('vi-VN') : '—'}</span>
+                        </div>
+                        <div class="expand-item">
+                            <label>Mã đơn vị</label>
+                            <span style="font-family:monospace;">${org.code || '—'}</span>
+                        </div>
+                        <div class="expand-item">
+                            <label>Cấp độ</label>
+                            <span>${levelLabels[org.level] || org.level}</span>
+                        </div>
+                    </div>
                 </td>
             </tr>
         `;
     }).join('');
 
     renderPagination(data);
+    updateBulkBar();
+}
+
+// ============================================
+// MOBILE CARDS
+// ============================================
+function renderMobileCards(data) {
+    const container = document.getElementById('mobileCards');
+    const items = data.data || [];
+
+    if (items.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = items.map(org => {
+        const statusHtml = org.is_active
+            ? '<span class="badge badge-active"><span class="dot"></span>Hoạt động</span>'
+            : '<span class="badge badge-inactive"><span class="dot"></span>Tạm dừng</span>';
+        const levelBadge = `<span class="badge lv-${org.level}">${levelIcons[org.level] || ''} ${levelLabels[org.level] || org.level}</span>`;
+        const checked = selectedIds.has(org.id) ? 'checked' : '';
+
+        return `
+            <div class="mobile-card">
+                <div class="mobile-card-top">
+                    <input type="checkbox" ${checked} onchange="toggleSelect(${org.id}, this)" style="width:16px;height:16px;accent-color:var(--primary);">
+                    <div class="unit-avatar ${org.level}" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${levelIcons[org.level] || '<i class="bi bi-building-gear"></i>'}</div>
+                    <div class="mobile-card-info">
+                        <div style="font-weight:600;font-size:14px;">${org.name}</div>
+                        <div style="font-size:12px;color:var(--text-secondary);font-family:monospace;">${org.code || '—'}</div>
+                    </div>
+                    <div class="mobile-card-actions">
+                        <button type="button" class="action-btn" onclick="openEdit(${org.id})" title="Sửa">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button type="button" class="action-btn danger" onclick="openDelete(${org.id})" title="Xóa">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="mobile-card-meta">
+                    <span>${levelBadge}</span>
+                    <span>${statusHtml}</span>
+                    <span>Cha: ${org.parent || '—'}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
+// EXPAND ROW
+// ============================================
+function toggleExpand(tr) {
+    const id = tr.dataset.id;
+    const expandRow = document.querySelector(`tr[data-expand="${id}"]`);
+    if (expandRow) {
+        expandRow.classList.toggle('show');
+    }
 }
 
 // ============================================
@@ -722,9 +1628,16 @@ function renderTable(data) {
 function renderPagination(data) {
     const info = document.getElementById('pagerInfo');
     const total = data.total || 0;
+    
+    if (total === 0) {
+        info.textContent = '0 kết quả';
+        document.getElementById('pagerBtns').innerHTML = '';
+        return;
+    }
+    
     const startIdx = (data.page - 1) * data.per_page + 1;
     const endIdx = Math.min(data.page * data.per_page, total);
-    info.textContent = total > 0 ? `${startIdx}–${endIdx} trên ${total}` : '0 kết quả';
+    info.textContent = `Hiển thị ${startIdx}–${endIdx} / ${total} kết quả`;
 
     const box = document.getElementById('pagerBtns');
     box.innerHTML = '';
@@ -736,7 +1649,7 @@ function renderPagination(data) {
         b.className = 'pg' + (opts.active ? ' active' : '');
         if (opts.disabled) b.disabled = true;
         if (opts.icon) {
-            b.innerHTML = `<i class="bi bi-${label}"></i>`;
+            b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="${label === 'prev' ? '15 18 9 12 15 6' : '9 18 15 12 9 6'}"/></svg>`;
         } else {
             b.textContent = label;
         }
@@ -749,35 +1662,225 @@ function renderPagination(data) {
         box.appendChild(b);
     };
 
-    mkBtn('chevron-left', state.page - 1, { disabled: state.page <= 1, icon: true });
+    mkBtn('prev', state.page - 1, { disabled: state.page <= 1, icon: true });
 
-    for (let p = 1; p <= totalPages; p++) {
+    // Show limited page numbers
+    const maxVisible = 5;
+    let start = Math.max(1, state.page - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) {
+        start = Math.max(1, end - maxVisible + 1);
+    }
+
+    if (start > 1) {
+        mkBtn('1', 1);
+        if (start > 2) {
+            const dots = document.createElement('span');
+            dots.className = 'pg';
+            dots.style.border = 'none';
+            dots.style.background = 'none';
+            dots.textContent = '...';
+            box.appendChild(dots);
+        }
+    }
+
+    for (let p = start; p <= end; p++) {
         mkBtn(String(p), p, { active: p === state.page });
     }
 
-    mkBtn('chevron-right', state.page + 1, { disabled: state.page >= totalPages, icon: true });
+    if (end < totalPages) {
+        if (end < totalPages - 1) {
+            const dots = document.createElement('span');
+            dots.className = 'pg';
+            dots.style.border = 'none';
+            dots.style.background = 'none';
+            dots.textContent = '...';
+            box.appendChild(dots);
+        }
+        mkBtn(String(totalPages), totalPages);
+    }
+
+    mkBtn('next', state.page + 1, { disabled: state.page >= totalPages, icon: true });
 }
 
 // ============================================
-// MODAL - ADD
+// FILTERS
+// ============================================
+function toggleChip(el, filter) {
+    if (filter === 'all') {
+        // Reset all
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        state.level = 'all';
+        state.status = 'all';
+    } else {
+        // Remove 'all' chip active
+        document.querySelector('.chip[data-filter="all"]').classList.remove('active');
+        
+        // Toggle clicked chip
+        el.classList.toggle('active');
+        
+        // Build filters
+        state.level = 'all';
+        state.status = 'all';
+        
+        document.querySelectorAll('.chip.active').forEach(c => {
+            const f = c.dataset.filter;
+            if (f.startsWith('level:')) state.level = f.split(':')[1];
+            if (f.startsWith('status:')) state.status = f.split(':')[1];
+        });
+    }
+    
+    state.page = 1;
+    loadOrganizations();
+}
+
+function applyFilter(filter) {
+    // Click on stat card
+    document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    if (filter === 'all') {
+        state.level = 'all';
+        state.status = 'all';
+    } else if (filter.startsWith('status:')) {
+        state.status = filter.split(':')[1];
+        state.level = 'all';
+    } else if (filter.startsWith('level:')) {
+        state.level = filter.split(':')[1];
+        state.status = 'all';
+    }
+    
+    // Sync chips
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelector(`.chip[data-filter="${filter}"]`)?.classList.add('active');
+    if (filter === 'all') {
+        document.querySelector('.chip[data-filter="all"]').classList.add('active');
+    }
+    
+    state.page = 1;
+    loadOrganizations();
+}
+
+// ============================================
+// SEARCH
+// ============================================
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        state.search = this.value;
+        state.page = 1;
+        loadOrganizations();
+    }, 300);
+});
+
+// ============================================
+// PER PAGE
+// ============================================
+function changePerPage(val) {
+    state.perPage = val;
+    state.page = 1;
+    loadOrganizations();
+}
+
+// ============================================
+// SELECTION
+// ============================================
+function toggleSelect(id, checkbox) {
+    if (checkbox.checked) {
+        selectedIds.add(id);
+    } else {
+        selectedIds.delete(id);
+        document.getElementById('selectAll').checked = false;
+    }
+    updateBulkBar();
+}
+
+function toggleSelectAll(checkbox) {
+    if (checkbox.checked) {
+        allOrgs.forEach(org => selectedIds.add(org.id));
+    } else {
+        selectedIds.clear();
+    }
+    // Update checkboxes in table
+    document.querySelectorAll('#tableBody .chk-cell input[type=checkbox]').forEach(cb => {
+        cb.checked = checkbox.checked;
+    });
+    updateBulkBar();
+}
+
+function clearSelection() {
+    selectedIds.clear();
+    document.getElementById('selectAll').checked = false;
+    document.querySelectorAll('#tableBody .chk-cell input[type=checkbox]').forEach(cb => cb.checked = false);
+    updateBulkBar();
+}
+
+function updateBulkBar() {
+    const bar = document.getElementById('bulkBar');
+    const count = document.getElementById('bulkCount');
+    count.textContent = selectedIds.size;
+    bar.classList.toggle('show', selectedIds.size > 0);
+}
+
+// ============================================
+// TOGGLE STATUS
+// ============================================
+function toggleStatus(id, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    fetch(`/analytics/api/organizations/${id}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            loadOrganizations();
+            loadStats();
+        } else {
+            showToast(data.error || 'Có lỗi xảy ra', 'error');
+            loadOrganizations(); // Reload to reset toggle
+        }
+    })
+    .catch(() => {
+        showToast('Lỗi kết nối', 'error');
+        loadOrganizations();
+    });
+}
+
+// ============================================
+// PANEL - ADD / EDIT
 // ============================================
 function openAdd() {
     editingId = null;
     document.getElementById('unitForm').reset();
     document.getElementById('fActive').checked = true;
-    document.getElementById('fLevel').value = 'city';
+    document.getElementById('statusLabel').textContent = 'Hoạt động';
     document.getElementById('formTitle').textContent = 'Thêm đơn vị mới';
     clearErrors();
     loadParentOptions();
-    document.getElementById('formModal').classList.add('show');
-    setTimeout(() => document.getElementById('fCode').focus(), 100);
+    
+    // Reset level chips
+    document.querySelectorAll('.level-chip').forEach(c => c.classList.remove('selected'));
+    document.querySelector('.level-chip[data-value="city"]').classList.add('selected');
+    
+    updatePreview();
+    openPanel();
+    setTimeout(() => document.getElementById('fCode').focus(), 350);
 }
 
-// ============================================
-// MODAL - EDIT
-// ============================================
 function openEdit(id) {
     editingId = id;
+    document.getElementById('formTitle').textContent = 'Sửa đơn vị';
+    clearErrors();
+    
     fetch(`/analytics/api/organizations/${id}/`, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
@@ -785,55 +1888,108 @@ function openEdit(id) {
     .then(data => {
         if (data.success) {
             const org = data.data;
-            document.getElementById('fCode').value = org.code;
-            document.getElementById('fName').value = org.name;
-            document.getElementById('fLevel').value = org.level;
+            document.getElementById('fCode').value = org.code || '';
+            document.getElementById('fName').value = org.name || '';
+            
+            // Set level chip
+            document.querySelectorAll('.level-chip').forEach(c => c.classList.remove('selected'));
+            const levelChip = document.querySelector(`.level-chip[data-value="${org.level}"]`);
+            if (levelChip) levelChip.classList.add('selected');
+            
             document.getElementById('fActive').checked = org.is_active;
-            document.getElementById('formTitle').textContent = 'Sửa đơn vị';
-            clearErrors();
+            document.getElementById('statusLabel').textContent = org.is_active ? 'Hoạt động' : 'Tạm dừng';
+            
             loadParentOptions(id);
-            document.getElementById('fParent').value = org.parent_id || '';
-            document.getElementById('formModal').classList.add('show');
-            setTimeout(() => document.getElementById('fName').focus(), 100);
+            setTimeout(() => {
+                document.getElementById('fParent').value = org.parent_id || '';
+            }, 200);
+            
+            updatePreview();
+            openPanel();
+            setTimeout(() => document.getElementById('fName').focus(), 350);
+        } else {
+            showToast('Không thể tải thông tin đơn vị', 'error');
         }
     })
-    .catch(error => {
-        showToast('Không thể tải thông tin đơn vị', true);
+    .catch(() => {
+        showToast('Lỗi kết nối', 'error');
     });
 }
 
-// ============================================
-// MODAL - DELETE
-// ============================================
-function openDelete(id) {
-    deleteTargetId = id;
-    const org = allOrgs.find(o => o.id === id);
-    document.getElementById('deleteTarget').textContent = org ? `${org.name} (${org.code})` : '';
-    document.getElementById('deleteModal').classList.add('show');
+function openPanel() {
+    document.getElementById('panelOverlay').classList.add('show');
+    document.getElementById('formPanel').classList.add('show');
+    document.body.style.overflow = 'hidden';
 }
+
+function closePanel(e) {
+    if (e && e.target !== document.getElementById('panelOverlay')) return;
+    document.getElementById('panelOverlay').classList.remove('show');
+    document.getElementById('formPanel').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// ============================================
+// LEVEL SELECTION
+// ============================================
+function selectLevel(el) {
+    document.querySelectorAll('.level-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    updatePreview();
+}
+
+// ============================================
+// LIVE PREVIEW
+// ============================================
+function updatePreview() {
+    const name = document.getElementById('fName').value.trim() || 'Tên đơn vị';
+    const code = document.getElementById('fCode').value.trim() || 'MÃ-ĐƠN-VỊ';
+    const active = document.getElementById('fActive').checked;
+    const level = document.querySelector('.level-chip.selected')?.dataset.value || 'department';
+    
+    document.getElementById('previewName').textContent = name;
+    document.getElementById('previewCode').textContent = code;
+    document.getElementById('previewAvatar').innerHTML = levelIcons[level] || '<i class="bi bi-building-gear"></i>';
+    document.getElementById('previewAvatar').style.background = levelColors[level] + '20';
+    
+    const badge = document.getElementById('previewBadge');
+    if (active) {
+        badge.className = 'preview-badge badge-active';
+        badge.innerHTML = '<span class="dot"></span>Hoạt động';
+    } else {
+        badge.className = 'preview-badge badge-inactive';
+        badge.innerHTML = '<span class="dot"></span>Tạm dừng';
+    }
+    
+    document.getElementById('statusLabel').textContent = active ? 'Hoạt động' : 'Tạm dừng';
+}
+
+// Live preview on input
+document.getElementById('fName').addEventListener('input', updatePreview);
+document.getElementById('fCode').addEventListener('input', updatePreview);
 
 // ============================================
 // SAVE
 // ============================================
-document.getElementById('unitForm').addEventListener('submit', function(e) {
+function saveUnit(e) {
     e.preventDefault();
     clearErrors();
 
     const code = document.getElementById('fCode').value.trim();
     const name = document.getElementById('fName').value.trim();
-    const level = document.getElementById('fLevel').value;
+    const level = document.querySelector('.level-chip.selected')?.dataset.value || 'city';
     const parentId = document.getElementById('fParent').value;
     const isActive = document.getElementById('fActive').checked;
 
     let valid = true;
     if (!code) {
         document.getElementById('errCode').classList.add('show');
-        document.getElementById('fCode').classList.add('invalid');
+        document.getElementById('fCode').classList.add('error');
         valid = false;
     }
     if (!name) {
         document.getElementById('errName').classList.add('show');
-        document.getElementById('fName').classList.add('invalid');
+        document.getElementById('fName').classList.add('error');
         valid = false;
     }
     if (!valid) return;
@@ -846,6 +2002,12 @@ document.getElementById('unitForm').addEventListener('submit', function(e) {
         : '/analytics/api/organizations/create/';
     const method = editingId ? 'PUT' : 'POST';
 
+    // Show saving state
+    const submitBtn = document.querySelector('#unitForm .btn-primary');
+    const origText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin" style="width:16px;height:16px;animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"/></svg> Đang lưu...';
+    submitBtn.disabled = true;
+
     fetch(url, {
         method: method,
         headers: {
@@ -857,24 +2019,52 @@ document.getElementById('unitForm').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(data => {
+        submitBtn.innerHTML = origText;
+        submitBtn.disabled = false;
+        
         if (data.success) {
-            document.getElementById('formModal').classList.remove('show');
-            showToast(data.message);
+            closePanel();
+            showToast(data.message || 'Thao tác thành công!');
             loadOrganizations();
+            loadStats();
         } else {
-            showToast(data.error || 'Có lỗi xảy ra', true);
+            showToast(data.error || 'Có lỗi xảy ra', 'error');
         }
     })
-    .catch(error => {
-        showToast('Lỗi kết nối', true);
+    .catch(() => {
+        submitBtn.innerHTML = origText;
+        submitBtn.disabled = false;
+        showToast('Lỗi kết nối', 'error');
     });
-});
+    
+    return false;
+}
 
 // ============================================
-// DELETE CONFIRM
+// DELETE
 // ============================================
+function openDelete(id) {
+    deleteTargetId = id;
+    const org = allOrgs.find(o => o.id === id);
+    deleteTargetName = org ? `${org.name} (${org.code})` : '';
+    document.getElementById('deleteTarget').textContent = deleteTargetName;
+    document.getElementById('deleteOverlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+    deleteTargetId = null;
+}
+
 document.getElementById('deleteConfirm').addEventListener('click', function() {
     if (!deleteTargetId) return;
+    
+    const btn = this;
+    const origText = btn.innerHTML;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin" style="width:14px;height:14px;animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="32"/></svg> Đang xóa...';
+    btn.disabled = true;
 
     fetch(`/analytics/api/organizations/${deleteTargetId}/delete/`, {
         method: 'DELETE',
@@ -885,73 +2075,122 @@ document.getElementById('deleteConfirm').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById('deleteModal').classList.remove('show');
+        btn.innerHTML = origText;
+        btn.disabled = false;
+        closeDeleteModal();
+        
         if (data.success) {
+            // Fade out row
+            const row = document.querySelector(`tr[data-id="${deleteTargetId}"]`);
+            if (row) {
+                row.classList.add('fade-out');
+                setTimeout(() => {
+                    loadOrganizations();
+                    loadStats();
+                }, 300);
+            } else {
+                loadOrganizations();
+                loadStats();
+            }
             showToast(data.message);
-            loadOrganizations();
         } else {
-            showToast(data.error || 'Có lỗi xảy ra', true);
+            showToast(data.error || 'Có lỗi xảy ra', 'error');
         }
         deleteTargetId = null;
     })
-    .catch(error => {
-        showToast('Lỗi kết nối', true);
+    .catch(() => {
+        btn.innerHTML = origText;
+        btn.disabled = false;
+        showToast('Lỗi kết nối', 'error');
         deleteTargetId = null;
     });
 });
 
 // ============================================
+// BULK DELETE
+// ============================================
+function bulkDelete() {
+    if (selectedIds.size === 0) return;
+    
+    if (!confirm(`Bạn có chắc muốn xóa ${selectedIds.size} đơn vị đã chọn?`)) return;
+    
+    fetch('/analytics/api/organizations/bulk-delete/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ ids: Array.from(selectedIds) })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            selectedIds.clear();
+            loadOrganizations();
+            loadStats();
+        } else {
+            showToast(data.error || 'Có lỗi xảy ra', 'error');
+        }
+    })
+    .catch(() => {
+        showToast('Lỗi kết nối', 'error');
+    });
+}
+
+// ============================================
+// EXPORT EXCEL
+// ============================================
+function exportExcel() {
+    if (allOrgs.length === 0) {
+        showToast('Không có dữ liệu để xuất', 'error');
+        return;
+    }
+    
+    // Simple CSV export
+    let csv = '\uFEFFMã đơn vị,Tên đơn vị,Cấp độ,Đơn vị cha,Trạng thái\n';
+    allOrgs.forEach(org => {
+        const level = levelLabels[org.level] || org.level;
+        const status = org.is_active ? 'Hoạt động' : 'Tạm dừng';
+        const parent = org.parent || '';
+        csv += `"${org.code}","${org.name}","${level}","${parent}","${status}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `danh-sach-don-vi-${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+    showToast('Xuất dữ liệu thành công!');
+}
+
+// ============================================
 // HELPERS
 // ============================================
 function clearErrors() {
-    ['errCode', 'errName'].forEach(id => document.getElementById(id).classList.remove('show'));
-    ['fCode', 'fName'].forEach(id => document.getElementById(id).classList.remove('invalid'));
-}
-
-function closeModal(id) {
-    document.getElementById(id).classList.remove('show');
+    document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('.form-input.error').forEach(el => el.classList.remove('error'));
 }
 
 // ============================================
-// EVENT BINDING
+// KEYBOARD SHORTCUTS
 // ============================================
-document.getElementById('addBtn').addEventListener('click', openAdd);
-document.getElementById('formClose').addEventListener('click', () => closeModal('formModal'));
-document.getElementById('formCancel').addEventListener('click', () => closeModal('formModal'));
-document.getElementById('deleteClose').addEventListener('click', () => closeModal('deleteModal'));
-document.getElementById('deleteCancel').addEventListener('click', () => closeModal('deleteModal'));
-
-// Close on backdrop click
-document.getElementById('formModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('formModal');
-});
-document.getElementById('deleteModal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal('deleteModal');
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePanel();
+        closeDeleteModal();
+    }
 });
 
-// Search & Filter
-document.getElementById('searchInput').addEventListener('input', function() {
-    state.search = this.value;
-    state.page = 1;
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
     loadOrganizations();
-});
-
-document.getElementById('levelFilter').addEventListener('change', function() {
-    state.level = this.value;
-    state.page = 1;
-    loadOrganizations();
-});
-
-document.getElementById('statusFilter').addEventListener('change', function() {
-    state.status = this.value;
-    state.page = 1;
-    loadOrganizations();
-});
-
-document.getElementById('perPage').addEventListener('change', function() {
-    state.perPage = parseInt(this.value);
-    state.page = 1;
-    loadOrganizations();
+    loadStats();
 });
 </script>
 {% endblock %}

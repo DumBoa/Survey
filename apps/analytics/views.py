@@ -1855,183 +1855,334 @@ def organization_options_api(request):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-# apps/analytics/views.py - Thêm vào cuối file
 
-# apps/analytics/views.py - Sửa hàm organization_with_status_api
+
+# ============================================
+# API THỐNG KÊ ĐƠN VỊ (DASHBOARD CARDS)
+# ============================================
 
 @login_required(login_url='/accounts/login/')
 @admin_required
-def organization_with_status_api(request):
+def organization_stats_api(request):
     """
-    API lấy danh sách tất cả đơn vị kèm trạng thái hoàn thành khảo sát
-    TỔNG HỢP TOÀN BỘ TIẤN ĐỘ DỰA TRÊN NHÓM ĐỐI TƯỢNG CỦA USER
+    API lấy thống kê nhanh cho dashboard cards
+    GET /api/organizations/stats/
     """
     try:
-        from apps.survey.models import SurveyUnitStatus, Survey, SurveyProgress
-        from apps.accounts.models import Organization, User
-        from apps.analytics.models import TargetGroup
+        total = Organization.objects.count()
+        active = Organization.objects.filter(is_active=True).count()
+        inactive = Organization.objects.filter(is_active=False).count()
         
-        # Lấy tất cả organization
-        departments = Organization.objects.filter(
-            level='department',
-            is_active=True
-        ).order_by('name')
-        
-        wards = Organization.objects.filter(
-            level='ward',
-            is_active=True
-        ).order_by('name')
-        
-        # Dữ liệu Sở
-        dept_list = []
-        dept_completed = 0
-        
-        for dept in departments:
-            # Lấy tất cả user thuộc đơn vị này
-            users = User.objects.filter(
-                organization=dept,
-                is_active=True
-            )
-            
-            if not users.exists():
-                # Nếu không có user, vẫn hiển thị đơn vị với 0/0
-                dept_list.append({
-                    'id': dept.id,
-                    'name': dept.name,
-                    'code': dept.code,
-                    'status': 'pending',
-                    'completed_at': None,
-                    'done': 0,
-                    'total': 0,
-                    'progress_display': '0/0',
-                    'progress_percent': 0,
-                })
-                continue
-            
-            # Lấy tất cả target_groups của các user trong đơn vị
-            target_group_ids = users.values_list('target_groups', flat=True).distinct()
-            target_groups = TargetGroup.objects.filter(id__in=target_group_ids, is_active=True)
-            
-            # Lấy tất cả form_code từ các target group
-            all_form_codes = set()
-            for tg in target_groups:
-                if tg.forms:
-                    all_form_codes.update(tg.forms)
-            
-            total_surveys = len(all_form_codes)
-            
-            # Đếm số khảo sát đã hoàn thành của đơn vị này
-            # Một khảo sát được coi là hoàn thành khi có SurveyProgress status='completed'
-            completed_count = SurveyProgress.objects.filter(
-                participant__user__in=users,
-                form_code__in=all_form_codes,
-                status='completed'
-            ).values('form_code').distinct().count()
-            
-            # Kiểm tra xem tất cả đã hoàn thành chưa
-            is_completed = completed_count >= total_surveys and total_surveys > 0
-            
-            # Lấy thời gian hoàn thành mới nhất
-            latest_completed = SurveyProgress.objects.filter(
-                participant__user__in=users,
-                form_code__in=all_form_codes,
-                status='completed'
-            ).order_by('-completed_at').first()
-            
-            status = 'completed' if is_completed else ('in_progress' if completed_count > 0 else 'pending')
-            
-            if status == 'completed':
-                dept_completed += 1
-            
-            dept_list.append({
-                'id': dept.id,
-                'name': dept.name,
-                'code': dept.code,
-                'status': status,
-                'completed_at': latest_completed.completed_at.isoformat() if latest_completed else None,
-                'done': completed_count,
-                'total': total_surveys,
-                'progress_display': f"{completed_count}/{total_surveys}",
-                'progress_percent': round((completed_count / total_surveys * 100) if total_surveys > 0 else 0, 1),
-            })
-        
-        # Dữ liệu Xã/Phường - Tương tự
-        ward_list = []
-        ward_completed = 0
-        
-        for ward in wards:
-            users = User.objects.filter(
-                organization=ward,
-                is_active=True
-            )
-            
-            if not users.exists():
-                ward_list.append({
-                    'id': ward.id,
-                    'name': ward.name,
-                    'code': ward.code,
-                    'status': 'pending',
-                    'completed_at': None,
-                    'done': 0,
-                    'total': 0,
-                    'progress_display': '0/0',
-                    'progress_percent': 0,
-                })
-                continue
-            
-            target_group_ids = users.values_list('target_groups', flat=True).distinct()
-            target_groups = TargetGroup.objects.filter(id__in=target_group_ids, is_active=True)
-            
-            all_form_codes = set()
-            for tg in target_groups:
-                if tg.forms:
-                    all_form_codes.update(tg.forms)
-            
-            total_surveys = len(all_form_codes)
-            
-            completed_count = SurveyProgress.objects.filter(
-                participant__user__in=users,
-                form_code__in=all_form_codes,
-                status='completed'
-            ).values('form_code').distinct().count()
-            
-            is_completed = completed_count >= total_surveys and total_surveys > 0
-            
-            latest_completed = SurveyProgress.objects.filter(
-                participant__user__in=users,
-                form_code__in=all_form_codes,
-                status='completed'
-            ).order_by('-completed_at').first()
-            
-            status = 'completed' if is_completed else ('in_progress' if completed_count > 0 else 'pending')
-            
-            if status == 'completed':
-                ward_completed += 1
-            
-            ward_list.append({
-                'id': ward.id,
-                'name': ward.name,
-                'code': ward.code,
-                'status': status,
-                'completed_at': latest_completed.completed_at.isoformat() if latest_completed else None,
-                'done': completed_count,
-                'total': total_surveys,
-                'progress_display': f"{completed_count}/{total_surveys}",
-                'progress_percent': round((completed_count / total_surveys * 100) if total_surveys > 0 else 0, 1),
-            })
+        # Đếm theo cấp độ
+        level_counts = {}
+        for level_code, level_label in Organization.LEVEL_CHOICES:
+            count = Organization.objects.filter(level=level_code).count()
+            if count > 0:
+                level_counts[level_code] = {
+                    'count': count,
+                    'label': level_label
+                }
         
         return JsonResponse({
             'success': True,
             'data': {
+                'total': total,
+                'active': active,
+                'inactive': inactive,
+                'by_level': level_counts,
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+# ============================================
+# API XÓA HÀNG LOẠT ĐƠN VỊ
+# ============================================
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def organization_bulk_delete_api(request):
+    """
+    API xóa hàng loạt đơn vị
+    POST /api/organizations/bulk-delete/
+    Body: {"ids": [1, 2, 3]}
+    """
+    try:
+        data = json.loads(request.body) if request.body else {}
+        ids = data.get('ids', [])
+        
+        if not ids:
+            return JsonResponse({
+                'success': False,
+                'error': 'Vui lòng chọn ít nhất một đơn vị'
+            }, status=400)
+        
+        deleted_count = 0
+        errors = []
+        
+        for org_id in ids:
+            try:
+                org = Organization.objects.get(id=org_id)
+                
+                # Kiểm tra đơn vị con
+                if Organization.objects.filter(parent=org).exists():
+                    errors.append(f'Đơn vị "{org.name}" còn đơn vị con')
+                    continue
+                
+                # Kiểm tra user
+                if User.objects.filter(organization=org).exists():
+                    errors.append(f'Đơn vị "{org.name}" còn người dùng')
+                    continue
+                
+                org.delete()
+                deleted_count += 1
+                
+            except Organization.DoesNotExist:
+                errors.append(f'Đơn vị ID {org_id} không tồn tại')
+        
+        message = f'Đã xóa {deleted_count} đơn vị'
+        if errors:
+            message += f'. Lỗi: {", ".join(errors[:3])}'
+        
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'deleted_count': deleted_count,
+            'errors': errors
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+# ============================================
+# API TOGGLE TRẠNG THÁI ĐƠN VỊ
+# ============================================
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+@csrf_exempt
+@require_http_methods(["POST"])
+def organization_toggle_status_api(request, org_id):
+    """
+    API bật/tắt trạng thái đơn vị
+    POST /api/organizations/<id>/toggle-status/
+    """
+    try:
+        org = get_object_or_404(Organization, id=org_id)
+        org.is_active = not org.is_active
+        org.save()
+        
+        status_text = 'Hoạt động' if org.is_active else 'Tạm dừng'
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Đã chuyển trạng thái đơn vị "{org.name}" sang "{status_text}"',
+            'data': {
+                'id': org.id,
+                'is_active': org.is_active,
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+# ============================================
+# API TỔNG HỢP KHẢO SÁT (SURVEY SUMMARY)
+# ============================================
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def organization_survey_summary_api(request):
+    """
+    API lấy tổng hợp tiến độ khảo sát theo đơn vị
+    GET /api/organizations/survey-summary/
+    Phân loại: department → Sở/Ngành, ward → Phường/Xã, còn lại → Khác
+    Tiến độ = số người dùng đã hoàn thành / tổng số người dùng trong đơn vị
+    """
+    try:
+        from apps.survey.models import SurveyProgress
+        from apps.accounts.models import Organization, User
+        from apps.analytics.models import TargetGroup
+        
+        # Lấy tất cả organization (kể cả không active, kể cả 0 user)
+        all_orgs = Organization.objects.all().order_by('name')
+        
+        def process_org_list(orgs):
+            org_list = []
+            total_completed = 0
+            total_in_progress = 0
+            total_pending = 0
+            total_users = 0
+            total_completed_users = 0
+            
+            for org in orgs:
+                users = User.objects.filter(organization=org, is_active=True)
+                user_count = users.count()
+                total_users += user_count
+                
+                if user_count == 0:
+                    org_list.append({
+                        'id': org.id,
+                        'name': org.name,
+                        'code': org.code,
+                        'level': org.level,
+                        'total_users': 0,
+                        'completed_users': 0,
+                        'progress_percent': 0,
+                        'status': 'pending',
+                        'users': []
+                    })
+                    total_pending += 1
+                    continue
+                
+                # Lấy target_groups của users
+                tg_ids = users.values_list('target_groups', flat=True).distinct()
+                target_groups = TargetGroup.objects.filter(id__in=tg_ids, is_active=True)
+                
+                all_form_codes = set()
+                for tg in target_groups:
+                    if tg.forms:
+                        all_form_codes.update(tg.forms)
+                
+                total_surveys = len(all_form_codes)
+                
+                user_list = []
+                completed_users = 0
+                
+                for user in users:
+                    if total_surveys == 0:
+                        user_list.append({
+                            'id': user.id,
+                            'full_name': f"{user.last_name} {user.first_name}".strip() or user.username,
+                            'email': user.email,
+                            'completed': False,
+                            'completed_at': None
+                        })
+                        continue
+                    
+                    done_count = SurveyProgress.objects.filter(
+                        participant__user=user,
+                        form_code__in=all_form_codes,
+                        status='completed'
+                    ).values('form_code').distinct().count()
+                    
+                    is_done = done_count >= total_surveys
+                    if is_done:
+                        completed_users += 1
+                    
+                    latest = SurveyProgress.objects.filter(
+                        participant__user=user,
+                        form_code__in=all_form_codes,
+                        status='completed'
+                    ).order_by('-completed_at').first()
+                    
+                    user_list.append({
+                        'id': user.id,
+                        'full_name': f"{user.last_name} {user.first_name}".strip() or user.username,
+                        'email': user.email,
+                        'completed': is_done,
+                        'completed_at': latest.completed_at.isoformat() if latest else None
+                    })
+                
+                pct = round((completed_users / user_count * 100), 1) if user_count > 0 else 0
+                
+                if pct >= 100:
+                    status = 'completed'
+                    total_completed += 1
+                elif pct > 0:
+                    status = 'in_progress'
+                    total_in_progress += 1
+                else:
+                    status = 'pending'
+                    total_pending += 1
+                
+                total_completed_users += completed_users
+                
+                org_list.append({
+                    'id': org.id,
+                    'name': org.name,
+                    'code': org.code,
+                    'level': org.level,
+                    'total_users': user_count,
+                    'completed_users': completed_users,
+                    'progress_percent': pct,
+                    'status': status,
+                    'users': user_list
+                })
+            
+            return org_list, total_completed, total_in_progress, total_pending, total_users, total_completed_users
+        
+        # Phân loại theo level
+        dept_orgs = all_orgs.filter(level='department')
+        ward_orgs = all_orgs.filter(level='ward')
+        other_orgs = all_orgs.exclude(level__in=['department', 'ward'])
+        
+        dept_list, dept_c, dept_ip, dept_p, dept_u, dept_cu = process_org_list(dept_orgs)
+        ward_list, ward_c, ward_ip, ward_p, ward_u, ward_cu = process_org_list(ward_orgs)
+        other_list, other_c, other_ip, other_p, other_u, other_cu = process_org_list(other_orgs)
+        
+        # Tổng hợp
+        total_orgs = len(dept_list) + len(ward_list) + len(other_list)
+        total_completed = dept_c + ward_c + other_c
+        total_in_progress = dept_ip + ward_ip + other_ip
+        total_pending = dept_p + ward_p + other_p
+        grand_users = dept_u + ward_u + other_u
+        grand_completed = dept_cu + ward_cu + other_cu
+        overall_rate = round((grand_completed / grand_users * 100), 1) if grand_users > 0 else 0
+        
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'summary': {
+                    'total_orgs': total_orgs,
+                    'total_users': grand_users,
+                    'completed_orgs': total_completed,
+                    'in_progress_orgs': total_in_progress,
+                    'pending_orgs': total_pending,
+                    'completed_users': grand_completed,
+                    'completion_rate': overall_rate,
+                },
                 'department': {
-                    'total': departments.count(),
-                    'completed': dept_completed,
+                    'total': len(dept_list),
+                    'completed': dept_c,
+                    'in_progress': dept_ip,
+                    'pending': dept_p,
+                    'total_users': dept_u,
+                    'completed_users': dept_cu,
                     'list': dept_list,
                 },
                 'ward': {
-                    'total': wards.count(),
-                    'completed': ward_completed,
+                    'total': len(ward_list),
+                    'completed': ward_c,
+                    'in_progress': ward_ip,
+                    'pending': ward_p,
+                    'total_users': ward_u,
+                    'completed_users': ward_cu,
                     'list': ward_list,
+                },
+                'other': {
+                    'total': len(other_list),
+                    'completed': other_c,
+                    'in_progress': other_ip,
+                    'pending': other_p,
+                    'total_users': other_u,
+                    'completed_users': other_cu,
+                    'list': other_list,
                 }
             }
         })
@@ -2043,3 +2194,11 @@ def organization_with_status_api(request):
             'error': str(e),
             'traceback': traceback.format_exc()
         }, status=500)
+
+
+# apps/analytics/views.py - Giữ lại hàm cũ cho tương thích ngược
+@login_required(login_url='/accounts/login/')
+@admin_required
+def organization_with_status_api(request):
+    """API cũ - giữ tương thích"""
+    return organization_survey_summary_api(request)
