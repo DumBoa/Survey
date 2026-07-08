@@ -732,7 +732,7 @@ def survey_dashboard(request):
             user=user,
             session_key=session_key,
             target_group_code=target_group_code,
-            status='draft'
+            status__in=['draft', 'submitted']
         ).order_by('-created_at').first()
         logger.info(f"Found participant by session + target: {participant.id if participant else 'None'}")
     
@@ -741,7 +741,7 @@ def survey_dashboard(request):
         participant = SurveyParticipant.objects.filter(
             user=user,
             session_key=session_key,
-            status='draft'
+            status__in=['draft', 'submitted']
         ).order_by('-created_at').first()
         logger.info(f"Found latest participant by session: {participant.id if participant else 'None'}")
     

@@ -2312,17 +2312,32 @@
                         answered = false;
                     } else {
                         let allRowsAnswered = true;
+                        let hasAnyCheckbox = false;
+                        let anyCheckboxChecked = false;
+                        
                         rows.forEach(row => {
                             let rowAnswered = false;
                             const inputs = row.querySelectorAll('input');
                             for (let inp of inputs) {
                                 if (inp.type === 'radio' && inp.checked) rowAnswered = true;
-                                if (inp.type === 'checkbox' && inp.checked) rowAnswered = true;
+                                if (inp.type === 'checkbox') {
+                                    hasAnyCheckbox = true;
+                                    if (inp.checked) {
+                                        rowAnswered = true;
+                                        anyCheckboxChecked = true;
+                                    }
+                                }
                                 if (inp.type === 'text' && inp.value.trim() !== '') rowAnswered = true;
                             }
                             if (!rowAnswered) allRowsAnswered = false;
                         });
-                        answered = allRowsAnswered;
+                        
+                        // CÂU Ô VUÔNG CHO CHỌN NHIỀU PHƯƠNG ÁN: KHÔNG BẮT BUỘC TRẢ LỜI TOÀN BỘ (CÁC HÀNG)
+                        if (hasAnyCheckbox) {
+                            answered = anyCheckboxChecked; 
+                        } else {
+                            answered = allRowsAnswered;
+                        }
                     }
                 } else if (dataTable) {
                     const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="hidden"], tbody input[type="checkbox"]:checked');

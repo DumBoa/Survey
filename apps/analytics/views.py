@@ -2027,21 +2027,24 @@ def organization_survey_summary_api(request):
             total_completed = 0
             total_in_progress = 0
             total_pending = 0
-            total_users = 0
-            total_completed_users = 0
+            total_objects = 0
+            total_completed_objects = 0
+            
+            from apps.survey.models import SurveyParticipant, SurveyProgress
             
             for org in orgs:
-                users = User.objects.filter(organization=org, is_active=True)
-                user_count = users.count()
-                total_users += user_count
+                target_objects_count = 3
+                total_objects += target_objects_count
                 
-                if user_count == 0:
+                users = User.objects.filter(organization=org, is_active=True)
+                
+                if not users.exists():
                     org_list.append({
                         'id': org.id,
                         'name': org.name,
                         'code': org.code,
                         'level': org.level,
-                        'total_users': 0,
+                        'total_users': target_objects_count,
                         'completed_users': 0,
                         'progress_percent': 0,
                         'status': 'pending',
@@ -2050,82 +2053,70 @@ def organization_survey_summary_api(request):
                     total_pending += 1
                     continue
                 
-                # Lấy target_groups của users
-                tg_ids = users.values_list('target_groups', flat=True).distinct()
-                target_groups = TargetGroup.objects.filter(id__in=tg_ids, is_active=True)
-                
-                all_form_codes = set()
-                for tg in target_groups:
-                    if tg.forms:
-                        all_form_codes.update(tg.forms)
-                
-                total_surveys = len(all_form_codes)
-                
                 user_list = []
-                completed_users = 0
+                completed_objects_count = 0
                 
-                for user in users:
-                    if total_surveys == 0:
-                        user_list.append({
-                            'id': user.id,
-                            'full_name': f"{user.last_name} {user.first_name}".strip() or user.username,
-                            'email': user.email,
-                            'completed': False,
-                            'completed_at': None
-                        })
-                        continue
+                participations = SurveyParticipant.objects.filter(user__in=users)
+                
+                for participant in participations:
+                    assigned_forms = participant.assigned_forms or []
+                    n_assigned = len(assigned_forms)
                     
-                    done_count = SurveyProgress.objects.filter(
-                        participant__user=user,
-                        form_code__in=all_form_codes,
-                        status='completed'
-                    ).values('form_code').distinct().count()
-                    
-                    is_done = done_count >= total_surveys
+                    if n_assigned > 0:
+                        n_completed = SurveyProgress.objects.filter(
+                            participant=participant,
+                            form_code__in=assigned_forms,
+                            status='completed'
+                        ).count()
+                        is_done = (n_completed == n_assigned)
+                    else:
+                        is_done = False
+                        
                     if is_done:
-                        completed_users += 1
+                        completed_objects_count += 1
                     
-                    latest = SurveyProgress.objects.filter(
-                        participant__user=user,
-                        form_code__in=all_form_codes,
+                    last_progress = SurveyProgress.objects.filter(
+                        participant=participant,
                         status='completed'
                     ).order_by('-completed_at').first()
                     
                     user_list.append({
-                        'id': user.id,
-                        'full_name': f"{user.last_name} {user.first_name}".strip() or user.username,
-                        'email': user.email,
+                        'id': participant.id,
+                        'full_name': participant.full_name or participant.email or f"Đối tượng {participant.id}",
+                        'email': participant.email or '',
                         'completed': is_done,
-                        'completed_at': latest.completed_at.isoformat() if latest else None
+                        'completed_at': last_progress.completed_at.isoformat() if (last_progress and last_progress.completed_at) else None
                     })
                 
-                pct = round((completed_users / user_count * 100), 1) if user_count > 0 else 0
+                pct = round((completed_objects_count / target_objects_count * 100), 1)
+                if pct > 100:
+                    pct = 100.0
                 
                 if pct >= 100:
                     status = 'completed'
                     total_completed += 1
-                elif pct > 0:
+                elif completed_objects_count > 0:
                     status = 'in_progress'
                     total_in_progress += 1
                 else:
                     status = 'pending'
                     total_pending += 1
                 
-                total_completed_users += completed_users
+                total_completed_objects += completed_objects_count
                 
                 org_list.append({
                     'id': org.id,
                     'name': org.name,
                     'code': org.code,
                     'level': org.level,
-                    'total_users': user_count,
-                    'completed_users': completed_users,
+                    'total_users': target_objects_count,
+                    'completed_users': completed_objects_count,
                     'progress_percent': pct,
                     'status': status,
                     'users': user_list
                 })
             
-            return org_list, total_completed, total_in_progress, total_pending, total_users, total_completed_users
+            return org_list, total_completed, total_in_progress, total_pending, total_objects, total_completed_objects
         
         # Phân loại theo level
         dept_orgs = all_orgs.filter(level='department')

@@ -1,872 +1,1041 @@
 <!-- apps/accounts/templates/accounts/congkhaosat_main.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Theo dõi, Đánh giá CCHC - Cổng khảo sát</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hệ thống Theo dõi, Cải cách Hành chính thuộc Thành phố Hà Nội</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F4F6F9;
-            color: #334155;
-            padding-bottom: 3rem;
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f4f6f9;
+        color: #334155;
+        padding-bottom: 3rem;
+      }
+      .text-primary-custom {
+        color: #1d4ed8;
+      }
+      .bg-primary-custom {
+        background-color: #1d4ed8;
+      }
+
+      .top-bar {
+        background-color: #1d4ed8;
+        color: white;
+        font-size: 0.85rem;
+        padding: 0.5rem 0;
+        font-weight: 500;
+      }
+      .header-section {
+        background-color: #ffffff;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .logo-circle {
+        width: 56px;
+        height: 56px;
+        background-color: #1d4ed8;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        text-align: center;
+        line-height: 1.1;
+        flex-shrink: 0;
+      }
+      .stepper-wrapper {
+        background-color: #ffffff;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .step {
+        display: flex;
+        align-items: flex-start;
+        position: relative;
+        z-index: 1;
+        cursor: pointer;
+      }
+      .step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-right: 12px;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+      }
+      .step.active .step-number {
+        background-color: #1d4ed8;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.2);
+      }
+      .step.completed .step-number {
+        background-color: #10b981;
+        color: white;
+      }
+      .step.inactive .step-number {
+        background-color: #e2e8f0;
+        color: #64748b;
+      }
+      .step-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #1e293b;
+        margin-bottom: 2px;
+      }
+      .step.inactive .step-title {
+        color: #64748b;
+      }
+      .step.completed .step-title {
+        color: #10b981;
+      }
+      .step-subtitle {
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      .step-line {
+        height: 2px;
+        background-color: #e2e8f0;
+        width: 40px;
+        margin: 14px 16px 0 16px;
+        transition: background-color 0.3s ease;
+      }
+      .step-line.completed {
+        background-color: #10b981;
+      }
+      .main-container {
+        margin-top: 2rem;
+      }
+      .card-custom {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+      }
+      .step-content {
+        display: none;
+      }
+      .step-content.active {
+        display: block;
+        animation: fadeIn 0.4s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
-        .text-primary-custom { color: #1D4ED8; }
-        .bg-primary-custom { background-color: #1D4ED8; }
-        
-        .top-bar {
-            background-color: #1D4ED8;
-            color: white;
-            font-size: 0.85rem;
-            padding: 0.5rem 0;
-            font-weight: 500;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .header-section {
-            background-color: #ffffff;
-            padding: 1.5rem 0;
-            border-bottom: 1px solid #E2E8F0;
+      }
+      .alert-info-custom {
+        background-color: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e3a8a;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+      }
+      .field-label {
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin-bottom: 1rem;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+      }
+      .field-label::before {
+        content: "";
+        display: inline-block;
+        width: 4px;
+        height: 20px;
+        background-color: #1d4ed8;
+        margin-right: 8px;
+        border-radius: 2px;
+      }
+      .required-star {
+        color: #ef4444;
+        margin-left: 4px;
+      }
+
+      /* Login form styles */
+      .login-input {
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 1rem;
+        transition: all 0.2s;
+        width: 100%;
+      }
+      .login-input:focus {
+        border-color: #1d4ed8;
+        box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+        outline: none;
+      }
+      .login-input.is-invalid {
+        border-color: #ef4444;
+      }
+      .btn-login {
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+        background-color: #1d4ed8;
+        color: white;
+        border: none;
+        width: 100%;
+      }
+      .btn-login:hover:not(:disabled) {
+        background-color: #1e40af;
+        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+      }
+      .btn-login:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Target group radio cards */
+      .radio-card {
+        display: flex;
+        align-items: flex-start;
+        padding: 1.25rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        background-color: #ffffff;
+      }
+      .radio-card:hover {
+        border-color: #93c5fd;
+        background-color: #f8fafc;
+      }
+      .radio-card.active {
+        border-color: #1d4ed8;
+        background-color: #eff6ff;
+      }
+      .radio-card.selected {
+        border-color: #10b981;
+        background-color: #ecfdf5;
+      }
+      .radio-input-wrapper {
+        margin-right: 1rem;
+        margin-top: 4px;
+      }
+      .form-check-input-custom {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+      }
+      .radio-icon-box {
+        width: 40px;
+        height: 40px;
+        background-color: #f1f5f9;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #64748b;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        transition: all 0.2s;
+      }
+      .radio-card.active .radio-icon-box {
+        background-color: #1d4ed8;
+        color: white;
+      }
+      .radio-card.selected .radio-icon-box {
+        background-color: #10b981;
+        color: white;
+      }
+      .radio-content {
+        flex-grow: 1;
+      }
+      .radio-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.25rem;
+      }
+      .radio-subtitle {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 0;
+      }
+      .badge-form {
+        background-color: #e2e8f0;
+        color: #475569;
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin-left: 4px;
+      }
+      .radio-card.active .badge-form {
+        background-color: #1d4ed8;
+        color: white;
+      }
+      .radio-card.selected .badge-form {
+        background-color: #10b981;
+        color: white;
+      }
+
+      .btn-navigation {
+        padding: 0.7rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .btn-navigation:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-prev {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+      }
+      .btn-prev:hover:not(:disabled) {
+        background-color: #e2e8f0;
+      }
+      .btn-next {
+        background-color: #1d4ed8;
+        color: white;
+        border: none;
+      }
+      .btn-next:hover:not(:disabled) {
+        background-color: #1e40af;
+        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+      }
+      .btn-submit {
+        background-color: #10b981;
+        color: white;
+        border: none;
+      }
+      .btn-submit:hover:not(:disabled) {
+        background-color: #059669;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+
+      /* Sidebar */
+      .sidebar-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+      .sidebar-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+      }
+      .dynamic-value {
+        font-weight: 500;
+        color: #0f172a;
+        font-size: 0.95rem;
+      }
+      .dynamic-placeholder {
+        color: #94a3b8;
+        font-style: italic;
+      }
+      .sidebar-step-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .sidebar-step-indicator:last-child {
+        border-bottom: none;
+      }
+      .sidebar-step-indicator .step-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #e2e8f0;
+        flex-shrink: 0;
+      }
+      .sidebar-step-indicator .step-dot.active {
+        background-color: #1d4ed8;
+      }
+      .sidebar-step-indicator .step-dot.completed {
+        background-color: #10b981;
+      }
+      .sidebar-step-indicator .step-label {
+        font-size: 0.85rem;
+        color: #64748b;
+      }
+      .sidebar-step-indicator .step-label.active {
+        color: #1d4ed8;
+        font-weight: 600;
+      }
+      .sidebar-step-indicator .step-label.completed {
+        color: #10b981;
+        font-weight: 600;
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .loading-overlay.show {
+        display: flex;
+      }
+
+      .toast-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        display: none;
+        max-width: 400px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+      }
+      .toast-message.success {
+        background: #f0fdf4;
+        color: #065f46;
+        border: 1px solid #86efac;
+      }
+      .toast-message.error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fca5a5;
+      }
+      .toast-message.show {
+        display: block;
+        animation: slideIn 0.3s ease;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
         }
-        .logo-circle {
-            width: 56px;
-            height: 56px;
-            background-color: #1D4ED8;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-            text-align: center;
-            line-height: 1.1;
-            flex-shrink: 0;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .stepper-wrapper {
-            background-color: #ffffff;
-            padding: 1.5rem 0;
-            border-bottom: 1px solid #E2E8F0;
-        }
-        .step {
-            display: flex;
-            align-items: flex-start;
-            position: relative;
-            z-index: 1;
-            cursor: pointer;
-        }
-        .step-number {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-right: 12px;
-            flex-shrink: 0;
-            transition: all 0.3s ease;
-        }
-        .step.active .step-number {
-            background-color: #1D4ED8;
-            color: white;
-            box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.2);
-        }
-        .step.completed .step-number {
-            background-color: #10B981;
-            color: white;
-        }
-        .step.inactive .step-number {
-            background-color: #E2E8F0;
-            color: #64748B;
-        }
-        .step-title { font-weight: 600; font-size: 0.95rem; color: #1e293b; margin-bottom: 2px;}
-        .step.inactive .step-title { color: #64748B; }
-        .step.completed .step-title { color: #10B981; }
-        .step-subtitle { font-size: 0.8rem; color: #64748B; }
+      }
+
+      .no-data-message {
+        padding: 2rem;
+        text-align: center;
+        color: #64748b;
+      }
+
+      @media (max-width: 768px) {
         .step-line {
-            height: 2px;
-            background-color: #E2E8F0;
-            width: 40px;
-            margin: 14px 16px 0 16px;
-            transition: background-color 0.3s ease;
+          display: none;
         }
-        .step-line.completed { background-color: #10B981; }
-        .main-container { margin-top: 2rem; }
-        .card-custom {
-            background-color: #ffffff;
-            border-radius: 12px;
-            border: 1px solid #E2E8F0;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        .step-subtitle {
+          display: none;
         }
-        .step-content { display: none; }
-        .step-content.active {
-            display: block;
-            animation: fadeIn 0.4s ease;
+        .stepper-wrapper .d-flex {
+          flex-direction: column;
+          gap: 1rem;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .alert-info-custom {
-            background-color: #EFF6FF;
-            border: 1px solid #BFDBFE;
-            color: #1E3A8A;
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
-        }
-        .field-label {
-            font-weight: 600;
-            font-size: 1.05rem;
-            margin-bottom: 1rem;
-            color: #0F172A;
-            display: flex;
-            align-items: center;
-        }
-        .field-label::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 20px;
-            background-color: #1D4ED8;
-            margin-right: 8px;
-            border-radius: 2px;
-        }
-        .required-star { color: #EF4444; margin-left: 4px; }
-        
-        /* Login form styles */
-        .login-input {
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            border: 1px solid #CBD5E1;
-            font-size: 1rem;
-            transition: all 0.2s;
-            width: 100%;
-        }
-        .login-input:focus {
-            border-color: #1D4ED8;
-            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
-            outline: none;
-        }
-        .login-input.is-invalid {
-            border-color: #EF4444;
-        }
-        .btn-login {
-            padding: 0.8rem 2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s;
-            background-color: #1D4ED8;
-            color: white;
-            border: none;
-            width: 100%;
-        }
-        .btn-login:hover:not(:disabled) {
-            background-color: #1E40AF;
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
-        }
-        .btn-login:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Target group radio cards */
         .radio-card {
-            display: flex;
-            align-items: flex-start;
-            padding: 1.25rem;
-            border: 1.5px solid #E2E8F0;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            background-color: #ffffff;
+          padding: 1rem;
         }
-        .radio-card:hover {
-            border-color: #93C5FD;
-            background-color: #F8FAFC;
-        }
-        .radio-card.active {
-            border-color: #1D4ED8;
-            background-color: #EFF6FF;
-        }
-        .radio-card.selected {
-            border-color: #10B981;
-            background-color: #ECFDF5;
-        }
-        .radio-input-wrapper {
-            margin-right: 1rem;
-            margin-top: 4px;
-        }
-        .form-check-input-custom {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-        .radio-icon-box {
-            width: 40px;
-            height: 40px;
-            background-color: #F1F5F9;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #64748B;
-            margin-right: 1rem;
-            flex-shrink: 0;
-            transition: all 0.2s;
-        }
-        .radio-card.active .radio-icon-box {
-            background-color: #1D4ED8;
-            color: white;
-        }
-        .radio-card.selected .radio-icon-box {
-            background-color: #10B981;
-            color: white;
-        }
-        .radio-content { flex-grow: 1; }
-        .radio-title { font-weight: 600; color: #1E293B; margin-bottom: 0.25rem; }
-        .radio-subtitle { font-size: 0.85rem; color: #64748B; margin: 0; }
-        .badge-form {
-            background-color: #E2E8F0;
-            color: #475569;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 4px;
-            margin-left: 4px;
-        }
-        .radio-card.active .badge-form {
-            background-color: #1D4ED8;
-            color: white;
-        }
-        .radio-card.selected .badge-form {
-            background-color: #10B981;
-            color: white;
-        }
-
-        .btn-navigation {
-            padding: 0.7rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn-navigation:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .btn-prev {
-            background-color: #F1F5F9;
-            color: #475569;
-            border: 1px solid #E2E8F0;
-        }
-        .btn-prev:hover:not(:disabled) {
-            background-color: #E2E8F0;
-        }
-        .btn-next {
-            background-color: #1D4ED8;
-            color: white;
-            border: none;
-        }
-        .btn-next:hover:not(:disabled) {
-            background-color: #1E40AF;
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
-        }
-        .btn-submit {
-            background-color: #10B981;
-            color: white;
-            border: none;
-        }
-        .btn-submit:hover:not(:disabled) {
-            background-color: #059669;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        /* Sidebar */
-        .sidebar-card {
-            background-color: #ffffff;
-            border-radius: 12px;
-            border: 1px solid #E2E8F0;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .sidebar-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #64748B;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-        }
-        .dynamic-value {
-            font-weight: 500;
-            color: #0F172A;
-            font-size: 0.95rem;
-        }
-        .dynamic-placeholder { color: #94A3B8; font-style: italic; }
-        .sidebar-step-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 0;
-            border-bottom: 1px solid #F1F5F9;
-        }
-        .sidebar-step-indicator:last-child {
-            border-bottom: none;
-        }
-        .sidebar-step-indicator .step-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: #E2E8F0;
-            flex-shrink: 0;
-        }
-        .sidebar-step-indicator .step-dot.active {
-            background-color: #1D4ED8;
-        }
-        .sidebar-step-indicator .step-dot.completed {
-            background-color: #10B981;
-        }
-        .sidebar-step-indicator .step-label {
-            font-size: 0.85rem;
-            color: #64748B;
-        }
-        .sidebar-step-indicator .step-label.active {
-            color: #1D4ED8;
-            font-weight: 600;
-        }
-        .sidebar-step-indicator .step-label.completed {
-            color: #10B981;
-            font-weight: 600;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255,255,255,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .toast-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            display: none;
-            max-width: 400px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.12);
-        }
-        .toast-message.success {
-            background: #f0fdf4;
-            color: #065f46;
-            border: 1px solid #86efac;
-        }
-        .toast-message.error {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-        .toast-message.show {
-            display: block;
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .no-data-message {
-            padding: 2rem;
-            text-align: center;
-            color: #64748B;
-        }
-
-        @media (max-width: 768px) {
-            .step-line { display: none; }
-            .step-subtitle { display: none; }
-            .stepper-wrapper .d-flex { flex-direction: column; gap: 1rem; }
-            .radio-card { padding: 1rem; }
-        }
+      }
     </style>
-</head>
-<body>
-
+  </head>
+  <body>
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
-        <div class="text-center">
-            <div class="spinner-border text-primary-custom" role="status">
-                <span class="visually-hidden">Đang tải...</span>
-            </div>
-            <p class="mt-2 text-muted">Đang xử lý...</p>
+      <div class="text-center">
+        <div class="spinner-border text-primary-custom" role="status">
+          <span class="visually-hidden">Đang tải...</span>
         </div>
+        <p class="mt-2 text-muted">Đang xử lý...</p>
+      </div>
     </div>
 
     <!-- Toast -->
     <div id="toast" class="toast-message">
-        <span id="toastMessage"></span>
+      <span id="toastMessage"></span>
     </div>
 
     <!-- Top Bar -->
 
     <!-- Header -->
     <header class="header-section">
-        <div class="container-lg d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <div class="logo-circle me-3">CCHC</div>
-                <div>
-                    <div class="text-uppercase text-muted" style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;">Bộ Nội Vụ • Vụ Cải Cách Hành Chính</div>
-                    <h1 class="h4 mb-1 fw-bold text-dark">Hệ thống Theo dõi, Đánh giá Cải cách Hành chính (CCHC)</h1>
-                    <div class="text-muted" style="font-size: 0.9rem;">Cổng khảo sát trực tuyến dành cho cán bộ, công chức</div>
-                </div>
+      <div
+        class="container-lg d-flex align-items-center justify-content-between"
+      >
+        <div class="d-flex align-items-center">
+          <div class="logo-circle me-3">CCHC</div>
+          <div>
+            <h1 class="h4 mb-1 fw-bold text-dark">
+              Hệ thống Theo dõi, Cải cách Hành chính thuộc Thành phố Hà Nội
+            </h1>
+            <div class="text-muted" style="font-size: 0.9rem">
+              Cổng khảo sát trực tuyến dành cho cán bộ, công chức
             </div>
-            <div class="text-end" id="userInfoHeader" style="display:none;">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="text-muted small">
-                        <i class="bi bi-person-circle me-1"></i>
-                        <span id="userDisplayName"></span>
-                    </div>
-                    <button class="btn btn-sm btn-outline-danger" onclick="handleLogout()">
-                        <i class="bi bi-box-arrow-right"></i>
-                    </button>
-                </div>
-            </div>
+          </div>
         </div>
+        <div class="text-end" id="userInfoHeader" style="display: none">
+          <div class="d-flex align-items-center gap-3">
+            <div class="text-muted small">
+              <i class="bi bi-person-circle me-1"></i>
+              <span id="userDisplayName"></span>
+            </div>
+            <button
+              class="btn btn-sm btn-outline-danger"
+              onclick="handleLogout()"
+            >
+              <i class="bi bi-box-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
     </header>
 
     <!-- Stepper - Chỉ còn 3 bước -->
     <div class="stepper-wrapper">
-        <div class="container-lg">
-            <div class="d-flex align-items-center" id="stepWizard">
-                <div class="step active" data-step="1">
-                    <div class="step-number">1</div>
-                    <div>
-                        <div class="step-title">Đăng nhập</div>
-                        <div class="step-subtitle">Xác thực tài khoản</div>
-                    </div>
-                </div>
-                <div class="step-line" id="line1"></div>
-                <div class="step inactive" data-step="2">
-                    <div class="step-number">2</div>
-                    <div>
-                        <div class="step-title">Chọn nhóm đối tượng</div>
-                        <div class="step-subtitle">Xác định vai trò</div>
-                    </div>
-                </div>
-                <div class="step-line" id="line2"></div>
-                <div class="step inactive" data-step="3">
-                    <div class="step-number">3</div>
-                    <div>
-                        <div class="step-title">Xác nhận</div>
-                        <div class="step-subtitle">Kiểm tra thông tin</div>
-                    </div>
-                </div>
+      <div class="container-lg">
+        <div class="d-flex align-items-center" id="stepWizard">
+          <div class="step active" data-step="1">
+            <div class="step-number">1</div>
+            <div>
+              <div class="step-title">Đăng nhập</div>
+              <div class="step-subtitle">Xác thực tài khoản</div>
             </div>
-            <div class="mt-3 text-primary-custom fw-medium" style="font-size: 0.9rem;" id="stepDescription">
-                Bước 1 / 3: <span class="text-muted fw-normal">Đăng nhập để tiếp tục</span>
+          </div>
+          <div class="step-line" id="line1"></div>
+          <div class="step inactive" data-step="2">
+            <div class="step-number">2</div>
+            <div>
+              <div class="step-title">Chọn nhóm đối tượng</div>
+              <div class="step-subtitle">Xác định vai trò</div>
             </div>
+          </div>
+          <div class="step-line" id="line2"></div>
+          <div class="step inactive" data-step="3">
+            <div class="step-number">3</div>
+            <div>
+              <div class="step-title">Xác nhận</div>
+              <div class="step-subtitle">Kiểm tra thông tin</div>
+            </div>
+          </div>
         </div>
+        <div
+          class="mt-3 text-primary-custom fw-medium"
+          style="font-size: 0.9rem"
+          id="stepDescription"
+        >
+          Bước 1 / 3:
+          <span class="text-muted fw-normal">Đăng nhập để tiếp tục</span>
+        </div>
+      </div>
     </div>
 
     <!-- Main Content -->
     <div class="container-lg main-container">
-        <div class="row">
-            <div class="col-lg-8">
-                
-                <!-- STEP 1: ĐĂNG NHẬP -->
-                <div class="step-content active" id="step1Content">
-                    <div class="card-custom">
-                        <div class="alert-info-custom">
-                            <i class="bi bi-shield-lock fs-5 mt-1"></i>
-                            <div>
-                                <strong>Đăng nhập vào hệ thống</strong><br>
-                                Sử dụng tài khoản được cấp để tham gia khảo sát.
-                            </div>
-                        </div>
+      <div class="row">
+        <div class="col-lg-8">
+          <!-- STEP 1: ĐĂNG NHẬP -->
+          <div class="step-content active" id="step1Content">
+            <div class="card-custom">
+              <div class="alert-info-custom">
+                <i class="bi bi-shield-lock fs-5 mt-1"></i>
+                <div>
+                  <strong>Đăng nhập vào hệ thống</strong><br />
+                  Sử dụng tài khoản được cấp để tham gia khảo sát.
+                </div>
+              </div>
 
-                        <form id="loginForm" onsubmit="handleLogin(event)">
-                            <div class="mb-3">
-                                <label for="loginUsername" class="form-label fw-medium">Tên đăng nhập <span class="required-star">*</span></label>
-                                <input type="text" id="loginUsername" class="login-input" 
-                                       placeholder="Nhập tên đăng nhập" required>
-                                <div class="invalid-feedback" id="loginUsernameError" style="display:none;">Vui lòng nhập tên đăng nhập</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="loginPassword" class="form-label fw-medium">Mật khẩu <span class="required-star">*</span></label>
-                                <input type="password" id="loginPassword" class="login-input" 
-                                       placeholder="Nhập mật khẩu" required>
-                                <div class="invalid-feedback" id="loginPasswordError" style="display:none;">Vui lòng nhập mật khẩu</div>
-                            </div>
-
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" id="loginRemember" class="form-check-input">
-                                <label for="loginRemember" class="form-check-label text-muted">Ghi nhớ đăng nhập</label>
-                            </div>
-
-                            <button type="submit" class="btn-login" id="loginBtn">
-                                <span id="loginBtnText">Đăng nhập</span>
-                                <i class="bi bi-arrow-right ms-2"></i>
-                            </button>
-                        </form>
-                    </div>
+              <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-3">
+                  <label for="loginUsername" class="form-label fw-medium"
+                    >Tên đăng nhập <span class="required-star">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="loginUsername"
+                    class="login-input"
+                    placeholder="Nhập tên đăng nhập"
+                    required
+                  />
+                  <div
+                    class="invalid-feedback"
+                    id="loginUsernameError"
+                    style="display: none"
+                  >
+                    Vui lòng nhập tên đăng nhập
+                  </div>
                 </div>
 
-                <!-- STEP 2: CHỌN NHÓM ĐỐI TƯỢNG -->
-                <div class="step-content" id="step2Content">
-                    <div class="card-custom">
-                        <div class="alert-info-custom">
-                            <i class="bi bi-people fs-5 mt-1"></i>
-                            <div>
-                                <strong>Xin chào <span id="greetingName"></span>!</strong><br>
-                                Vui lòng chọn nhóm đối tượng phù hợp với chức danh và nhiệm vụ của bạn.
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="field-label">Chọn Nhóm đối tượng / Vai trò <span class="required-star">*</span></div>
-                            <p class="text-muted mb-3" style="font-size: 0.85rem;">Nhóm đối tượng sẽ xác định biểu mẫu khảo sát được gán cho bạn</p>
-
-                            <div id="targetGroupsContainer">
-                                <div class="text-center py-3">
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
-                                        <span class="visually-hidden">Đang tải...</span>
-                                    </div>
-                                    <span class="ms-2 text-muted">Đang tải danh sách nhóm đối tượng...</span>
-                                </div>
-                            </div>
-                            <div class="invalid-feedback d-block" id="roleError" style="display:none;">Vui lòng chọn nhóm đối tượng</div>
-                        </div>
-
-                        <div class="d-flex justify-content-end mt-4">
-                            <button class="btn btn-next btn-navigation" id="btnToStep3" disabled>
-                                Tiếp tục <i class="bi bi-arrow-right ms-2"></i>
-                            </button>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                  <label for="loginPassword" class="form-label fw-medium"
+                    >Mật khẩu <span class="required-star">*</span></label
+                  >
+                  <input
+                    type="password"
+                    id="loginPassword"
+                    class="login-input"
+                    placeholder="Nhập mật khẩu"
+                    required
+                  />
+                  <div
+                    class="invalid-feedback"
+                    id="loginPasswordError"
+                    style="display: none"
+                  >
+                    Vui lòng nhập mật khẩu
+                  </div>
                 </div>
 
-                <!-- STEP 3: XÁC NHẬN (Đã bỏ bước xác minh SĐT) -->
-                <div class="step-content" id="step3Content">
-                    <div class="card-custom">
-                        <div class="alert-info-custom">
-                            <i class="bi bi-check-circle fs-5 mt-1"></i>
-                            <div>
-                                <strong>Xác nhận thông tin</strong><br>
-                                Vui lòng kiểm tra lại thông tin trước khi vào bảng điều khiển khảo sát.
-                            </div>
-                        </div>
-
-                        <!-- Thông tin xác nhận -->
-                        <div class="bg-light rounded-3 p-4 mb-4">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="text-muted small text-uppercase fw-semibold">Người dùng</div>
-                                    <div class="fw-medium" id="confirmUser">---</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-muted small text-uppercase fw-semibold">Đơn vị công tác</div>
-                                    <div class="fw-medium" id="confirmAgency">---</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-muted small text-uppercase fw-semibold">Nhóm đối tượng</div>
-                                    <div class="fw-medium" id="confirmGroup">---</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-muted small text-uppercase fw-semibold">Số biểu mẫu được gán</div>
-                                    <div class="fw-medium" id="confirmFormCount">---</div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="text-muted small text-uppercase fw-semibold">Danh sách biểu mẫu</div>
-                                    <div class="fw-medium" id="confirmForms">---</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-4">
-                            <button class="btn btn-prev btn-navigation" id="btnBackToStep2">
-                                <i class="bi bi-arrow-left me-2"></i> Quay lại
-                            </button>
-                            <button class="btn btn-submit btn-navigation" id="btnConfirmAndGo">
-                                <i class="bi bi-check-circle me-2"></i> Xác nhận và vào Dashboard
-                            </button>
-                        </div>
-                    </div>
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    id="loginRemember"
+                    class="form-check-input"
+                  />
+                  <label for="loginRemember" class="form-check-label text-muted"
+                    >Ghi nhớ đăng nhập</label
+                  >
                 </div>
 
+                <button type="submit" class="btn-login" id="loginBtn">
+                  <span id="loginBtnText">Đăng nhập</span>
+                  <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+              </form>
             </div>
+          </div>
 
-            <!-- SIDEBAR -->
-            <div class="col-lg-4">
-                <div class="sidebar-card">
-                    <div class="sidebar-title">Tiến độ</div>
-                    <div id="stepIndicator">
-                        <div class="sidebar-step-indicator">
-                            <div class="step-dot active" id="dot1"></div>
-                            <span class="step-label active" id="label1">Bước 1: Đăng nhập</span>
-                        </div>
-                        <div class="sidebar-step-indicator">
-                            <div class="step-dot" id="dot2"></div>
-                            <span class="step-label" id="label2">Bước 2: Chọn nhóm</span>
-                        </div>
-                        <div class="sidebar-step-indicator">
-                            <div class="step-dot" id="dot3"></div>
-                            <span class="step-label" id="label3">Bước 3: Xác nhận</span>
-                        </div>
-                    </div>
+          <!-- STEP 2: CHỌN NHÓM ĐỐI TƯỢNG -->
+          <div class="step-content" id="step2Content">
+            <div class="card-custom">
+              <div class="alert-info-custom">
+                <i class="bi bi-people fs-5 mt-1"></i>
+                <div>
+                  <strong>Xin chào <span id="greetingName"></span>!</strong
+                  ><br />
+                  Vui lòng chọn nhóm đối tượng phù hợp với chức danh và nhiệm vụ
+                  của bạn.
                 </div>
+              </div>
 
-                <div class="sidebar-card" id="infoSidebar">
-                    <div class="sidebar-title">Thông tin</div>
-                    <div id="sidebarInfo">
-                        <div class="text-muted" style="font-size: 0.85rem;">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Vui lòng đăng nhập để tiếp tục
-                        </div>
-                    </div>
+              <div>
+                <div class="field-label">
+                  Chọn Nhóm đối tượng / Vai trò
+                  <span class="required-star">*</span>
                 </div>
+                <p class="text-muted mb-3" style="font-size: 0.85rem">
+                  Nhóm đối tượng sẽ xác định biểu mẫu khảo sát được gán cho bạn
+                </p>
 
-                <div class="sidebar-card bg-light border-0">
-                    <div class="sidebar-title">Cần hỗ trợ?</div>
-                    <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">
-                        Nếu gặp vấn đề khi đăng nhập hoặc chọn nhóm đối tượng, vui lòng liên hệ thông tin dưới đây.
-                    </p>
-                    <div style="font-size: 0.85rem; color: #1e293b;" class="fw-medium">
-                        <div class="mb-2"><i class="bi bi-telephone-fill text-danger me-2"></i>Đường dây nóng: 0848076556</div>
-                        <div><i class="bi bi-envelope-fill text-muted me-2"></i>0848076556</div>
+                <div id="targetGroupsContainer">
+                  <div class="text-center py-3">
+                    <div
+                      class="spinner-border spinner-border-sm text-primary"
+                      role="status"
+                    >
+                      <span class="visually-hidden">Đang tải...</span>
                     </div>
+                    <span class="ms-2 text-muted"
+                      >Đang tải danh sách nhóm đối tượng...</span
+                    >
+                  </div>
                 </div>
+                <div
+                  class="invalid-feedback d-block"
+                  id="roleError"
+                  style="display: none"
+                >
+                  Vui lòng chọn nhóm đối tượng
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end mt-4">
+                <button
+                  class="btn btn-next btn-navigation"
+                  id="btnToStep3"
+                  disabled
+                >
+                  Tiếp tục <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+              </div>
             </div>
+          </div>
+
+          <!-- STEP 3: XÁC NHẬN (Đã bỏ bước xác minh SĐT) -->
+          <div class="step-content" id="step3Content">
+            <div class="card-custom">
+              <div class="alert-info-custom">
+                <i class="bi bi-check-circle fs-5 mt-1"></i>
+                <div>
+                  <strong>Xác nhận thông tin</strong><br />
+                  Vui lòng kiểm tra lại thông tin trước khi vào bảng điều khiển
+                  khảo sát.
+                </div>
+              </div>
+
+              <!-- Thông tin xác nhận -->
+              <div class="bg-light rounded-3 p-4 mb-4">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="text-muted small text-uppercase fw-semibold">
+                      Người dùng
+                    </div>
+                    <div class="fw-medium" id="confirmUser">---</div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="text-muted small text-uppercase fw-semibold">
+                      Đơn vị công tác
+                    </div>
+                    <div class="fw-medium" id="confirmAgency">---</div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="text-muted small text-uppercase fw-semibold">
+                      Nhóm đối tượng
+                    </div>
+                    <div class="fw-medium" id="confirmGroup">---</div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="text-muted small text-uppercase fw-semibold">
+                      Số biểu mẫu được gán
+                    </div>
+                    <div class="fw-medium" id="confirmFormCount">---</div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="text-muted small text-uppercase fw-semibold">
+                      Danh sách biểu mẫu
+                    </div>
+                    <div class="fw-medium" id="confirmForms">---</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-prev btn-navigation" id="btnBackToStep2">
+                  <i class="bi bi-arrow-left me-2"></i> Quay lại
+                </button>
+                <button
+                  class="btn btn-submit btn-navigation"
+                  id="btnConfirmAndGo"
+                >
+                  <i class="bi bi-check-circle me-2"></i> Xác nhận và vào
+                  Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- SIDEBAR -->
+        <div class="col-lg-4">
+          <div class="sidebar-card">
+            <div class="sidebar-title">Tiến độ</div>
+            <div id="stepIndicator">
+              <div class="sidebar-step-indicator">
+                <div class="step-dot active" id="dot1"></div>
+                <span class="step-label active" id="label1"
+                  >Bước 1: Đăng nhập</span
+                >
+              </div>
+              <div class="sidebar-step-indicator">
+                <div class="step-dot" id="dot2"></div>
+                <span class="step-label" id="label2">Bước 2: Chọn nhóm</span>
+              </div>
+              <div class="sidebar-step-indicator">
+                <div class="step-dot" id="dot3"></div>
+                <span class="step-label" id="label3">Bước 3: Xác nhận</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card" id="infoSidebar">
+            <div class="sidebar-title">Thông tin</div>
+            <div id="sidebarInfo">
+              <div class="text-muted" style="font-size: 0.85rem">
+                <i class="bi bi-info-circle me-1"></i>
+                Vui lòng đăng nhập để tiếp tục
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card bg-light border-0">
+            <div class="sidebar-title">Cần hỗ trợ?</div>
+            <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem">
+              Nếu gặp vấn đề khi đăng nhập hoặc chọn nhóm đối tượng, vui lòng
+              liên hệ thông tin dưới đây.
+            </p>
+            <div style="font-size: 0.85rem; color: #1e293b" class="fw-medium">
+              <div class="mb-2">
+                <i class="bi bi-telephone-fill text-danger me-2"></i>Đường dây
+                nóng: 0848076556
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-<script>
-    // ============================================
-    // STATE
-    // ============================================
-    let currentStep = 1;
-    let selectedGroup = null;
-    let targetGroups = [];
-    let userData = null;
+    <script>
+      // ============================================
+      // STATE
+      // ============================================
+      let currentStep = 1;
+      let selectedGroup = null;
+      let targetGroups = [];
+      let userData = null;
 
-    // ============================================
-    // TOAST
-    // ============================================
-    function showToast(message, type = 'success') {
-        const toast = document.getElementById('toast');
-        const toastMsg = document.getElementById('toastMessage');
-        toast.className = 'toast-message ' + type;
+      // ============================================
+      // TOAST
+      // ============================================
+      function showToast(message, type = "success") {
+        const toast = document.getElementById("toast");
+        const toastMsg = document.getElementById("toastMessage");
+        toast.className = "toast-message " + type;
         toastMsg.textContent = message;
-        toast.classList.add('show');
+        toast.classList.add("show");
         setTimeout(() => {
-            toast.classList.remove('show');
+          toast.classList.remove("show");
         }, 4000);
-    }
+      }
 
-    // ============================================
-    // LOADING
-    // ============================================
-    function showLoading() {
-        document.getElementById('loadingOverlay').classList.add('show');
-    }
+      // ============================================
+      // LOADING
+      // ============================================
+      function showLoading() {
+        document.getElementById("loadingOverlay").classList.add("show");
+      }
 
-    function hideLoading() {
-        document.getElementById('loadingOverlay').classList.remove('show');
-    }
+      function hideLoading() {
+        document.getElementById("loadingOverlay").classList.remove("show");
+      }
 
-    // ============================================
-    // CSRF TOKEN
-    // ============================================
-    function getCSRFToken() {
+      // ============================================
+      // CSRF TOKEN
+      // ============================================
+      function getCSRFToken() {
         let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, 10) === 'csrftoken=') {
-                    cookieValue = decodeURIComponent(cookie.substring(10));
-                    break;
-                }
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 10) === "csrftoken=") {
+              cookieValue = decodeURIComponent(cookie.substring(10));
+              break;
             }
+          }
         }
         return cookieValue;
-    }
+      }
 
-    // ============================================
-    // NAVIGATION - Cập nhật chỉ 3 bước
-    // ============================================
-    function goToStep(step) {
-        document.querySelectorAll('.step-content').forEach(el => {
-            el.classList.remove('active');
+      // ============================================
+      // NAVIGATION - Cập nhật chỉ 3 bước
+      // ============================================
+      function goToStep(step) {
+        document.querySelectorAll(".step-content").forEach((el) => {
+          el.classList.remove("active");
         });
-        
+
         const contentMap = {
-            1: 'step1Content',
-            2: 'step2Content',
-            3: 'step3Content'
+          1: "step1Content",
+          2: "step2Content",
+          3: "step3Content",
         };
-        document.getElementById(contentMap[step]).classList.add('active');
-        
-        const stepElements = document.querySelectorAll('#stepWizard .step');
-        stepElements.forEach((el, idx) => {
-            const num = idx + 1;
-            el.classList.remove('active', 'completed', 'inactive');
-            if (num === step) el.classList.add('active');
-            else if (num < step) el.classList.add('completed');
-            else el.classList.add('inactive');
-        });
-        
-        // Cập nhật lines (chỉ có 2 lines)
-        const stepLines = [document.getElementById('line1'), document.getElementById('line2')];
-        stepLines.forEach((line, idx) => {
-            if (idx + 1 < step) line.classList.add('completed');
-            else line.classList.remove('completed');
-        });
-        
-        // Cập nhật sidebar dots & labels (chỉ 3)
-        const stepDots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3')];
-        const stepLabels = [document.getElementById('label1'), document.getElementById('label2'), document.getElementById('label3')];
-        
-        stepDots.forEach((dot, idx) => {
-            const num = idx + 1;
-            dot.className = 'step-dot';
-            if (num === step) dot.classList.add('active');
-            else if (num < step) dot.classList.add('completed');
-        });
-        
-        stepLabels.forEach((label, idx) => {
-            const num = idx + 1;
-            label.className = 'step-label';
-            if (num === step) label.classList.add('active');
-            else if (num < step) label.classList.add('completed');
-        });
-        
-        const descriptions = [
-            'Đăng nhập để tiếp tục',
-            'Chọn nhóm đối tượng phù hợp',
-            'Xác nhận thông tin và vào Dashboard'
-        ];
-        document.querySelector('#stepDescription span').textContent = descriptions[step - 1] || '';
-        document.querySelector('#stepDescription').innerHTML = 
-            `Bước ${step} / 3: <span class="text-muted fw-normal">${descriptions[step - 1] || ''}</span>`;
-        
-        currentStep = step;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+        document.getElementById(contentMap[step]).classList.add("active");
 
-    // ============================================
-    // LOGIN
-    // ============================================
-    function handleLogin(event) {
+        const stepElements = document.querySelectorAll("#stepWizard .step");
+        stepElements.forEach((el, idx) => {
+          const num = idx + 1;
+          el.classList.remove("active", "completed", "inactive");
+          if (num === step) el.classList.add("active");
+          else if (num < step) el.classList.add("completed");
+          else el.classList.add("inactive");
+        });
+
+        // Cập nhật lines (chỉ có 2 lines)
+        const stepLines = [
+          document.getElementById("line1"),
+          document.getElementById("line2"),
+        ];
+        stepLines.forEach((line, idx) => {
+          if (idx + 1 < step) line.classList.add("completed");
+          else line.classList.remove("completed");
+        });
+
+        // Cập nhật sidebar dots & labels (chỉ 3)
+        const stepDots = [
+          document.getElementById("dot1"),
+          document.getElementById("dot2"),
+          document.getElementById("dot3"),
+        ];
+        const stepLabels = [
+          document.getElementById("label1"),
+          document.getElementById("label2"),
+          document.getElementById("label3"),
+        ];
+
+        stepDots.forEach((dot, idx) => {
+          const num = idx + 1;
+          dot.className = "step-dot";
+          if (num === step) dot.classList.add("active");
+          else if (num < step) dot.classList.add("completed");
+        });
+
+        stepLabels.forEach((label, idx) => {
+          const num = idx + 1;
+          label.className = "step-label";
+          if (num === step) label.classList.add("active");
+          else if (num < step) label.classList.add("completed");
+        });
+
+        const descriptions = [
+          "Đăng nhập để tiếp tục",
+          "Chọn nhóm đối tượng phù hợp",
+          "Xác nhận thông tin và vào Dashboard",
+        ];
+        document.querySelector("#stepDescription span").textContent =
+          descriptions[step - 1] || "";
+        document.querySelector("#stepDescription").innerHTML =
+          `Bước ${step} / 3: <span class="text-muted fw-normal">${descriptions[step - 1] || ""}</span>`;
+
+        currentStep = step;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // ============================================
+      // LOGIN
+      // ============================================
+      function handleLogin(event) {
         event.preventDefault();
-        
-        const username = document.getElementById('loginUsername').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        const remember = document.getElementById('loginRemember').checked;
-        
-        document.getElementById('loginUsername').classList.remove('is-invalid');
-        document.getElementById('loginPassword').classList.remove('is-invalid');
-        document.getElementById('loginUsernameError').style.display = 'none';
-        document.getElementById('loginPasswordError').style.display = 'none';
-        
+
+        const username = document.getElementById("loginUsername").value.trim();
+        const password = document.getElementById("loginPassword").value;
+        const remember = document.getElementById("loginRemember").checked;
+
+        document.getElementById("loginUsername").classList.remove("is-invalid");
+        document.getElementById("loginPassword").classList.remove("is-invalid");
+        document.getElementById("loginUsernameError").style.display = "none";
+        document.getElementById("loginPasswordError").style.display = "none";
+
         if (!username) {
-            document.getElementById('loginUsername').classList.add('is-invalid');
-            document.getElementById('loginUsernameError').style.display = 'block';
-            return;
+          document.getElementById("loginUsername").classList.add("is-invalid");
+          document.getElementById("loginUsernameError").style.display = "block";
+          return;
         }
         if (!password) {
-            document.getElementById('loginPassword').classList.add('is-invalid');
-            document.getElementById('loginPasswordError').style.display = 'block';
-            return;
+          document.getElementById("loginPassword").classList.add("is-invalid");
+          document.getElementById("loginPasswordError").style.display = "block";
+          return;
         }
-        
-        const btn = document.getElementById('loginBtn');
-        btn.disabled = true;
-        document.getElementById('loginBtnText').textContent = 'Đang đăng nhập...';
-        
-        fetch('/accounts/api/congkhaosat/login/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({ username, password, remember })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                userData = data.user;
-                document.getElementById('userDisplayName').textContent = userData.full_name || userData.username;
-                document.getElementById('userInfoHeader').style.display = 'block';
-                document.getElementById('greetingName').textContent = userData.full_name || userData.username;
-                showToast('Đăng nhập thành công!', 'success');
-                loadTargetGroups();
-                goToStep(2);
-            } else {
-                showToast(data.message || 'Đăng nhập thất bại', 'error');
-                document.getElementById('loginPassword').classList.add('is-invalid');
-            }
-        })
-        .catch(err => {
-            showToast('Lỗi kết nối, vui lòng thử lại', 'error');
-            console.error(err);
-        })
-        .finally(() => {
-            btn.disabled = false;
-            document.getElementById('loginBtnText').textContent = 'Đăng nhập';
-        });
-    }
 
-    // ============================================
-    // LOGOUT
-    // ============================================
-    function handleLogout() {
-        if (confirm('Bạn có chắc muốn đăng xuất?')) {
-            fetch('/accounts/api/congkhaosat/logout/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCSRFToken()
-                }
-            })
+        const btn = document.getElementById("loginBtn");
+        btn.disabled = true;
+        document.getElementById("loginBtnText").textContent =
+          "Đang đăng nhập...";
+
+        fetch("/accounts/api/congkhaosat/login/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+          },
+          body: JSON.stringify({ username, password, remember }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              userData = data.user;
+              document.getElementById("userDisplayName").textContent =
+                userData.full_name || userData.username;
+              document.getElementById("userInfoHeader").style.display = "block";
+              document.getElementById("greetingName").textContent =
+                userData.full_name || userData.username;
+              showToast("Đăng nhập thành công!", "success");
+              loadTargetGroups();
+              goToStep(2);
+            } else {
+              showToast(data.message || "Đăng nhập thất bại", "error");
+              document
+                .getElementById("loginPassword")
+                .classList.add("is-invalid");
+            }
+          })
+          .catch((err) => {
+            showToast("Lỗi kết nối, vui lòng thử lại", "error");
+            console.error(err);
+          })
+          .finally(() => {
+            btn.disabled = false;
+            document.getElementById("loginBtnText").textContent = "Đăng nhập";
+          });
+      }
+
+      // ============================================
+      // LOGOUT
+      // ============================================
+      function handleLogout() {
+        if (confirm("Bạn có chắc muốn đăng xuất?")) {
+          fetch("/accounts/api/congkhaosat/logout/", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCSRFToken(),
+            },
+          })
             .then(() => {
-                window.location.reload();
+              window.location.reload();
             })
             .catch(() => {
-                window.location.reload();
+              window.location.reload();
             });
         }
-    }
+      }
 
-    // ============================================
-    // LOAD TARGET GROUPS
-    // ============================================
-    function loadTargetGroups() {
-        const container = document.getElementById('targetGroupsContainer');
+      // ============================================
+      // LOAD TARGET GROUPS
+      // ============================================
+      function loadTargetGroups() {
+        const container = document.getElementById("targetGroupsContainer");
         container.innerHTML = `
             <div class="text-center py-3">
                 <div class="spinner-border spinner-border-sm text-primary" role="status">
@@ -875,73 +1044,76 @@
                 <span class="ms-2 text-muted">Đang tải danh sách nhóm đối tượng...</span>
             </div>
         `;
-        
-        fetch('/accounts/api/target-groups/', {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+
+        fetch("/accounts/api/target-groups/", {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
         })
-        .then(response => response.json())
-        .then(data => {
+          .then((response) => response.json())
+          .then((data) => {
             if (data.success) {
-                targetGroups = data.data;
-                renderTargetGroups(data.data);
+              targetGroups = data.data;
+              renderTargetGroups(data.data);
             } else {
-                container.innerHTML = `
+              container.innerHTML = `
                     <div class="no-data-message">
                         <i class="bi bi-exclamation-triangle fs-4 text-warning"></i>
                         <p class="mt-2">Không thể tải danh sách nhóm đối tượng.</p>
                     </div>
                 `;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
             container.innerHTML = `
                 <div class="no-data-message">
                     <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
                     <p class="mt-2">Lỗi kết nối đến máy chủ.</p>
                 </div>
             `;
-        });
-    }
+          });
+      }
 
-    function renderTargetGroups(groups) {
-        const container = document.getElementById('targetGroupsContainer');
-        
+      function renderTargetGroups(groups) {
+        const container = document.getElementById("targetGroupsContainer");
+
         if (!groups || groups.length === 0) {
-            container.innerHTML = `
+          container.innerHTML = `
                 <div class="no-data-message">
                     <i class="bi bi-inbox fs-4 text-muted"></i>
                     <p class="mt-2">Chưa có nhóm đối tượng nào.</p>
                 </div>
             `;
-            return;
+          return;
         }
-        
-        let html = '';
+
+        let html = "";
         groups.forEach((group, index) => {
-            const forms = group.forms || [];
-            const formsHtml = forms.length > 0 
-                ? forms.map(f => `<span class="badge-form">${f}</span>`).join(' ') 
-                : '<span class="text-muted small">Chưa có biểu mẫu</span>';
-            
-            const iconMap = {
-                'bi-person-badge': 'bi bi-person-badge',
-                'bi-shield-check': 'bi bi-shield-check',
-                'bi-display': 'bi bi-display',
-                'bi-building': 'bi bi-building',
-                'bi-people': 'bi bi-people',
-                'bi-person-workspace': 'bi bi-person-workspace',
-            };
-            const iconClass = iconMap[group.icon] || 'bi bi-people';
-            const groupName = group.name || `Nhóm ${index + 1}`;
-            
-            html += `
+          const forms = group.forms || [];
+          const formsHtml =
+            forms.length > 0
+              ? forms
+                  .map((f) => `<span class="badge-form">${f}</span>`)
+                  .join(" ")
+              : '<span class="text-muted small">Chưa có biểu mẫu</span>';
+
+          const iconMap = {
+            "bi-person-badge": "bi bi-person-badge",
+            "bi-shield-check": "bi bi-shield-check",
+            "bi-display": "bi bi-display",
+            "bi-building": "bi bi-building",
+            "bi-people": "bi bi-people",
+            "bi-person-workspace": "bi bi-person-workspace",
+          };
+          const iconClass = iconMap[group.icon] || "bi bi-people";
+          const groupName = group.name || `Nhóm ${index + 1}`;
+
+          html += `
                 <label class="radio-card" id="card-role-${group.id}">
                     <div class="radio-input-wrapper">
                         <input class="form-check-input form-check-input-custom" type="radio" 
                                name="roleSelection" value="${groupName}" 
                                data-group-id="${group.id}"
-                               data-group-code="${group.code || ''}"
+                               data-group-code="${group.code || ""}"
                                data-forms='${JSON.stringify(forms)}'>
                     </div>
                     <div class="radio-icon-box"><i class="${iconClass}"></i></div>
@@ -950,40 +1122,42 @@
                             <div class="radio-title">${groupName}</div>
                             <div>${formsHtml}</div>
                         </div>
-                        <p class="radio-subtitle">${group.description || 'Không có mô tả'}</p>
+                        <p class="radio-subtitle">${group.description || "Không có mô tả"}</p>
                     </div>
                 </label>
             `;
         });
-        
-        container.innerHTML = html;
-        
-        document.querySelectorAll('.radio-card').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                const radio = this.querySelector('input[type="radio"]');
-                radio.checked = true;
-                
-                const groupId = parseInt(radio.dataset.groupId);
-                selectedGroup = targetGroups.find(g => g.id === groupId);
-                
-                document.getElementById('btnToStep3').disabled = false;
-                document.getElementById('roleError').style.display = 'none';
-                
-                updateSidebarInfo();
-            });
-        });
-    }
 
-    // ============================================
-    // UPDATE SIDEBAR
-    // ============================================
-    function updateSidebarInfo() {
-        const sidebar = document.getElementById('sidebarInfo');
-        
+        container.innerHTML = html;
+
+        document.querySelectorAll(".radio-card").forEach((card) => {
+          card.addEventListener("click", function () {
+            document
+              .querySelectorAll(".radio-card")
+              .forEach((c) => c.classList.remove("active"));
+            this.classList.add("active");
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+
+            const groupId = parseInt(radio.dataset.groupId);
+            selectedGroup = targetGroups.find((g) => g.id === groupId);
+
+            document.getElementById("btnToStep3").disabled = false;
+            document.getElementById("roleError").style.display = "none";
+
+            updateSidebarInfo();
+          });
+        });
+      }
+
+      // ============================================
+      // UPDATE SIDEBAR
+      // ============================================
+      function updateSidebarInfo() {
+        const sidebar = document.getElementById("sidebarInfo");
+
         if (selectedGroup) {
-            sidebar.innerHTML = `
+          sidebar.innerHTML = `
                 <div class="mb-2">
                     <div class="text-muted" style="font-size: 0.75rem;">NHÓM ĐỐI TƯỢNG</div>
                     <div class="dynamic-value">${selectedGroup.name}</div>
@@ -994,136 +1168,167 @@
                 </div>
             `;
         } else {
-            sidebar.innerHTML = `
+          sidebar.innerHTML = `
                 <div class="text-muted" style="font-size: 0.85rem;">
                     <i class="bi bi-info-circle me-1"></i>
                     Vui lòng chọn nhóm đối tượng
                 </div>
             `;
         }
-    }
+      }
 
-    // ============================================
-    // BUTTON HANDLERS
-    // ============================================
-    
-    // Bước 2 → Bước 3
-    document.getElementById('btnToStep3').addEventListener('click', function() {
-        if (selectedGroup) {
+      // ============================================
+      // BUTTON HANDLERS
+      // ============================================
+
+      // Bước 2 → Bước 3
+      document
+        .getElementById("btnToStep3")
+        .addEventListener("click", function () {
+          if (selectedGroup) {
             // Cập nhật thông tin xác nhận
-            document.getElementById('confirmUser').textContent = userData?.full_name || userData?.username || '---';
-            document.getElementById('confirmAgency').textContent = userData?.organization || '---';
-            document.getElementById('confirmGroup').textContent = selectedGroup.name;
+            document.getElementById("confirmUser").textContent =
+              userData?.full_name || userData?.username || "---";
+            document.getElementById("confirmAgency").textContent =
+              userData?.organization || "---";
+            document.getElementById("confirmGroup").textContent =
+              selectedGroup.name;
             const forms = selectedGroup.forms || [];
-            document.getElementById('confirmFormCount').textContent = forms.length + ' biểu mẫu';
-            document.getElementById('confirmForms').textContent = forms.join(', ') || 'Chưa có';
-            
+            document.getElementById("confirmFormCount").textContent =
+              forms.length + " biểu mẫu";
+            document.getElementById("confirmForms").textContent =
+              forms.join(", ") || "Chưa có";
+
             goToStep(3);
-        }
-    });
+          }
+        });
 
-    // Bước 3 → Bước 2
-    document.getElementById('btnBackToStep2').addEventListener('click', function() {
-        goToStep(2);
-    });
+      // Bước 3 → Bước 2
+      document
+        .getElementById("btnBackToStep2")
+        .addEventListener("click", function () {
+          goToStep(2);
+        });
 
-    // Bước 3: Xác nhận và vào Dashboard
-    document.getElementById('btnConfirmAndGo').addEventListener('click', function() {
-        if (!selectedGroup) {
-            showToast('Vui lòng chọn nhóm đối tượng!', 'error');
+      // Bước 3: Xác nhận và vào Dashboard
+      document
+        .getElementById("btnConfirmAndGo")
+        .addEventListener("click", function () {
+          if (!selectedGroup) {
+            showToast("Vui lòng chọn nhóm đối tượng!", "error");
             return;
-        }
-        
-        showLoading();
-        
-        // Tạo participant
-        fetch('/accounts/api/congkhaosat/create-participant/', {
-            method: 'POST',
+          }
+
+          showLoading();
+
+          // Tạo participant
+          fetch("/accounts/api/congkhaosat/create-participant/", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken(),
             },
             body: JSON.stringify({
-                target_group_id: selectedGroup.id,
-                organization_id: userData?.organization_id || null
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Xác nhận thành công! Đang chuyển vào Dashboard...', 'success');
+              target_group_id: selectedGroup.id,
+              organization_id: userData?.organization_id || null,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.success) {
+                showToast(
+                  "Xác nhận thành công! Đang chuyển vào Dashboard...",
+                  "success",
+                );
                 setTimeout(() => {
-                    window.location.href = '/accounts/survey-dashboard/';
+                  window.location.href = "/accounts/survey-dashboard/";
                 }, 500);
-            } else {
-                showToast(data.message || 'Có lỗi xảy ra', 'error');
+              } else {
+                showToast(data.message || "Có lỗi xảy ra", "error");
                 hideLoading();
-            }
-        })
-        .catch(err => {
-            showToast('Lỗi kết nối, vui lòng thử lại', 'error');
-            console.error(err);
-            hideLoading();
+              }
+            })
+            .catch((err) => {
+              showToast("Lỗi kết nối, vui lòng thử lại", "error");
+              console.error(err);
+              hideLoading();
+            });
         });
-    });
 
-    // ============================================
-    // CHECK AUTH ON LOAD
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('/accounts/api/congkhaosat/check-auth/', {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      // ============================================
+      // CHECK AUTH ON LOAD
+      // ============================================
+      document.addEventListener("DOMContentLoaded", function () {
+        fetch("/accounts/api/congkhaosat/check-auth/", {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
         })
-        .then(res => res.json())
-        .then(data => {
+          .then((res) => res.json())
+          .then((data) => {
             if (data.logged_in) {
-                userData = data.user;
-                document.getElementById('userDisplayName').textContent = userData.full_name || userData.username;
-                document.getElementById('userInfoHeader').style.display = 'block';
-                document.getElementById('greetingName').textContent = userData.full_name || userData.username;
-                
-                // ⚠️ KHÔNG TỰ ĐỘNG REDIRECT NỮA
-                // Chỉ load target groups và chuyển đến bước 2
-                
-                loadTargetGroups();
-                
-                // Đã đăng nhập -> bỏ qua bước 1, chuyển thẳng đến bước 2
-                document.querySelector('#stepWizard .step[data-step="1"]').classList.remove('active');
-                document.querySelector('#stepWizard .step[data-step="1"]').classList.add('completed');
-                document.querySelector('#stepWizard .step[data-step="2"]').classList.remove('inactive');
-                document.querySelector('#stepWizard .step[data-step="2"]').classList.add('active');
-                document.getElementById('line1').classList.add('completed');
-                
-                document.getElementById('dot1').className = 'step-dot completed';
-                document.getElementById('label1').className = 'step-label completed';
-                document.getElementById('dot2').className = 'step-dot active';
-                document.getElementById('label2').className = 'step-label active';
-                
-                document.getElementById('step1Content').classList.remove('active');
-                document.getElementById('step2Content').classList.add('active');
-                currentStep = 2;
-                
-                document.querySelector('#stepDescription span').textContent = 'Chọn nhóm đối tượng phù hợp';
-                document.querySelector('#stepDescription').innerHTML = 
-                    'Bước 2 / 3: <span class="text-muted fw-normal">Chọn nhóm đối tượng phù hợp</span>';
-            }
-        })
-        .catch(err => console.error('Error checking auth:', err));
-    });
+              userData = data.user;
+              document.getElementById("userDisplayName").textContent =
+                userData.full_name || userData.username;
+              document.getElementById("userInfoHeader").style.display = "block";
+              document.getElementById("greetingName").textContent =
+                userData.full_name || userData.username;
 
-    // Enter key support
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            if (currentStep === 1) {
-                const active = document.activeElement;
-                if (active === document.getElementById('loginUsername') || 
-                    active === document.getElementById('loginPassword')) {
-                    document.getElementById('loginForm').dispatchEvent(new Event('submit'));
-                }
+              // ⚠️ KHÔNG TỰ ĐỘNG REDIRECT NỮA
+              // Chỉ load target groups và chuyển đến bước 2
+
+              loadTargetGroups();
+
+              // Đã đăng nhập -> bỏ qua bước 1, chuyển thẳng đến bước 2
+              document
+                .querySelector('#stepWizard .step[data-step="1"]')
+                .classList.remove("active");
+              document
+                .querySelector('#stepWizard .step[data-step="1"]')
+                .classList.add("completed");
+              document
+                .querySelector('#stepWizard .step[data-step="2"]')
+                .classList.remove("inactive");
+              document
+                .querySelector('#stepWizard .step[data-step="2"]')
+                .classList.add("active");
+              document.getElementById("line1").classList.add("completed");
+
+              document.getElementById("dot1").className = "step-dot completed";
+              document.getElementById("label1").className =
+                "step-label completed";
+              document.getElementById("dot2").className = "step-dot active";
+              document.getElementById("label2").className = "step-label active";
+
+              document
+                .getElementById("step1Content")
+                .classList.remove("active");
+              document.getElementById("step2Content").classList.add("active");
+              currentStep = 2;
+
+              document.querySelector("#stepDescription span").textContent =
+                "Chọn nhóm đối tượng phù hợp";
+              document.querySelector("#stepDescription").innerHTML =
+                'Bước 2 / 3: <span class="text-muted fw-normal">Chọn nhóm đối tượng phù hợp</span>';
             }
+          })
+          .catch((err) => console.error("Error checking auth:", err));
+      });
+
+      // Enter key support
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          if (currentStep === 1) {
+            const active = document.activeElement;
+            if (
+              active === document.getElementById("loginUsername") ||
+              active === document.getElementById("loginPassword")
+            ) {
+              document
+                .getElementById("loginForm")
+                .dispatchEvent(new Event("submit"));
+            }
+          }
         }
-    });
-</script>
-
-</body>
+      });
+    </script>
+  </body>
 </html>
