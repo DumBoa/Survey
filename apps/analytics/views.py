@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.core.paginator import Paginator
 from django.db import models
 import json
@@ -77,10 +78,15 @@ def account_manage(request):
 
 
 @login_required(login_url='/accounts/login/')
-@admin_required
+@xframe_options_sameorigin
 def tongquankhaosat_view(request):
     """Trang tổng hợp đơn vị khảo sát"""
-    return render(request, 'analytics/tongquankhaosat.html', {'active_menu': 'survey_dashboard'})
+    is_iframe = request.GET.get('iframe') == 'true'
+    base_template = 'analytics/iframe_base.html' if is_iframe else 'analytics/dashboard_base.html'
+    return render(request, 'analytics/tongquankhaosat.html', {
+        'active_menu': 'survey_dashboard',
+        'base_template': base_template
+    })
 
 
 # ============================================
@@ -102,6 +108,10 @@ def target_group_list_api(request):
             queryset = queryset.filter(is_active=True)
         elif status == 'inactive':
             queryset = queryset.filter(is_active=False)
+            
+        category_id = request.GET.get('category_id')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
 
         # Filter theo search
         search = request.GET.get('search', '')
@@ -128,6 +138,8 @@ def target_group_list_api(request):
                 'description': group.description,
                 'icon': group.icon,
                 'is_active': group.is_active,
+                'category_id': group.category_id,
+                'category_name': group.category.name if group.category else None,
                 'forms': group.forms if group.forms else [],
                 'form_count': len(group.forms) if group.forms else 0,
                 'created_at': group.created_at.isoformat(),
@@ -166,6 +178,8 @@ def target_group_detail_api(request, group_id):
             'description': group.description,
             'icon': group.icon,
             'is_active': group.is_active,
+            'category_id': group.category_id,
+            'category_name': group.category.name if group.category else None,
             'forms': group.forms if group.forms else [],
             'created_at': group.created_at.isoformat(),
             'updated_at': group.updated_at.isoformat(),
@@ -194,10 +208,12 @@ def target_group_create_api(request):
     try:
         data = json.loads(request.body) if request.body else {}
 
-        if not data.get('code'):
+        # Nếu có category_id thì không bắt buộc truyền mã nhóm, sẽ tự sinh. 
+        # Cần kiểm tra logic này, nhưng tạm thời yêu cầu mã nhóm.
+        if not data.get('code') and not data.get('category_id'):
             return JsonResponse({
                 'success': False,
-                'error': 'Mã nhóm là bắt buộc'
+                'error': 'Mã nhóm hoặc danh mục là bắt buộc'
             }, status=400)
 
         if not data.get('name'):
@@ -206,20 +222,22 @@ def target_group_create_api(request):
                 'error': 'Tên nhóm là bắt buộc'
             }, status=400)
 
-        if TargetGroup.objects.filter(code=data['code']).exists():
+        if data.get('code') and TargetGroup.objects.filter(code=data['code']).exists():
             return JsonResponse({
                 'success': False,
                 'error': f'Mã nhóm "{data["code"]}" đã tồn tại'
             }, status=400)
 
-        group = TargetGroup.objects.create(
-            code=data['code'].strip().upper(),
+        group = TargetGroup(
+            code=data.get('code', '').strip().upper(),
             name=data['name'].strip(),
             description=data.get('description', ''),
             icon=data.get('icon', 'bi-people'),
             is_active=data.get('is_active', True),
-            forms=data.get('forms', [])
+            forms=data.get('forms', []),
+            category_id=data.get('category_id')
         )
+        group.save()
 
         return JsonResponse({
             'success': True,
@@ -322,7 +340,7 @@ def target_group_options_api(request):
     """
     try:
         groups = TargetGroup.objects.filter(is_active=True).order_by('name')
-        data = [{'id': g.id, 'code': g.code, 'name': g.name} for g in groups]
+        data = [{'id': g.id, 'code': g.code, 'name': g.name, 'category_id': g.category_id, 'category_name': g.category.name if g.category else None} for g in groups]
 
         return JsonResponse({
             'success': True,
@@ -466,6 +484,16 @@ def assignment_create_api(request):
             }, status=400)
 
         group = get_object_or_404(TargetGroup, id=group_id)
+        
+        if forms and group.category_id:
+            surveys = SurveyModel.objects.filter(code__in=forms)
+            for survey in surveys:
+                if survey.category_id != group.category_id:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Biểu mẫu "{survey.code}" không thuộc cùng danh mục với nhóm đối tượng.'
+                    }, status=400)
+                    
         group.forms = forms
         group.is_active = is_active
         group.save()
@@ -502,7 +530,16 @@ def assignment_update_api(request, group_id):
         data = json.loads(request.body) if request.body else {}
 
         if 'forms' in data:
-            group.forms = data['forms']
+            forms = data['forms']
+            if forms and group.category_id:
+                surveys = SurveyModel.objects.filter(code__in=forms)
+                for survey in surveys:
+                    if survey.category_id != group.category_id:
+                        return JsonResponse({
+                            'success': False,
+                            'error': f'Biểu mẫu "{survey.code}" không thuộc cùng danh mục với nhóm đối tượng.'
+                        }, status=400)
+            group.forms = forms
         if 'is_active' in data:
             group.is_active = data['is_active']
 
@@ -651,6 +688,7 @@ def survey_forms_list_api(request):
                     'title': survey.title,
                     'description': survey.description or '',
                     'section': survey.category.name if survey.category else '',
+                    'category_id': survey.category_id,
                     'groups': group_names,
                     'status': survey.status,
                     'status_display': survey.get_status_display(),
@@ -999,6 +1037,38 @@ def survey_form_categories_api(request):
             'success': False,
             'error': str(e)
         }, status=500)
+
+@login_required(login_url='/accounts/login/')
+@admin_required
+def survey_form_next_code_api(request):
+    """
+    API lấy mã code dự kiến tiếp theo cho 1 category
+    """
+    category_id = request.GET.get('category_id')
+    if not category_id:
+        return JsonResponse({'success': False, 'error': 'Missing category_id'})
+        
+    try:
+        category = SurveyCategoryModel.objects.get(id=category_id)
+        prefix = category.name.split()[0].upper()
+        
+        count = SurveyModel.objects.filter(category=category).count()
+        next_count = count + 1
+        new_code = f"{prefix}-BM-{next_count:02d}"
+        
+        while SurveyModel.objects.filter(code=new_code).exists():
+            next_count += 1
+            new_code = f"{prefix}-BM-{next_count:02d}"
+            
+        return JsonResponse({
+            'success': True,
+            'code': new_code,
+            'prefix': prefix
+        })
+    except SurveyCategoryModel.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Category not found'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 # ============================================
@@ -2006,7 +2076,6 @@ def organization_toggle_status_api(request, org_id):
 # ============================================
 
 @login_required(login_url='/accounts/login/')
-@admin_required
 def organization_survey_summary_api(request):
     """
     API lấy tổng hợp tiến độ khảo sát theo đơn vị

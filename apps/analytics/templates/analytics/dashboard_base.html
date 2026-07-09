@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Quản lý khảo sát CCHC{% endblock %}</title>
+    <title>{% block title %}Quản lý khảo sát{% endblock %}</title>
 
     <!-- Bootstrap 5 -->
     <link
@@ -276,7 +276,7 @@
         <div class="brand">
             <div class="logo">C</div>
             <div class="brand-text">
-                CCHC Admin
+                SURVEY ADMIN
                 <small>Hệ thống theo dõi, đánh giá CCHC</small>
             </div>
         </div>
@@ -299,7 +299,7 @@
                     </div>
                 </div>
             </div>
-            <a href="{% url 'accounts:logout' %}" class="logout-btn">
+            <a href="{{ logout_url }}" class="logout-btn">
                 <i class="bi bi-box-arrow-right"></i> Đăng xuất
             </a>
         </div>

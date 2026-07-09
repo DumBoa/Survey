@@ -1843,7 +1843,7 @@
 
             const dataTable = item.querySelector('.data-table');
             if (dataTable) {
-                const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="hidden"], tbody input[type="checkbox"]:checked');
+                const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="checkbox"]:checked');
                 for (let inp of inputs) {
                     if (inp.type === 'checkbox') {
                         return true;
@@ -2340,7 +2340,7 @@
                         }
                     }
                 } else if (dataTable) {
-                    const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="hidden"], tbody input[type="checkbox"]:checked');
+                    const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="checkbox"]:checked');
                     for (let inp of inputs) {
                         if (inp.type === 'checkbox') {
                             answered = true; break;

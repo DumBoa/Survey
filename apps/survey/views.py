@@ -141,6 +141,15 @@ class SurveyListCreateView(APIView):
     
     def get(self, request):
         surveys = SurveyModel.objects.all().order_by('-created_at')
+        
+        category_id = request.query_params.get('category_id')
+        category_code = request.query_params.get('category_code')
+        
+        if category_id:
+            surveys = surveys.filter(category_id=category_id)
+        elif category_code:
+            surveys = surveys.filter(category__name__icontains=category_code)
+            
         serializer = SurveySerializer(surveys, many=True)
         return Response(serializer.data)
     
@@ -155,10 +164,19 @@ class SurveyListCreateView(APIView):
                 slug = f"{base_slug}-{counter}"
                 counter += 1
             
+            category_id = data.get('category') or data.get('category_id')
+            category = None
+            if category_id:
+                try:
+                    category = SurveyCategoryModel.objects.get(id=category_id)
+                except SurveyCategoryModel.DoesNotExist:
+                    pass
+            
             survey = SurveyModel.objects.create(
                 title=data['title'],
                 slug=slug,
                 description=data.get('description', ''),
+                category=category,
                 start_date=timezone.now(),
                 end_date=timezone.now() + timezone.timedelta(days=30),
                 status='draft',

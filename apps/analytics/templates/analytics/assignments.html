@@ -62,6 +62,7 @@
                         <th style="width:50px;">STT</th>
                         <th>Nhóm đối tượng</th>
                         <th>Mã nhóm</th>
+                        <th>Danh mục</th>
                         <th>Biểu mẫu được gán</th>
                         <th style="width:120px;">Trạng thái</th>
                         <th style="width:180px;">Thao tác</th>
@@ -248,21 +249,45 @@ document.addEventListener('DOMContentLoaded', function() {
         // Modal group
         const modalGroup = document.getElementById('assignmentGroup');
         modalGroup.innerHTML = '<option value="">-- Chọn nhóm --</option>' +
-            groups.map(g => `<option value="${g.id}">${g.code} - ${g.name}</option>`).join('');
+            groups.map(g => {
+                const categoryText = g.category_name ? `[${g.category_name}] ` : '';
+                return `<option value="${g.id}" data-category-id="${g.category_id}">${categoryText}${g.code} - ${g.name}</option>`;
+            }).join('');
     }
 
     function renderFormOptions(forms) {
         // Filter form
         const filterForm = document.getElementById('filterForm');
         filterForm.innerHTML = '<option value="">Tất cả biểu mẫu</option>' +
-            forms.map(f => `<option value="${f.code}">${f.code} - ${f.name}</option>`).join('');
+            forms.map(f => {
+                const categoryText = f.section ? `[${f.section}] ` : '';
+                return `<option value="${f.code}">${categoryText}${f.code} - ${f.name}</option>`;
+            }).join('');
 
-        // Modal forms (multi-select)
+        // Modal forms (multi-select) - lưu data-category-id để filter
         const modalForms = document.getElementById('assignmentForms');
         modalForms.innerHTML = forms.map(f => 
-            `<option value="${f.code}">${f.code} - ${f.name}</option>`
+            `<option value="${f.code}" data-category-id="${f.category_id}">${f.section ? `[${f.section}] ` : ''}${f.code} - ${f.name}</option>`
         ).join('');
     }
+
+    // Lắng nghe sự kiện chọn Nhóm đối tượng để lọc danh sách biểu mẫu
+    document.getElementById('assignmentGroup').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const categoryId = selectedOption.getAttribute('data-category-id');
+        const formOptions = document.getElementById('assignmentForms').options;
+        
+        for (let i = 0; i < formOptions.length; i++) {
+            const formCategory = formOptions[i].getAttribute('data-category-id');
+            // Ẩn/hiện dựa vào category_id
+            if (!categoryId || formCategory === categoryId) {
+                formOptions[i].style.display = '';
+            } else {
+                formOptions[i].style.display = 'none';
+                formOptions[i].selected = false; // Bỏ chọn nếu đang ẩn
+            }
+        }
+    });
 
     // ============================================
     // LOAD ASSIGNMENTS
@@ -318,6 +343,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${(data.page - 1) * data.per_page + idx + 1}</td>
                     <td><i class="bi ${item.group_icon || 'bi-people'} me-2"></i>${item.group_name}</td>
                     <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${item.group_code}</span></td>
+                    <td>
+                        ${item.category_name ? 
+                          `<span class="badge ${item.category_name === 'CCHC' ? 'bg-primary' : 'bg-success'}">${item.category_name}</span>` : 
+                          '-'
+                        }
+                    </td>
                     <td>
                         ${item.forms && item.forms.length > 0 ? 
                             item.forms.map(f => `

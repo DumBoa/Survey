@@ -83,6 +83,13 @@ class TargetGroup(models.Model):
     icon = models.CharField(max_length=50, choices=ICON_CHOICES, default='bi-people', verbose_name="Icon")
     is_active = models.BooleanField(default=True, verbose_name="Đang hoạt động")
     
+    category = models.ForeignKey(
+        'survey.SurveyCategory', 
+        on_delete=models.CASCADE, 
+        null=True, blank=True,
+        verbose_name="Danh mục khảo sát"
+    )
+    
     # Liên kết với survey (có thể gán cho nhiều survey)
     surveys = models.ManyToManyField(
         'survey.Survey', 
@@ -104,3 +111,30 @@ class TargetGroup(models.Model):
     
     def __str__(self):
         return f"[{self.code}] {self.name}"
+
+    def save(self, *args, **kwargs):
+        if not self.code and self.category:
+            import unicodedata
+            import re
+            
+            # Lấy prefix từ category (từ đầu tiên của category name, ví dụ: SIPAS)
+            prefix = self.category.name.split()[0].upper()
+            
+            # Xử lý tên nhóm: Thay chữ Đ trước khi bỏ dấu
+            name_for_slug = self.name.replace('Đ', 'D').replace('đ', 'd')
+            # Bỏ dấu, in hoa, thay space bằng _
+            name_ascii = unicodedata.normalize('NFKD', name_for_slug).encode('ASCII', 'ignore').decode('utf-8')
+            name_slug = re.sub(r'[^a-zA-Z0-9]', '_', name_ascii).upper()
+            # Xóa các gạch dưới thừa
+            name_slug = re.sub(r'_+', '_', name_slug).strip('_')
+            
+            base_code = f"{prefix}-{name_slug}"
+            self.code = base_code
+            
+            # Đảm bảo unique
+            counter = 1
+            while TargetGroup.objects.filter(code=self.code).exclude(id=self.id).exists():
+                self.code = f"{base_code}_{counter}"
+                counter += 1
+                
+        super().save(*args, **kwargs)

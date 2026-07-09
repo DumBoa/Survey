@@ -109,9 +109,9 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Mã biểu mẫu <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="formCode" 
-                                placeholder="VD: BM-001" required>
-                        <div class="form-text">Mã biểu mẫu sẽ được dùng để gán cho nhóm đối tượng. Tự động tạo nếu để trống.</div>
+                        <input type="text" class="form-control bg-light" id="formCode" 
+                                placeholder="Tự động sinh khi chọn danh mục" readonly required>
+                        <div class="form-text">Mã biểu mẫu được tự động sinh dựa trên danh mục đã chọn (VD: CCHC-BM-001).</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Mô tả</label>
@@ -233,6 +233,35 @@ document.addEventListener('DOMContentLoaded', function() {
         select.innerHTML = '<option value="">Chưa phân loại</option>' +
             data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     }
+
+    // ============================================
+    // AUTO GENERATE CODE ON CATEGORY CHANGE
+    // ============================================
+    document.getElementById('formCategory').addEventListener('change', function() {
+        const categoryId = this.value;
+        const formCodeInput = document.getElementById('formCode');
+        const isEdit = document.getElementById('editFormId').value !== '';
+        
+        if (isEdit) return; // Don't change code if editing an existing form
+        
+        if (!categoryId) {
+            formCodeInput.value = '';
+            return;
+        }
+        
+        fetch(`/analytics/api/survey-forms/next-code/?category_id=${categoryId}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                formCodeInput.value = data.code;
+            } else {
+                console.error('Lỗi khi lấy mã:', data.error);
+            }
+        })
+        .catch(error => console.error('Error fetching next code:', error));
+    });
 
     // ============================================
     // LOAD FORMS
@@ -446,7 +475,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('formModalForm').reset();
         document.getElementById('editFormId').value = '';
         document.getElementById('formCode').value = '';
-        document.getElementById('formCode').readOnly = false;
         document.getElementById('formModalTitle').textContent = 'Thêm biểu mẫu mới';
         document.getElementById('formStatus').value = 'draft';
         document.getElementById('formAllowAfterDeadline').checked = false;
@@ -469,7 +497,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const form = data.data;
                     document.getElementById('editFormId').value = form.id;
                     document.getElementById('formCode').value = form.code || '';
-                    document.getElementById('formCode').readOnly = true;
                     document.getElementById('formName').value = form.title;
                     document.getElementById('formDescription').value = form.description || '';
                     document.getElementById('formCategory').value = form.category_id || '';

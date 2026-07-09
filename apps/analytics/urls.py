@@ -42,6 +42,7 @@ urlpatterns = [
     path('api/survey-forms/<int:survey_id>/update/', views.survey_form_update_api, name='api_survey_form_update'),
     path('api/survey-forms/<int:survey_id>/delete/', views.survey_form_delete_api, name='api_survey_form_delete'),
     path('api/survey-forms/categories/', views.survey_form_categories_api, name='api_survey_form_categories'),
+    path('api/survey-forms/next-code/', views.survey_form_next_code_api, name='api_survey_form_next_code'),
     
     # === API QUẢN LÝ TÀI KHOẢN ===
     path('api/accounts/', views.account_list_api, name='api_account_list'),

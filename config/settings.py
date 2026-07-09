@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-p=@$#5d4qjm)yj@nyc$s9334hhqegb=a45n+b_vzp589fk^67v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["hywang.pythonanywhere.com",
+"127.0.0.1",]
 
 
 # Application definition
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.accounts.middleware.LoginPathMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -75,6 +77,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.accounts.context_processors.logout_url_processor',
             ],
         },
     },
@@ -141,7 +144,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/'
+LOGOUT_REDIRECT_URL = '/accounts/cchc/'
 
-SURVEY_LOGIN_URL = '/accounts/'
+SURVEY_LOGIN_URL = '/accounts/cchc/'
 ADMIN_LOGIN_URL = '/accounts/login/'

@@ -189,8 +189,7 @@
 <body>
     <div class="login-container">
         <div class="logo">
-            <h1>CCHC Admin</h1>
-            <p>Hệ thống theo dõi, đánh giá  CCHC các cấp thành phố Hà Nội</p>
+            <h1>SURVEY ADMIN</h1>
         </div>
         
         <div id="errorMessage" class="error-message"></div>
@@ -205,20 +204,11 @@
                 <label for="password">Mật khẩu</label>
                 <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required>
             </div>
-            
-            <div class="form-options">
-                <label>
-                    <input type="checkbox" name="remember" id="remember">
-                    Ghi nhớ đăng nhập
-                </label>
-            </div>
+
             
             <button type="submit" class="btn-login">Đăng nhập</button>
         </form>
-        
-        <div class="test-account">
-            Tài khoản test: <strong>admin</strong> / <strong>admin123</strong>
-        </div>
+    
     </div>
 
     <script>
@@ -227,7 +217,8 @@
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const remember = document.getElementById('remember').checked;
+            const rememberElement = document.getElementById('remember');
+            const remember = rememberElement ? rememberElement.checked : false;
             const errorDiv = document.getElementById('errorMessage');
             
             errorDiv.classList.remove('show');

@@ -536,10 +536,10 @@
         class="container-lg d-flex align-items-center justify-content-between"
       >
         <div class="d-flex align-items-center">
-          <div class="logo-circle me-3">CCHC</div>
+          <div class="logo-circle me-3">SIPAS</div>
           <div>
             <h1 class="h4 mb-1 fw-bold text-dark">
-              Hệ thống Theo dõi, Cải cách Hành chính thuộc Thành phố Hà Nội
+              Hệ thống Khảo sát (SIPAS)
             </h1>
             <div class="text-muted" style="font-size: 0.9rem">
               Cổng khảo sát trực tuyến dành cho cán bộ, công chức
@@ -1006,7 +1006,7 @@
             "Content-Type": "application/json",
             "X-CSRFToken": getCSRFToken(),
           },
-          body: JSON.stringify({ username, password, remember, login_type: 'cchc' }),
+          body: JSON.stringify({ username, password, remember, login_type: 'sipas' }),
         })
           .then((res) => res.json())
           .then((data) => {
@@ -1101,13 +1101,13 @@
       function renderTargetGroups(allGroups) {
         const contentContainer = document.getElementById("categoryTabContent");
         
-        const groups = allGroups.filter(g => g.category_name === 'CCHC');
+        const groups = allGroups.filter(g => g.category_name === 'SIPAS');
         
         if (!groups || groups.length === 0) {
           contentContainer.innerHTML = `
                 <div class="no-data-message">
                     <i class="bi bi-inbox fs-4 text-muted"></i>
-                    <p class="mt-2">Chưa có nhóm đối tượng nào thuộc danh mục CCHC.</p>
+                    <p class="mt-2">Chưa có nhóm đối tượng nào thuộc danh mục SIPAS.</p>
                 </div>
             `;
           return;

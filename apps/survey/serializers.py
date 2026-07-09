@@ -52,11 +52,12 @@ class SurveySerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, read_only=True)
     total_sections = serializers.SerializerMethodField()
     total_questions = serializers.SerializerMethodField()
+    original_code = serializers.CharField(read_only=True)
     
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'slug', 'description', 'category', 'category_detail',
+            'id', 'code', 'original_code', 'title', 'slug', 'description', 'category', 'category_detail',
             'start_date', 'end_date', 'allow_after_deadline', 'status',
             'target_groups', 'settings', 'sections', 'total_sections',
             'total_questions', 'created_at', 'updated_at'
@@ -76,11 +77,12 @@ class SurveyDetailSerializer(serializers.ModelSerializer):
     """Serializer chi tiết bao gồm tất cả sections và questions"""
     category_detail = SurveyCategorySerializer(source='category', read_only=True)
     sections = SectionSerializer(many=True, read_only=True)
+    original_code = serializers.CharField(read_only=True)
     
     class Meta:
         model = Survey
         fields = [
-            'id', 'title', 'slug', 'description', 'category', 'category_detail',
+            'id', 'code', 'original_code', 'title', 'slug', 'description', 'category', 'category_detail',
             'start_date', 'end_date', 'allow_after_deadline', 'status',
             'target_groups', 'settings', 'sections', 'created_at', 'updated_at'
         ]

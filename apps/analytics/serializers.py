@@ -6,6 +6,8 @@ from apps.survey.models import Survey as SurveyModel
 class TargetGroupSerializer(serializers.ModelSerializer):
     form_count = serializers.SerializerMethodField()
     survey_count = serializers.SerializerMethodField()
+    category_id = serializers.IntegerField(source='category.id', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
     
     class Meta:
         model = TargetGroup
@@ -13,6 +15,7 @@ class TargetGroupSerializer(serializers.ModelSerializer):
             'id', 'code', 'name', 'description', 'icon', 
             'is_active', 'forms', 'surveys',
             'form_count', 'survey_count',
+            'category', 'category_id', 'category_name',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_at', 'updated_at']
@@ -32,9 +35,11 @@ class AssignmentSerializer(serializers.Serializer):
     group_icon = serializers.CharField()
     forms = serializers.ListField(child=serializers.CharField())
     is_active = serializers.BooleanField()
+    category_id = serializers.IntegerField(required=False, allow_null=True)
+    category_name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     
     class Meta:
-        fields = ['group_id', 'group_code', 'group_name', 'group_icon', 'forms', 'is_active']
+        fields = ['group_id', 'group_code', 'group_name', 'group_icon', 'forms', 'is_active', 'category_id', 'category_name']
 
 
 # Serializer cho Survey (để lấy danh sách survey)

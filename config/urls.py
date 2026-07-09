@@ -17,7 +17,7 @@ def root_redirect(request):
         # User thường -> vào dashboard
         return redirect('/accounts/survey-dashboard/')
     # Chưa đăng nhập -> vào cổng khảo sát
-    return redirect('/accounts/')
+    return redirect('/accounts/cchc/')
 
 
 urlpatterns = [

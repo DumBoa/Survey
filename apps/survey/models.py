@@ -45,11 +45,52 @@ class Survey(models.Model):
         null=True,
         verbose_name="Mã biểu mẫu"
     )
+    @property
+    def original_code(self):
+        if not isinstance(self.settings, dict):
+            return ""
+        return self.settings.get('original_code', '')
+
+    @original_code.setter
+    def original_code(self, value):
+        if not isinstance(self.settings, dict):
+            self.settings = {}
+        self.settings['original_code'] = value
+
     def save(self, *args, **kwargs):
-        # Tự động tạo code nếu chưa có
-        if not self.code:
-            count = Survey.objects.count() + 1
-            self.code = f"BM-{str(count).zfill(3)}"
+        prefix = ""
+        if self.category and self.category.name:
+            prefix = self.category.name.split()[0].upper()
+            
+        is_new = self.pk is None
+        category_changed = False
+        
+        if not is_new:
+            old_survey = Survey.objects.filter(pk=self.pk).first()
+            if old_survey and old_survey.category != self.category:
+                category_changed = True
+
+        if not isinstance(self.settings, dict):
+            self.settings = {}
+
+        if not self.code or category_changed:
+            orig_code = self.settings.get('original_code')
+            if not orig_code or category_changed:
+                count = Survey.objects.filter(category=self.category).count() if self.category else Survey.objects.count()
+                orig_code = f"BM-{str(count + 1).zfill(2)}"
+                self.settings['original_code'] = orig_code
+            
+            new_code = f"{prefix}-{orig_code}" if prefix else orig_code
+            
+            base_count = int(orig_code.replace("BM-", "")) if orig_code.startswith("BM-") else 1
+            while Survey.objects.filter(code=new_code).exclude(pk=self.pk).exists():
+                base_count += 1
+                orig_code = f"BM-{str(base_count).zfill(2)}"
+                new_code = f"{prefix}-{orig_code}" if prefix else orig_code
+                self.settings['original_code'] = orig_code
+                
+            self.code = new_code
+            
         super().save(*args, **kwargs)
         
     def __str__(self):

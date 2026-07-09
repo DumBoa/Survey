@@ -50,6 +50,34 @@ def accounts_main_render(request):
     # Chưa đăng nhập -> vào congkhaosat_main (có bước login)
     return render(request, 'accounts/congkhaosat_main.html')
 
+def accounts_main_render_sipas(request):
+    """
+    Trang chủ của accounts dành cho SIPAS - hiển thị congkhaosat_main_SIPAS.html
+    Nếu đã đăng nhập và là admin thì redirect sang analytics
+    """
+    if request.user.is_authenticated:
+        if is_admin_user(request.user):
+            return redirect('/analytics/')
+        
+        # Nếu có tham số choose_group=true, hiển thị trang chọn nhóm (bỏ qua bước login)
+        if request.GET.get('choose_group') == 'true':
+            return render(request, 'accounts/congkhaosat_main_SIPAS.html', {
+                'skip_login': True,
+                'force_choose_group': True
+            })
+        
+        # Nếu user đã có SĐT và không có tham số đặc biệt, redirect đến dashboard
+        if request.user.phone_number:
+            return redirect('/accounts/survey-dashboard/')
+        
+        # User chưa có SĐT, hiển thị trang chọn nhóm (bỏ qua bước login)
+        return render(request, 'accounts/congkhaosat_main_SIPAS.html', {
+            'skip_login': True
+        })
+    
+    # Chưa đăng nhập -> vào congkhaosat_main_SIPAS (có bước login)
+    return render(request, 'accounts/congkhaosat_main_SIPAS.html')
+
 # ============================================
 # HÀM TIỆN ÍCH
 # ============================================
@@ -73,8 +101,21 @@ def get_redirect_url_based_on_role(user):
 @login_required
 def logout_view(request):
     """Đăng xuất và quay về trang chủ accounts"""
+    # Lấy login_url từ session hoặc tham số next
+    login_url = request.session.get('login_url')
+    next_param = request.GET.get('next')
+    
     logout(request)
-    return redirect('/accounts/')  # Về congkhaosat_main
+    
+    if next_param:
+        from django.utils.http import url_has_allowed_host_and_scheme
+        if url_has_allowed_host_and_scheme(url=next_param, allowed_hosts={request.get_host()}):
+            return redirect(next_param)
+            
+    if login_url:
+        return redirect(login_url)
+        
+    return redirect('/accounts/cchc/')
 
 
 # ============================================
@@ -175,6 +216,14 @@ def congkhaosat_login_api(request):
             }, status=403)
         
         login(request, user)
+        
+        # Lưu login_type và login_url (fallback nếu middleware chưa xử lý)
+        login_type = data.get('login_type', 'cchc')
+        request.session['login_type'] = login_type
+        if login_type == 'sipas':
+            request.session['login_url'] = '/accounts/sipas/'
+        else:
+            request.session['login_url'] = '/accounts/cchc/'
         
         if not remember:
             request.session.set_expiry(0)
@@ -841,6 +890,143 @@ def survey_dashboard(request):
 
 
 # ============================================
+# API LẤY DỮ LIỆU DASHBOARD (MỚI)
+# ============================================
+@login_required
+def api_survey_dashboard(request):
+    """API trả về dữ liệu cho Dashboard thay vì render HTML"""
+    user = request.user
+    if is_admin_user(user):
+        return JsonResponse({'success': False, 'redirect': '/analytics/'})
+        
+    target_group_code = request.session.get('current_target_group_code')
+    session_key = request.session.session_key
+    
+    participant = None
+    if target_group_code and session_key:
+        participant = SurveyParticipant.objects.filter(
+            user=user,
+            session_key=session_key,
+            target_group_code=target_group_code,
+            status__in=['draft', 'submitted']
+        ).order_by('-created_at').first()
+        
+    if not participant and session_key:
+        participant = SurveyParticipant.objects.filter(
+            user=user,
+            session_key=session_key,
+            status__in=['draft', 'submitted']
+        ).order_by('-created_at').first()
+        
+    if not participant:
+        return JsonResponse({'success': False, 'error': 'no_participant'})
+        
+    if not target_group_code and participant.target_group_code:
+        request.session['current_target_group_code'] = participant.target_group_code
+        
+    progress_list = []
+    assigned_forms = participant.assigned_forms or []
+    
+    for form_code in assigned_forms:
+        progress = SurveyProgress.objects.filter(participant=participant, form_code=form_code).first()
+        if not progress:
+            survey_obj = Survey.objects.filter(code=form_code, status='active').first()
+            progress = SurveyProgress.objects.create(
+                participant=participant, survey=survey_obj, form_code=form_code, status='not_started'
+            )
+        if not progress.survey:
+            survey_obj = Survey.objects.filter(code=form_code, status='active').first()
+            if survey_obj:
+                progress.survey = survey_obj
+                progress.save()
+                
+        # Update progress percent
+        if progress.response:
+            answers = progress.response.answers or {}
+            total_questions = 0
+            answered = 0
+            if progress.survey:
+                for section in progress.survey.sections.all():
+                    for question in section.questions.all():
+                        if question.question_type and question.question_type.code not in ['title', 'paragraph']:
+                            total_questions += 1
+                            if str(question.id) in answers:
+                                answered += 1
+                if total_questions > 0:
+                    progress.progress_percent = round((answered / total_questions) * 100)
+                    if progress.progress_percent >= 100 and progress.status != 'completed':
+                        progress.status = 'completed'
+                        progress.completed_at = timezone.now()
+                    progress.save()
+                    
+        # Calculate overdue
+        if progress.status != 'completed' and progress.survey and progress.survey.end_date:
+            if timezone.now() > progress.survey.end_date:
+                progress.status = 'overdue'
+                
+        progress_list.append(progress)
+        
+    # Stats
+    total = len(progress_list)
+    completed = sum(1 for p in progress_list if p.status == 'completed')
+    in_progress = sum(1 for p in progress_list if p.status == 'in_progress')
+    not_started = sum(1 for p in progress_list if p.status == 'not_started')
+    overdue = sum(1 for p in progress_list if p.status == 'overdue')
+    overall_progress = round((completed / total) * 100) if total > 0 else 0
+    
+    # Format Forms data
+    forms_data = []
+    for p in progress_list:
+        end_date_str = None
+        if p.survey and p.survey.end_date:
+            end_date_str = p.survey.end_date.isoformat()
+            
+        category_name = ""
+        category_prefix = ""
+        if p.survey and p.survey.category:
+            category_name = p.survey.category.name
+            category_prefix = p.survey.category.name.split()[0].upper()
+
+        forms_data.append({
+            'id': p.id,
+            'survey_id': p.survey.id if p.survey else None,
+            'form_code': p.form_code,
+            'form_name': p.survey.title if p.survey else f'Biểu mẫu {p.form_code}',
+            'category_name': category_name,
+            'category_prefix': category_prefix,
+            'status': p.status,
+            'progress_percent': p.progress_percent,
+            'end_date': end_date_str,
+            'is_required': True,
+            'response_id': p.response.id if p.response else None
+        })
+        
+    # Sort by default: status first, then id
+    status_order = {'overdue': 0, 'in_progress': 1, 'not_started': 2, 'completed': 3}
+    forms_data.sort(key=lambda f: (status_order.get(f['status'], 4), f['id']))
+    
+    return JsonResponse({
+        'success': True,
+        'participant': {
+            'full_name': participant.full_name or 'Chưa có tên',
+            'agency': participant.agency or 'Chưa có đơn vị',
+            'email': participant.email or 'Chưa có email',
+            'target_group_name': participant.target_group_name or 'Chưa có nhóm',
+            'target_group_code': participant.target_group_code or ''
+        },
+        'stats': {
+            'total': total,
+            'completed': completed,
+            'in_progress': in_progress,
+            'not_started': not_started,
+            'overdue': overdue,
+            'overall_progress': overall_progress
+        },
+        'forms': forms_data
+    })
+
+
+# ============================================
 # TIẾP TỤC LÀM KHẢO SÁT
 # ============================================
 
@@ -921,7 +1107,7 @@ def get_target_groups_api(request):
     API lấy danh sách nhóm đối tượng để hiển thị
     """
     try:
-        groups = TargetGroup.objects.filter(is_active=True).order_by('code')
+        groups = TargetGroup.objects.filter(is_active=True).select_related('category').order_by('code')
         data = [{
             'id': group.id,
             'code': group.code,
@@ -929,6 +1115,8 @@ def get_target_groups_api(request):
             'description': group.description,
             'icon': group.icon,
             'forms': group.forms if group.forms else [],
+            'category_id': group.category.id if group.category else None,
+            'category_name': group.category.name if group.category else 'Khác',
         } for group in groups]
         
         return JsonResponse({

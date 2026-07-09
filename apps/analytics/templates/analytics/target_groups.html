@@ -27,7 +27,13 @@
                     <option value="inactive">Tạm dừng</option>
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted">Danh mục</label>
+                <select class="form-select form-select-sm" id="filterCategory">
+                    <option value="">Tất cả danh mục</option>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label fw-semibold small text-muted">Tìm kiếm</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
@@ -59,6 +65,7 @@
                         <th style="width:50px;">STT</th>
                         <th style="width:100px;">Mã</th>
                         <th>Tên nhóm</th>
+                        <th>Danh mục</th>
                         <th>Mô tả</th>
                         <th style="width:120px;">Số biểu mẫu</th>
                         <th style="width:180px;">Biểu mẫu</th>
@@ -103,9 +110,16 @@
                     
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Mã nhóm <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="groupCode" 
-                               placeholder="VD: GRP001" required>
-                        <div class="form-text">Mã nhóm không dấu, viết hoa, không có khoảng trắng</div>
+                        <input type="text" class="form-control bg-light" id="groupCode" 
+                                placeholder="Tự động sinh khi chọn danh mục" readonly required>
+                        <div class="form-text">Mã nhóm tự động sinh theo danh mục (VD: CCHC-LANH_DAO)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Danh mục <span class="text-danger">*</span></label>
+                        <select class="form-select" id="groupCategory" required>
+                            <option value="">Chọn danh mục</option>
+                        </select>
                     </div>
                     
                     <div class="mb-3">
@@ -197,14 +211,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ============================================
+    // LOAD DANH MỤC
+    // ============================================
+    function loadCategories() {
+        fetch('/survey/api/categories/', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // DRF Response có thể trả về array trực tiếp hoặc {success: true, data: [...]}
+            let categories = [];
+            if (Array.isArray(data)) {
+                categories = data;
+            } else if (data.success && data.data) {
+                categories = data.data;
+            }
+            
+            if (categories.length > 0) {
+                const select = document.getElementById('groupCategory');
+                const filter = document.getElementById('filterCategory');
+                
+                // Clear old options (except the first placeholder)
+                while (select.options.length > 1) select.remove(1);
+                while (filter.options.length > 1) filter.remove(1);
+                
+                categories.forEach(category => {
+                    select.add(new Option(category.name, category.id));
+                    filter.add(new Option(category.name, category.id));
+                });
+            }
+        })
+        .catch(error => console.error('Error loading categories:', error));
+    }
+
+    // ============================================
     // LOAD DỮ LIỆU
     // ============================================
     function loadGroups() {
         const status = document.getElementById('filterStatus').value;
+        const category_id = document.getElementById('filterCategory').value;
         const search = document.getElementById('searchInput').value;
         
         let url = `/analytics/api/target-groups/?page=${currentPage}&per_page=${pageSize}`;
         if (status) url += `&status=${status}`;
+        if (category_id) url += `&category_id=${category_id}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;
         
         fetch(url, {
@@ -241,6 +293,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${(data.page - 1) * data.per_page + idx + 1}</td>
                     <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${g.code}</span></td>
                     <td><i class="bi ${g.icon} me-2"></i>${g.name}</td>
+                    <td>
+                        ${g.category_name ? 
+                          `<span class="badge ${g.category_name === 'CCHC' ? 'bg-primary' : 'bg-success'}">${g.category_name}</span>` : 
+                          '-'
+                        }
+                    </td>
                     <td class="text-muted small">${g.description || '-'}</td>
                     <td class="text-center"><span class="badge bg-primary bg-opacity-10 text-primary">${g.form_count || 0}</span></td>
                     <td>
@@ -348,15 +406,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const code = document.getElementById('groupCode').value.trim().toUpperCase();
         const name = document.getElementById('groupName').value.trim();
         const description = document.getElementById('groupDescription').value.trim();
+        const category_id = document.getElementById('groupCategory').value;
         const icon = document.getElementById('groupIcon').value;
         const isActive = document.getElementById('groupActive').checked;
 
-        if (!code || !name) {
-            alert('Vui lòng nhập đầy đủ mã và tên nhóm');
+        if (!name || !category_id) {
+            alert('Vui lòng nhập tên nhóm và chọn danh mục');
             return;
         }
 
-        const data = { code, name, description, icon, is_active: isActive };
+        const data = { code, name, description, icon, is_active: isActive, category_id: category_id };
         const url = id ? 
             `/analytics/api/target-groups/${id}/update/` : 
             '/analytics/api/target-groups/create/';
@@ -439,6 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('groupCode').value = group.code;
                     document.getElementById('groupName').value = group.name;
                     document.getElementById('groupDescription').value = group.description || '';
+                    document.getElementById('groupCategory').value = group.category_id || '';
                     document.getElementById('groupIcon').value = group.icon;
                     document.getElementById('groupActive').checked = group.is_active;
                     document.getElementById('groupModalTitle').textContent = 'Sửa nhóm đối tượng';
@@ -473,6 +533,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('btnReset').addEventListener('click', function() {
         document.getElementById('filterStatus').value = '';
+        document.getElementById('filterCategory').value = '';
         document.getElementById('searchInput').value = '';
         currentPage = 1;
         loadGroups();
@@ -498,6 +559,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // KHỞI TẠO
     // ============================================
+    loadCategories();
     loadGroups();
 });
 </script>

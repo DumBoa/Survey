@@ -8,7 +8,8 @@ urlpatterns = [
     # ==========================================
     # TRANG CHỦ - Cổng khảo sát (congkhaosat_main)
     # ==========================================
-    path('', views.accounts_main_render, name='home'),
+    path('cchc/', views.accounts_main_render, name='home'),
+    path('sipas/', views.accounts_main_render_sipas, name='sipas_home'),
     
     # ==========================================
     # TRANG ĐĂNG NHẬP ADMIN
@@ -25,6 +26,7 @@ urlpatterns = [
     # ==========================================
     path('survey-dashboard/', views.survey_dashboard, name='survey_dashboard'),
     path('survey-dashboard/continue/<int:progress_id>/', views.survey_dashboard_continue, name='survey_dashboard_continue'),
+    path('api/survey/dashboard/', views.api_survey_dashboard, name='api_survey_dashboard'),
     
     # ==========================================
     # API CỔNG KHẢO SÁT (congkhaosat_main)
