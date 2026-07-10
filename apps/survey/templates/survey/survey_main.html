@@ -1572,7 +1572,8 @@
               if (rowIndex === 0) return;
               const rowData = [];
               row.querySelectorAll("td").forEach((td, colIdx) => {
-                if (columns[colIdx] && columns[colIdx].type === 'checkbox') {
+                const cType = columns[colIdx] ? columns[colIdx].type : 'text';
+                if (cType === 'checkbox' || cType === 'radio') {
                     rowData.push(''); 
                 } else {
                     rowData.push(td.textContent.trim());
@@ -2143,6 +2144,9 @@
                 if (type === 'checkbox') {
                     let opts = typeof col === 'string' ? [] : (col.options || []);
                     rowHtml += `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockCheckboxCell(opts)}</td>`;
+                } else if (type === 'radio') {
+                    let opts = typeof col === 'string' ? [] : (col.options || []);
+                    rowHtml += `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockRadioCell(opts, `radio_mock_${Date.now()}_${idx}`)}</td>`;
                 } else {
                     rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true">${escapeHtml(rowData[idx] || "")}</td>`;
                 }
@@ -2152,11 +2156,14 @@
             });
           } else {
             let rowHtml = "<tr>";
-            columns.forEach((col) => {
+            columns.forEach((col, idx) => {
                 let type = typeof col === 'string' ? 'text' : col.type;
                 if (type === 'checkbox') {
                     let opts = typeof col === 'string' ? [] : (col.options || []);
                     rowHtml += `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockCheckboxCell(opts)}</td>`;
+                } else if (type === 'radio') {
+                    let opts = typeof col === 'string' ? [] : (col.options || []);
+                    rowHtml += `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockRadioCell(opts, `radio_mock_${Date.now()}_${idx}`)}</td>`;
                 } else {
                     rowHtml += `<td class="border border-gray-300 p-1" contenteditable="true"></td>`;
                 }
@@ -2440,6 +2447,23 @@
       lastSelectedEl = el;
       window.updatePropsPanel(el);
       showFloatingToolbar(el);
+    }
+    function showFloatingToolbar(el) {
+      if (!el) return;
+      const toolbar = document.getElementById("floating-toolbar");
+      toolbar.classList.add("visible");
+      
+      const rect = el.getBoundingClientRect();
+      const toolbarRect = toolbar.getBoundingClientRect();
+      
+      let top = rect.top - toolbarRect.height - 8;
+      if (top < 60) {
+        top = rect.top + 8;
+      }
+      let left = rect.right - toolbarRect.width;
+      
+      toolbar.style.top = top + "px";
+      toolbar.style.left = left + "px";
     }
 
     function hideFloatingToolbar() {
@@ -3652,6 +3676,9 @@
                  if (colType === 'checkbox') {
                      let opts = cols[idx].options || [];
                      return `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockCheckboxCell(opts)}</td>`;
+                 } else if (colType === 'radio') {
+                     let opts = cols[idx].options || [];
+                     return `<td class="border border-gray-300 p-1.5 bg-gray-50 align-top" contenteditable="false">${window.buildMockRadioCell(opts, `radio_mock_${Date.now()}_${idx}`)}</td>`;
                  }
                  return `<td class="border border-gray-300 p-1" contenteditable="true">${escapeHtml(c)}</td>`;
              }).join("");

@@ -1725,6 +1725,17 @@
                                         `;
                                     });
                                     html += `</div>`;
+                                } else if (colType === 'radio') {
+                                    html += `<div class="radio-group" style="text-align: left; display: flex; flex-direction: column; gap: 4px;">`;
+                                    colOptions.forEach(opt => {
+                                        html += `
+                                          <label class="custom-radio" style="padding: 4px; gap: 8px;">
+                                              <input type="radio" name="${inputName}" value="${escapeHtml(opt)}">
+                                              <span style="font-size: 0.8rem;">${escapeHtml(opt)}</span>
+                                          </label>
+                                        `;
+                                    });
+                                    html += `</div>`;
                                 }
                                 
                                 html += `</div></td>`;
