@@ -862,6 +862,7 @@ def survey_form_create_api(request):
             target_groups=data.get('target_groups', []),
             settings=data.get('settings', {}),
             code=code if code else None,
+            allow_after_deadline=data.get('allow_after_deadline', False),
         )
 
         return JsonResponse({

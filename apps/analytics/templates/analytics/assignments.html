@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(error => console.error('Fetch error groups:', error));
 
     // Load forms từ survey
-    fetch('/analytics/api/survey-forms/', {
+    fetch('/analytics/api/survey-forms/?per_page=1000', {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => response.json())

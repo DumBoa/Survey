@@ -1869,7 +1869,7 @@ function openAdd() {
     
     // Reset level chips
     document.querySelectorAll('.level-chip').forEach(c => c.classList.remove('selected'));
-    document.querySelector('.level-chip[data-value="city"]').classList.add('selected');
+    document.querySelector('.level-chip[data-value="department"]').classList.add('selected');
     
     updatePreview();
     openPanel();
@@ -1977,7 +1977,7 @@ function saveUnit(e) {
 
     const code = document.getElementById('fCode').value.trim();
     const name = document.getElementById('fName').value.trim();
-    const level = document.querySelector('.level-chip.selected')?.dataset.value || 'city';
+    const level = document.querySelector('.level-chip.selected')?.dataset.value || 'department';
     const parentId = document.getElementById('fParent').value;
     const isActive = document.getElementById('fActive').checked;
 

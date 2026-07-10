@@ -325,6 +325,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <a href="/survey/survey-edit/?survey_id=${f.id}" class="btn btn-outline-success" title="Vào builder">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
+                            <button class="btn btn-outline-info btn-duplicate" data-id="${f.id}" title="Nhân bản">
+                                <i class="bi bi-files"></i>
+                            </button>
                             <button class="btn btn-outline-primary btn-edit" data-id="${f.id}" title="Sửa thông tin">
                                 <i class="bi bi-gear"></i>
                             </button>
@@ -351,16 +354,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderPagination(data) {
         const pagination = document.getElementById('pagination');
         const totalPages = data.total_pages || 1;
-        const currentPage = data.page || 1;
+        const pageData = data.page || 1;
         
         let html = '';
         
-        html += `<li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" data-page="${currentPage - 1}">Trang trước</a>
+        html += `<li class="page-item ${pageData <= 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${pageData - 1}">Trang trước</a>
         </li>`;
         
         const maxVisible = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let startPage = Math.max(1, pageData - Math.floor(maxVisible / 2));
         let endPage = Math.min(totalPages, startPage + maxVisible - 1);
         
         if (endPage - startPage < maxVisible - 1) {
@@ -375,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         for (let i = startPage; i <= endPage; i++) {
-            html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+            html += `<li class="page-item ${i === pageData ? 'active' : ''}">
                 <a class="page-link" href="#" data-page="${i}">${i}</a>
             </li>`;
         }
@@ -387,8 +390,8 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
         }
         
-        html += `<li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
-            <a class="page-link" href="#" data-page="${currentPage + 1}">Trang sau</a>
+        html += `<li class="page-item ${pageData >= totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" data-page="${pageData + 1}">Trang sau</a>
         </li>`;
         
         pagination.innerHTML = html;
@@ -518,6 +521,32 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 alert('Không thể tải thông tin biểu mẫu');
             });
+            return;
+        }
+
+        // Nút Duplicate (Nhân bản)
+        const dupBtn = e.target.closest('.btn-duplicate');
+        if (dupBtn) {
+            const id = dupBtn.dataset.id;
+            if (confirm('Bạn có chắc chắn muốn nhân bản biểu mẫu này?')) {
+                fetch(`/survey/api/surveys/${id}/duplicate/`, {
+                    method: 'POST',
+                    headers: { 
+                        'X-CSRFToken': getCSRFToken(),
+                        'X-Requested-With': 'XMLHttpRequest' 
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Nhân bản thành công!');
+                        loadForms();
+                    } else {
+                        alert('Lỗi: ' + data.error);
+                    }
+                })
+                .catch(error => alert('Có lỗi xảy ra: ' + error));
+            }
             return;
         }
 
