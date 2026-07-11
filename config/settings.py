@@ -37,6 +37,8 @@ ALLOWED_HOSTS = env.list(
 )
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 
+# Phân biệt project SIPAS hay CCHC
+PROJECT_TYPE = env('PROJECT_TYPE', default='CCHC')
 
 # Application definition
 
@@ -65,6 +67,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

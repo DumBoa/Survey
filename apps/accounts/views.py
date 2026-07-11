@@ -22,11 +22,16 @@ logger = logging.getLogger(__name__)
 # TRANG CHỦ - REDIRECT THEO LUỒNG MỚI
 # ============================================
 
+from django.conf import settings
+
 def accounts_main_render(request):
     """
     Trang chủ của accounts - hiển thị congkhaosat_main.html
     Nếu đã đăng nhập và là admin thì redirect sang analytics
     """
+    if getattr(settings, 'PROJECT_TYPE', 'CCHC') == 'SIPAS':
+        return redirect('/accounts/sipas/')
+
     if request.user.is_authenticated:
         if is_admin_user(request.user):
             return redirect('/analytics/')
@@ -55,6 +60,9 @@ def accounts_main_render_sipas(request):
     Trang chủ của accounts dành cho SIPAS - hiển thị congkhaosat_main_SIPAS.html
     Nếu đã đăng nhập và là admin thì redirect sang analytics
     """
+    if getattr(settings, 'PROJECT_TYPE', 'CCHC') == 'CCHC':
+        return redirect('/accounts/cchc/')
+
     if request.user.is_authenticated:
         if is_admin_user(request.user):
             return redirect('/analytics/')

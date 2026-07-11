@@ -109,7 +109,7 @@ class Section(models.Model):
     )
 
     code = models.CharField(
-        max_length=10, verbose_name="Mã phần",
+        max_length=50, verbose_name="Mã phần",
         help_text="VD: A, B, C... dùng để hiển thị nhãn 'PHẦN A'"
     )
     title = models.CharField(max_length=255, verbose_name="Tên phần")
