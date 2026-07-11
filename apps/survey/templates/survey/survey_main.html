@@ -1712,7 +1712,24 @@
     }
 
     function extractOptions(comp) {
+      const type = comp.dataset.type;
       const options = [];
+      if (type === "data-table") {
+          const rows = comp.querySelectorAll("table tr:not(:first-child)");
+          rows.forEach(r => {
+             const td = r.querySelector("td");
+             if (td) { const text = td.textContent.trim(); if (text) options.push(text); }
+          });
+          return options;
+      }
+      if (type === "rating-grid") {
+          const rows = comp.querySelectorAll("tbody tr");
+          rows.forEach(r => {
+             const td = r.querySelector("td");
+             if (td) { const text = td.textContent.trim(); if (text) options.push(text); }
+          });
+          return options;
+      }
       const optionItems = comp.querySelectorAll('.option-item span[contenteditable="true"]');
       optionItems.forEach((el) => {
         const text = el.textContent.trim();
@@ -2496,8 +2513,7 @@
         <div class="space-y-3">
           <div class="bg-white rounded p-3 shadow-sm">
             <div class="text-xs text-gray-500 mb-2">Loại thành phần</div>
-            <select id="change-type-select" class="change-type-selector">${optionsHtml}</select>
-            <button id="btn-change-type" class="btn-change-type">🔄 Đổi loại thành phần</button>
+            <select id="change-type-select" class="change-type-selector" onchange="changeComponentType()">${optionsHtml}</select>
             <div style="font-size:10px;color:#9ca3af;margin-top:4px;text-align:center;">* Nội dung sẽ được giữ nguyên, cấu trúc sẽ thay đổi</div>
           </div>
           <div class="bg-white rounded p-3 shadow-sm">
@@ -2632,14 +2648,7 @@
       
       panel.innerHTML = html;
       
-      const btnChangeType = document.getElementById("btn-change-type");
-      if (btnChangeType) {
-        btnChangeType.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          changeComponentType();
-        });
-      }
+
     };
 
     function changeComponentType() {
@@ -2723,8 +2732,36 @@
       if (newType === "rating-grid" && oldContent.config) {
         const table = selectedEl.querySelector(".grid-table");
         if (table) {
-          const config = oldContent.config;
+          let config = oldContent.config;
+          if (currentType === "data-table" && config.columns) {
+              const criteria = [];
+              if (config.data) {
+                  config.data.forEach(row => {
+                      if (row[0]) criteria.push(row[0]);
+                  });
+              }
+              const scale = [];
+              for (let i = 1; i < config.columns.length; i++) {
+                  let colName = typeof config.columns[i] === 'string' ? config.columns[i] : config.columns[i].name;
+                  scale.push({ value: i, label: colName, kind: 'radio' });
+              }
+              let col0Name = typeof config.columns[0] === 'string' ? config.columns[0] : config.columns[0]?.name;
+              config = {
+                  criteria: criteria.length > 0 ? criteria : ["Tiêu chí 1"],
+                  scale: scale.length > 0 ? scale : [{value: 1, label: "Có", kind: "radio"}, {value: 2, label: "Không", kind: "radio"}],
+                  criteria_label: col0Name || "Tiêu chí",
+                  grid_type: "yesno"
+              };
+          }
+
           if (config.criteria && config.criteria.length > 0) {
+            const thead_tr = table.querySelector("thead tr");
+            if (thead_tr && config.scale) {
+               thead_tr.innerHTML = `<th contenteditable="true">${escapeHtml(config.criteria_label || "Tiêu chí")}</th>`;
+               config.scale.forEach(item => {
+                   thead_tr.innerHTML += `<th contenteditable="true" data-kind="${item.kind || 'radio'}">${escapeHtml(item.label)}</th>`;
+               });
+            }
             const tbody = table.querySelector("tbody");
             if (tbody) {
               tbody.innerHTML = "";
@@ -2750,7 +2787,20 @@
       if (newType === "data-table" && oldContent.config) {
         const table = selectedEl.querySelector("table");
         if (table) {
-          const config = oldContent.config;
+          let config = oldContent.config;
+          if (currentType === "rating-grid" && config.criteria) {
+              const columns = [{name: config.criteria_label || "Tiêu chí", type: "text"}];
+              if (config.scale) {
+                  config.scale.forEach(s => columns.push({name: s.label, type: "text"}));
+              }
+              const data = [];
+              config.criteria.forEach(crit => {
+                  const rowData = [crit];
+                  for(let i = 0; i < (config.scale ? config.scale.length : 0); i++) rowData.push("");
+                  data.push(rowData);
+              });
+              config = { columns, data };
+          }
           if (config.columns && config.columns.length > 0) {
             const headerRow = table.querySelector("tr");
             if (headerRow) {
@@ -2818,6 +2868,17 @@
           rows.forEach((row) => { const rowData = []; row.querySelectorAll("td").forEach((cell) => rowData.push(cell.textContent.trim())); if (rowData.some((cell) => cell !== "")) config.data.push(rowData); });
           content.config = config;
         }
+      }
+      if (type === "single-choice" || type === "multi-choice") {
+          const opts = content.options && content.options.length > 0 ? content.options : ["Lựa chọn 1", "Lựa chọn 2"];
+          content.config = {
+              columns: [{name: "Lựa chọn", type: "text"}],
+              data: opts.map(opt => [opt]),
+              criteria: opts,
+              scale: [{value: 1, label: "Có", kind: "radio"}, {value: 2, label: "Không", kind: "radio"}],
+              criteria_label: "Lựa chọn",
+              grid_type: "yesno"
+          };
       }
       return content;
     }

@@ -570,9 +570,10 @@
       }
 
       .data-table tbody td {
-        padding: 8px 12px;
+        padding: 0;
         border: 1px solid #e5e7eb;
         text-align: center;
+        vertical-align: top;
       }
 
       .data-table tbody td .data-cell {
@@ -611,6 +612,32 @@
 
       .data-table tbody td .input-wrapper {
         position: relative;
+        padding: 8px 12px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      
+      .data-table tbody td .input-wrapper.type-checkbox,
+      .data-table tbody td .input-wrapper.type-radio {
+        padding: 0;
+      }
+
+      .data-table tbody td .custom-checkbox,
+      .data-table tbody td .custom-radio {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: background 0.2s;
+        border-radius: 0;
+        margin: 0;
+      }
+      
+      .data-table tbody td .custom-checkbox:hover,
+      .data-table tbody td .custom-radio:hover {
+        background: #f3f4f6;
       }
 
       .data-table tbody td .input-wrapper .data-label {
@@ -658,21 +685,35 @@
       }
 
       .scale-table tbody td {
-        padding: 10px 8px;
+        padding: 0;
         border: 1px solid #e5e7eb;
         text-align: center;
+        vertical-align: middle;
       }
 
       .scale-table tbody td:first-child {
         text-align: left;
-        padding-left: 14px;
+        padding: 10px 14px;
         color: #1a1a1a;
       }
 
       .scale-table tbody td .custom-radio-label,
       .scale-table tbody td .custom-checkbox {
+        display: flex;
         justify-content: center;
-        padding: 4px;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        min-height: 44px;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        cursor: pointer;
+      }
+      
+      .scale-table tbody td .custom-radio-label:hover,
+      .scale-table tbody td .custom-checkbox:hover {
+        background: #f9fafb;
       }
 
       .scale-table tbody td .custom-radio-label input[type="radio"],
@@ -1699,7 +1740,7 @@
                                 const colType = typeof col === 'string' ? 'text' : (col.type || 'text');
                                 const colOptions = typeof col === 'string' ? [] : (col.options || []);
 
-                                html += `<td><div class="input-wrapper">`;
+                                html += `<td><div class="input-wrapper type-${colType}">`;
 
                                 if (colType === 'text') {
                                     if (hasData) {
@@ -1715,23 +1756,23 @@
                                         `;
                                     }
                                 } else if (colType === 'checkbox') {
-                                    html += `<div class="checkbox-group" style="text-align: left;">`;
+                                    html += `<div class="checkbox-group" style="text-align: left; gap: 0; margin: 0;">`;
                                     colOptions.forEach(opt => {
                                         html += `
-                                          <label class="custom-checkbox" style="padding: 4px; gap: 8px;">
+                                          <label class="custom-checkbox">
                                               <input type="checkbox" name="${inputName}[]" value="${escapeHtml(opt)}">
-                                              <span style="font-size: 0.8rem;">${escapeHtml(opt)}</span>
+                                              <span style="font-size: 0.85rem;">${escapeHtml(opt)}</span>
                                           </label>
                                         `;
                                     });
                                     html += `</div>`;
                                 } else if (colType === 'radio') {
-                                    html += `<div class="radio-group" style="text-align: left; display: flex; flex-direction: column; gap: 4px;">`;
+                                    html += `<div class="radio-group" style="text-align: left; gap: 0; margin: 0;">`;
                                     colOptions.forEach(opt => {
                                         html += `
-                                          <label class="custom-radio" style="padding: 4px; gap: 8px;">
+                                          <label class="custom-radio">
                                               <input type="radio" name="${inputName}" value="${escapeHtml(opt)}">
-                                              <span style="font-size: 0.8rem;">${escapeHtml(opt)}</span>
+                                              <span style="font-size: 0.85rem;">${escapeHtml(opt)}</span>
                                           </label>
                                         `;
                                     });
@@ -1854,15 +1895,22 @@
 
             const dataTable = item.querySelector('.data-table');
             if (dataTable) {
-                const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="checkbox"]:checked');
-                for (let inp of inputs) {
-                    if (inp.type === 'checkbox') {
-                        return true;
-                    } else if (inp.value && inp.value.trim() !== '') {
-                        return true;
+                const rows = dataTable.querySelectorAll('tbody tr');
+                if (rows.length === 0) return false;
+                let allRowsAnswered = true;
+                for (let row of rows) {
+                    let rowAnswered = false;
+                    const inputs = row.querySelectorAll('input');
+                    for (let inp of inputs) {
+                        if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) rowAnswered = true;
+                        if (inp.type === 'text' && inp.value.trim() !== '') rowAnswered = true;
+                    }
+                    if (!rowAnswered) {
+                        allRowsAnswered = false;
+                        break;
                     }
                 }
-                return false;
+                return allRowsAnswered;
             }
 
             const inputs = item.querySelectorAll('input, textarea');
@@ -2323,41 +2371,35 @@
                         answered = false;
                     } else {
                         let allRowsAnswered = true;
-                        let hasAnyCheckbox = false;
-                        let anyCheckboxChecked = false;
                         
                         rows.forEach(row => {
                             let rowAnswered = false;
                             const inputs = row.querySelectorAll('input');
                             for (let inp of inputs) {
-                                if (inp.type === 'radio' && inp.checked) rowAnswered = true;
-                                if (inp.type === 'checkbox') {
-                                    hasAnyCheckbox = true;
-                                    if (inp.checked) {
-                                        rowAnswered = true;
-                                        anyCheckboxChecked = true;
-                                    }
-                                }
+                                if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) rowAnswered = true;
                                 if (inp.type === 'text' && inp.value.trim() !== '') rowAnswered = true;
                             }
                             if (!rowAnswered) allRowsAnswered = false;
                         });
-                        
-                        // CÂU Ô VUÔNG CHO CHỌN NHIỀU PHƯƠNG ÁN: KHÔNG BẮT BUỘC TRẢ LỜI TOÀN BỘ (CÁC HÀNG)
-                        if (hasAnyCheckbox) {
-                            answered = anyCheckboxChecked; 
-                        } else {
-                            answered = allRowsAnswered;
-                        }
+                        answered = allRowsAnswered;
                     }
                 } else if (dataTable) {
-                    const inputs = item.querySelectorAll('tbody input[type="text"], tbody input[type="checkbox"]:checked');
-                    for (let inp of inputs) {
-                        if (inp.type === 'checkbox') {
-                            answered = true; break;
-                        } else if (inp.value && inp.value.trim() !== '') {
-                            answered = true; break;
-                        }
+                    const rows = dataTable.querySelectorAll('tbody tr');
+                    if (rows.length === 0) {
+                        answered = false;
+                    } else {
+                        let allRowsAnswered = true;
+                        
+                        rows.forEach(row => {
+                            let rowAnswered = false;
+                            const inputs = row.querySelectorAll('input');
+                            for (let inp of inputs) {
+                                if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) rowAnswered = true;
+                                if (inp.type === 'text' && inp.value.trim() !== '') rowAnswered = true;
+                            }
+                            if (!rowAnswered) allRowsAnswered = false;
+                        });
+                        answered = allRowsAnswered;
                     }
                 } else {
                     const inputs = item.querySelectorAll('input, textarea');

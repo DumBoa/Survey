@@ -4,454 +4,259 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng điều khiển khảo sát</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-    <style>
-        :root {
-            --primary: #3b82f6; /* Lighter, friendly blue */
-            --primary-light: #eff6ff;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #0f172a;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --radius: 12px;
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --transition: all 0.2s ease-in-out;
-            --font: 'Inter', sans-serif;
-        }
-
-        body {
-            font-family: var(--font);
-            background-color: var(--bg);
-            color: var(--text);
-            padding-bottom: 3rem;
-        }
-
-        /* Header */
-        .top-header {
-            background-color: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo-circle {
-            width: 40px;
-            height: 40px;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 1.25rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: var(--transition);
-        }
-        .stat-card:hover {
-            transform: translateY(-2px);
-            border-color: #cbd5e1;
-        }
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-        .stat-icon.blue { background: #eff6ff; color: #3b82f6; }
-        .stat-icon.green { background: #ecfdf5; color: #10b981; }
-        .stat-icon.yellow { background: #fffbeb; color: #f59e0b; }
-        .stat-icon.gray { background: #f1f5f9; color: #64748b; }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text);
-            margin: 0 0 2px 0;
-            line-height: 1.2;
-        }
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin: 0;
-        }
-
-        /* Toolbar */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .filter-group select, .sort-group select {
-            padding: 0.5rem 2.5rem 0.5rem 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background-color: var(--card);
-            font-size: 0.9rem;
-            color: var(--text);
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 12px 12px;
-        }
-        .filter-group select:focus, .sort-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        /* Form List */
-        .form-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .form-list-item {
-            background: var(--card);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            padding: 1.25rem 1.5rem;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1.5rem;
-            transition: var(--transition);
-        }
-        .form-list-item:hover {
-            border-color: #cbd5e1;
-        }
-        
-        @media (max-width: 768px) {
-            .form-list-item {
-                flex-direction: column;
-                align-items: stretch;
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6',
+                            600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af',
+                        }
+                    }
+                }
             }
         }
-
-        .form-info {
-            flex: 1;
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Skeleton loading shimmer */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
         }
-        .form-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .form-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--text);
-            margin: 0;
-            line-height: 1.4;
-        }
-
-        .badge-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        .badge-completed { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
-        .badge-in-progress { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-        .badge-not-started { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-
-        .form-meta {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            flex-wrap: wrap;
-        }
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Progress Bar */
-        .progress-section {
-            width: 200px;
-            flex-shrink: 0;
-        }
-        @media (max-width: 768px) {
-            .progress-section { width: 100%; }
-        }
-        .progress-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .progress-bar-bg {
-            flex-grow: 1;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .progress-bar-fill.blue { background: var(--primary); }
-        .progress-bar-fill.green { background: #10b981; }
-        .progress-bar-fill.gray { background: #9ca3af; }
-
-        .progress-text {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text);
-            min-width: 36px;
-            text-align: right;
-        }
-
-        /* Actions */
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-        .btn-action {
-            padding: 0.5rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 500;
-            font-size: 0.9rem;
-            text-align: center;
-            text-decoration: none;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: none;
-        }
-        .btn-primary-action {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary-action:hover {
-            background: #2563eb;
-            color: white;
-        }
-        .btn-success-action {
-            background: #ecfdf5;
-            color: #059669;
-            border: 1px solid #a7f3d0;
-            cursor: default;
-        }
-
-        .badge-req {
-            background: #f1f5f9;
-            color: #475569;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-            font-weight: 600;
-            vertical-align: middle;
-        }
-
-        /* Skeleton */
         .skeleton {
-            background: #e2e8f0;
-            color: transparent !important;
-            border-radius: 4px;
-            animation: pulse 1.5s infinite ease-in-out;
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+            border-radius: 6px;
         }
-        .skeleton * { visibility: hidden; }
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+        
+        /* Transitions & Animations */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        .form-card { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+
+        /* Hide scrollbar for filter pills on mobile */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="top-header">
-        <div class="container-fluid px-2 d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <a href="{% url 'accounts:home' %}?choose_group=true" class="text-secondary text-decoration-none bg-light p-2 rounded hover-bg" title="Quay lại chọn nhóm">
-                    <i data-lucide="home" style="width: 20px; height: 20px;"></i>
-                </a>
-                <div class="logo-circle">CCHC</div>
-                <div>
-                    <h1 class="h6 mb-0 fw-bold">Bảng điều khiển khảo sát</h1>
-                    <p class="mb-0 text-secondary" style="font-size: 0.85rem;" id="header-user-info">
-                        <span class="skeleton" style="width:100px; display:inline-block">Đang tải...</span>
-                    </p>
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Tabs -->
+                <div class="flex items-center gap-6">
+                    <a href="{% url 'accounts:home' %}?choose_group=true" class="flex items-center gap-2.5 text-slate-600 hover:text-primary-600 transition" title="Quay lại chọn nhóm">
+                        <div class="w-9 h-9 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center text-white shadow-sm shadow-primary-500/20">
+                            <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                        </div>
+                        <span class="font-bold text-lg text-slate-900 hidden sm:block tracking-tight">Trang Chủ Khảo Sát</span>
+                    </a>
+                    
+                    <nav class="hidden md:flex items-center bg-slate-100/50 p-1 rounded-lg">
+                        <button id="forms-tab-btn" onclick="switchTab('forms')" class="px-4 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition">
+                            Biểu mẫu
+                        </button>
+                        <button id="overview-tab-btn" onclick="switchTab('overview')" class="px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 transition">
+                            Tổng quan
+                        </button>
+                    </nav>
                 </div>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="d-none d-md-flex align-items-center text-secondary" style="font-size: 0.85rem;" id="header-email">
-                    <span class="skeleton" style="width:150px; display:inline-block">Đang tải...</span>
+
+                <!-- User Info -->
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:flex flex-col items-end">
+                        <div id="header-user-info" class="text-sm font-semibold text-slate-900 skeleton w-32 h-4"></div>
+                        <div id="header-email" class="text-xs text-slate-500 skeleton w-24 h-3 mt-1.5"></div>
+                    </div>
+                    <a href="{{ logout_url }}" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition" title="Đăng xuất">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Đăng xuất</span>
+                    </a>
                 </div>
-                <!-- Đã loại bỏ nút "Cập nhật thông tin" theo yêu cầu -->
-                <a href="{{ logout_url }}" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-2">
-                    <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
-                    <span class="d-none d-sm-inline">Đăng xuất</span>
-                </a>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="container-fluid p-0 mt-2" id="mainContent">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Tab: Forms -->
+        <div id="forms-pane" class="fade-in">
+            <!-- Mobile Tabs -->
+            <div class="md:hidden flex items-center bg-slate-100/50 p-1 rounded-lg mb-6 w-full">
+                <button onclick="switchTab('forms')" id="mobile-forms-btn" class="flex-1 px-4 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition">Biểu mẫu</button>
+                <button onclick="switchTab('overview')" id="mobile-overview-btn" class="flex-1 px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 transition">Tổng quan</button>
+            </div>
 
-        <!-- Tabs Navigation -->
-        <ul class="nav nav-tabs px-3" id="dashboardTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active fw-medium" id="forms-tab" data-bs-toggle="tab" data-bs-target="#forms-pane" type="button" role="tab" aria-controls="forms-pane" aria-selected="true">
-                    <i data-lucide="list" style="width: 16px; height: 16px; margin-right: 4px; display: inline-block; vertical-align: text-bottom;"></i> Danh sách biểu mẫu
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link fw-medium" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview-pane" type="button" role="tab" aria-controls="overview-pane" aria-selected="false">
-                    <i data-lucide="pie-chart" style="width: 16px; height: 16px; margin-right: 4px; display: inline-block; vertical-align: text-bottom;"></i> Tổng quan tiến độ
-                </button>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="dashboardTabsContent">
-            <!-- Tab 1: Forms List -->
-            <div class="tab-pane fade show active p-3" id="forms-pane" role="tabpanel" aria-labelledby="forms-tab" tabindex="0">
-                <!-- Target Group Info -->
-        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(to right, #eff6ff, #f8fafc);">
-            <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="bg-primary text-white rounded p-2 d-flex align-items-center justify-content-center">
-                        <i data-lucide="users" style="width: 20px; height: 20px;"></i>
+            <!-- Target Group Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-primary-600 uppercase tracking-wider mb-1">
+                        <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                        Nhóm đối tượng
                     </div>
-                    <div>
-                        <div class="text-uppercase fw-bold text-primary" style="font-size: 0.75rem; letter-spacing: 0.5px;">Nhóm đối tượng hiện tại</div>
-                        <div class="fw-semibold text-dark" style="font-size: 1.1rem;" id="targetGroupName">
-                            <span class="skeleton" style="width:200px; display:inline-block">Đang tải...</span>
-                        </div>
+                    <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-3" id="targetGroupName">
+                        <span class="skeleton w-48 h-7"></span>
+                    </h1>
+                    <div class="text-sm text-slate-500 mt-1" id="targetFormCount">
+                        <span class="skeleton w-24 h-4"></span>
                     </div>
                 </div>
-                <div class="text-primary fw-medium" style="font-size: 0.9rem;" id="targetFormCount">
-                    <i data-lucide="file-text" style="width: 16px; height: 16px; display: inline; margin-right: 4px;"></i>
-                    <span>... biểu mẫu</span>
+                
+                <div class="flex items-center gap-4">
+                    <button onclick="fetchDashboardData()" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition shadow-sm">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Làm mới</span>
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Stats Grid (Chỉ còn 4 thẻ cơ bản) -->
-        <div class="stats-grid" id="statsGrid">
-            <!-- Rendered by JS -->
-            <div class="stat-card skeleton"><div style="height:48px"></div></div>
-            <div class="stat-card skeleton"><div style="height:48px"></div></div>
-            <div class="stat-card skeleton"><div style="height:48px"></div></div>
-            <div class="stat-card skeleton"><div style="height:48px"></div></div>
-        </div>
+            <!-- Note Card -->
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-8 flex gap-3 shadow-sm">
+                <div class="text-blue-600 shrink-0 mt-0.5">
+                    <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-blue-800 font-bold text-sm mb-1.5">Lưu ý</h3>
+                    <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
+                        <li>Trạng thái biểu mẫu được lưu tự động. Bạn có thể làm tiếp các khảo sát đang dang dở miễn là chưa đóng trình duyệt.</li>
+                        <li>Để kết thúc hoàn toàn phiên làm khảo sát, vui lòng bấm nút <span class="font-semibold">Đăng xuất</span>.</li>
+                    </ul>
+                </div>
+            </div>
 
-        <!-- Toolbar -->
-        <div class="toolbar">
-            <h2 class="h5 fw-bold mb-0 text-dark d-flex align-items-center gap-2">
-                Danh sách biểu mẫu 
-                <span class="badge bg-light text-secondary border fs-6 rounded-pill" id="formListCount">...</span>
-            </h2>
-            <div class="d-flex gap-2">
-                <div class="filter-group">
-                    <select id="categoryFilter" onchange="applyFilters()">
-                        <option value="all">Tất cả danh mục</option>
-                        <option value="CCHC">Khảo sát CCHC</option>
-                        <option value="SIPAS">Khảo sát SIPAS</option>
-                    </select>
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" id="statsGrid">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm skeleton h-24"></div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm skeleton h-24"></div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm skeleton h-24"></div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm skeleton h-24"></div>
+            </div>
+
+            <!-- Filter Toolbar -->
+            <div class="bg-white p-2 rounded-2xl border border-slate-200/60 shadow-sm mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <!-- Status Filter Pills -->
+                <div class="flex overflow-x-auto hide-scrollbar gap-2 p-1 flex-1" id="filterPills">
+                    <button onclick="setFilter('all')" data-filter="all" class="filter-pill px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap bg-primary-50 text-primary-700 transition">Tất cả</button>
+                    <button onclick="setFilter('completed')" data-filter="completed" class="filter-pill px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap text-slate-600 hover:bg-slate-100 transition">Hoàn thành</button>
+                    <button onclick="setFilter('in_progress')" data-filter="in_progress" class="filter-pill px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap text-slate-600 hover:bg-slate-100 transition">Đang làm</button>
+                    <button onclick="setFilter('not_started')" data-filter="not_started" class="filter-pill px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap text-slate-600 hover:bg-slate-100 transition">Chưa làm</button>
                 </div>
-                <div class="filter-group">
-                    <select id="statusFilter" onchange="applyFilters()">
-                        <option value="all">Tất cả trạng thái</option>
-                        <option value="completed">Đã hoàn thành</option>
-                        <option value="in_progress">Đang làm</option>
-                        <option value="not_started">Chưa làm</option>
-                    </select>
-                </div>
-                <div class="sort-group">
-                    <select id="sortOrder" onchange="applyFilters()">
-                        <option value="name">Sắp xếp: Tên biểu mẫu</option>
+
+                <!-- Sort Dropdown -->
+                <div class="relative px-1">
+                    <select id="sortOrder" onchange="applyFilters()" class="appearance-none w-full sm:w-auto pl-3 pr-10 py-2 text-sm font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition cursor-pointer">
+                        <option value="name">Tên biểu mẫu</option>
                         <option value="status">Trạng thái</option>
                         <option value="deadline_asc">Hạn nộp (Gần nhất)</option>
                     </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Forms Grid -->
+            <div id="formsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 skeleton h-56"></div>
+                <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 skeleton h-56"></div>
+                <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6 skeleton h-56"></div>
             </div>
         </div>
 
-        <!-- Forms List -->
-        <div class="form-list" id="formsGrid">
-            <!-- Skeleton items -->
-            <div class="form-list-item skeleton" style="height: 100px;"></div>
-            <div class="form-list-item skeleton" style="height: 100px;"></div>
+        <!-- Tab: Overview (Iframe) -->
+        <div id="overview-pane" class="hidden fade-in">
+            <iframe src="/analytics/survey-dashboard/?iframe=true" width="100%" height="900px" frameborder="0" class="block min-h-[900px] w-full"></iframe>
         </div>
-
-            </div> <!-- End Tab 1 -->
-
-            <!-- Tab 2: Overview (Iframe) -->
-            <div class="tab-pane fade" id="overview-pane" role="tabpanel" aria-labelledby="overview-tab" tabindex="0">
-                <iframe src="/analytics/survey-dashboard/?iframe=true" width="100%" height="900px" frameborder="0" style="min-height: 900px; display: block;"></iframe>
-            </div> <!-- End Tab 2 -->
-
-        </div> <!-- End Tab Content -->
 
     </main>
 
     <script>
-        // Init Lucide
         document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
             fetchDashboardData();
-            // Auto refresh every 30 seconds
             setInterval(fetchDashboardData, 30000);
         });
 
         let dashboardData = null;
-        let isFirstLoad = true;
+        let currentFilter = 'all';
 
-        // Fetch Data
+        function switchTab(tabName) {
+            const formsPane = document.getElementById('forms-pane');
+            const overviewPane = document.getElementById('overview-pane');
+            
+            const formsBtn = document.getElementById('forms-tab-btn');
+            const overviewBtn = document.getElementById('overview-tab-btn');
+            
+            const mobileFormsBtn = document.getElementById('mobile-forms-btn');
+            const mobileOverviewBtn = document.getElementById('mobile-overview-btn');
+
+            if (tabName === 'forms') {
+                formsPane.classList.remove('hidden');
+                overviewPane.classList.add('hidden');
+                
+                formsBtn.className = "px-4 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition";
+                overviewBtn.className = "px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 transition";
+                
+                if(mobileFormsBtn) mobileFormsBtn.className = "flex-1 px-4 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition";
+                if(mobileOverviewBtn) mobileOverviewBtn.className = "flex-1 px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 transition";
+            } else {
+                formsPane.classList.add('hidden');
+                overviewPane.classList.remove('hidden');
+                
+                overviewBtn.className = "px-4 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition";
+                formsBtn.className = "px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 hover:text-slate-700 transition";
+                
+                if(mobileOverviewBtn) mobileOverviewBtn.className = "flex-1 px-4 py-1.5 rounded-md text-sm font-medium bg-white text-slate-900 shadow-sm transition";
+                if(mobileFormsBtn) mobileFormsBtn.className = "flex-1 px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 transition";
+            }
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-pill').forEach(btn => {
+                if (btn.getAttribute('data-filter') === filter) {
+                    btn.className = "filter-pill px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap bg-primary-50 text-primary-700 transition";
+                } else {
+                    btn.className = "filter-pill px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap text-slate-600 hover:bg-slate-100 transition";
+                }
+            });
+            applyFilters();
+        }
+
         async function fetchDashboardData() {
             try {
                 const response = await fetch('/accounts/api/survey/dashboard/');
@@ -463,16 +268,15 @@
                 } else if (data.redirect) {
                     window.location.href = data.redirect;
                 } else if (data.error === 'no_participant') {
-                    document.getElementById('mainContent').innerHTML = `
-                        <div class="text-center py-5 mt-5">
-                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
-                                <i data-lucide="inbox" style="width: 40px; height: 40px; color: #9ca3af;"></i>
+                    document.querySelector('main').innerHTML = `
+                        <div class="text-center py-20 mt-10 fade-in">
+                            <div class="bg-slate-100 rounded-full inline-flex items-center justify-center mb-6 mx-auto w-20 h-20">
+                                <i data-lucide="inbox" class="w-10 h-10 text-slate-400"></i>
                             </div>
-                            <h4 class="fw-bold text-dark mb-2">Chưa có biểu mẫu nào</h4>
-                            <p class="text-secondary mb-4">Bạn chưa chọn nhóm đối tượng hoặc chưa được gán biểu mẫu. Vui lòng quay lại trang chủ.</p>
-                            <p style="color: red; margin-bottom: 1rem;">Vui lòng đăng xuất khi gặp sự cố này.</p>
-                            <a href="{% url 'accounts:home' %}" class="btn btn-primary px-4 py-2 fw-medium">
-                                <i data-lucide="home" style="width: 18px; height: 18px; display: inline; margin-right: 6px;"></i>
+                            <h2 class="text-2xl font-bold text-slate-900 mb-3">Chưa có biểu mẫu nào</h2>
+                            <p class="text-slate-500 mb-8 max-w-md mx-auto">Bạn chưa chọn nhóm đối tượng hoặc chưa được gán biểu mẫu. Vui lòng quay lại trang chủ để chọn nhóm.</p>
+                            <a href="{% url 'accounts:home' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-xl shadow-lg shadow-primary-600/20 transition">
+                                <i data-lucide="home" class="w-5 h-5"></i>
                                 Quay lại trang chủ
                             </a>
                         </div>
@@ -490,76 +294,68 @@
             const p = dashboardData.participant;
             const stats = dashboardData.stats;
 
-            // Header info
-            document.getElementById('header-user-info').innerHTML = `
-                <span id="participant-name" class="fw-medium text-dark">${p.full_name}</span>
-                <span class="mx-1">-</span>
-                <span id="participant-agency">${p.agency}</span>
-            `;
-            document.getElementById('header-email').innerHTML = `
-                <i data-lucide="mail" style="width: 14px; height: 14px; margin-right: 6px;"></i>
-                <span id="user-email">${p.email}</span>
-            `;
+            // Header
+            document.getElementById('header-user-info').innerHTML = `${p.full_name}`;
+            document.getElementById('header-email').innerHTML = `${p.email}`;
+            document.getElementById('header-user-info').classList.remove('skeleton', 'w-32', 'h-4');
+            document.getElementById('header-email').classList.remove('skeleton', 'w-24', 'h-3');
+
             document.getElementById('targetGroupName').innerHTML = `
                 ${p.target_group_name}
-                ${p.target_group_code ? `<span class="text-secondary fw-normal fs-6 ms-1">(${p.target_group_code})</span>` : ''}
+                ${p.target_group_code ? `<span class="text-slate-400 font-normal text-base ml-1">(${p.target_group_code})</span>` : ''}
             `;
-            document.getElementById('targetFormCount').innerHTML = `
-                <i data-lucide="file-text" style="width: 16px; height: 16px; display: inline; margin-right: 4px;"></i>
-                <span>${stats.total} biểu mẫu</span>
-            `;
+            document.getElementById('targetFormCount').innerHTML = `${stats.total} biểu mẫu được gán`;
 
-            // Stats (Chỉ giữ lại 4 thẻ)
+            // Stats
             document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-icon blue"><i data-lucide="file-text"></i></div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="file-text" class="w-6 h-6"></i>
+                    </div>
                     <div>
-                        <p class="stat-value">${stats.total}</p>
-                        <p class="stat-label">Tổng biểu mẫu</p>
+                        <p class="text-2xl font-bold text-slate-900">${stats.total}</p>
+                        <p class="text-sm text-slate-500 font-medium">Tổng biểu mẫu</p>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon green"><i data-lucide="check-circle"></i></div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                    </div>
                     <div>
-                        <p class="stat-value">${stats.completed}</p>
-                        <p class="stat-label">Đã hoàn thành</p>
+                        <p class="text-2xl font-bold text-slate-900">${stats.completed}</p>
+                        <p class="text-sm text-slate-500 font-medium">Hoàn thành</p>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon yellow"><i data-lucide="clock"></i></div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
                     <div>
-                        <p class="stat-value">${stats.in_progress}</p>
-                        <p class="stat-label">Đang làm</p>
+                        <p class="text-2xl font-bold text-slate-900">${stats.in_progress}</p>
+                        <p class="text-sm text-slate-500 font-medium">Đang làm</p>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon gray"><i data-lucide="inbox"></i></div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-slate-100 text-slate-500 rounded-xl flex items-center justify-center">
+                        <i data-lucide="inbox" class="w-6 h-6"></i>
+                    </div>
                     <div>
-                        <p class="stat-value">${stats.not_started}</p>
-                        <p class="stat-label">Chưa bắt đầu</p>
+                        <p class="text-2xl font-bold text-slate-900">${stats.not_started}</p>
+                        <p class="text-sm text-slate-500 font-medium">Chưa bắt đầu</p>
                     </div>
                 </div>
             `;
 
             applyFilters();
-
-            if (isFirstLoad) {
-                lucide.createIcons();
-                isFirstLoad = false;
-            } else {
-                lucide.createIcons();
-            }
+            lucide.createIcons();
         }
 
         function applyFilters() {
             if (!dashboardData) return;
-            const categoryFilter = document.getElementById('categoryFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
             const sortOrder = document.getElementById('sortOrder').value;
 
             let filtered = dashboardData.forms.filter(f => {
-                if (categoryFilter !== 'all' && f.category_prefix !== categoryFilter) return false;
-                if (statusFilter !== 'all' && f.status !== statusFilter && !(f.status === 'overdue' && statusFilter === 'not_started')) return false;
+                if (currentFilter !== 'all' && f.status !== currentFilter && !(f.status === 'overdue' && currentFilter === 'not_started')) return false;
                 return true;
             });
 
@@ -577,7 +373,6 @@
                 return 0;
             });
 
-            document.getElementById('formListCount').textContent = filtered.length;
             renderForms(filtered);
         }
 
@@ -585,107 +380,99 @@
             const container = document.getElementById('formsGrid');
             if (forms.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-5 rounded border bg-white">
-                        <p class="text-secondary mb-0">Không tìm thấy biểu mẫu nào khớp với bộ lọc.</p>
+                    <div class="col-span-full text-center py-16 rounded-2xl border border-dashed border-slate-300 bg-white/50">
+                        <i data-lucide="search-x" class="w-12 h-12 text-slate-300 mx-auto mb-3"></i>
+                        <p class="text-slate-500 font-medium">Không tìm thấy biểu mẫu nào khớp với bộ lọc.</p>
                     </div>
                 `;
+                lucide.createIcons();
                 return;
             }
 
             container.innerHTML = forms.map(f => {
-                // Status Badge
-                let badgeClass = '';
-                let badgeText = '';
-                if (f.status === 'completed') { badgeClass = 'badge-completed'; badgeText = 'Hoàn thành'; }
-                else if (f.status === 'in_progress') { badgeClass = 'badge-in-progress'; badgeText = 'Đang làm'; }
-                else { badgeClass = 'badge-not-started'; badgeText = 'Chưa bắt đầu'; }
-
-                // Category Badge
-                let categoryBadge = '';
-                if (f.category_prefix) {
-                    let catColor = f.category_prefix === 'CCHC' ? '#3b82f6' : (f.category_prefix === 'SIPAS' ? '#10b981' : '#64748b');
-                    categoryBadge = `<span class="badge" style="background-color: ${catColor}; color: white; margin-right: 8px; font-size: 0.75rem;">${f.category_prefix}</span>`;
+                let badgeClass = '', badgeText = '', badgeIcon = '';
+                if (f.status === 'completed') { 
+                    badgeClass = 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/10'; 
+                    badgeText = 'Hoàn thành'; badgeIcon = 'check-circle-2';
+                } else if (f.status === 'in_progress') { 
+                    badgeClass = 'bg-blue-50 text-blue-700 ring-1 ring-blue-600/10'; 
+                    badgeText = 'Đang làm'; badgeIcon = 'clock';
+                } else { 
+                    badgeClass = 'bg-slate-100 text-slate-600 ring-1 ring-slate-500/10'; 
+                    badgeText = 'Chưa làm'; badgeIcon = 'circle';
                 }
 
-                // Deadline
+                let categoryBadge = '';
+                if (f.category_prefix) {
+                    let catColor = 'bg-slate-100 text-slate-600';
+                    if (f.category_prefix === 'CCHC') catColor = 'bg-indigo-50 text-indigo-700 ring-1 ring-indigo-600/10';
+                    else if (f.category_prefix === 'SIPAS') catColor = 'bg-teal-50 text-teal-700 ring-1 ring-teal-600/10';
+                    categoryBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${catColor}">${f.category_prefix}</span>`;
+                }
+
                 let deadlineHtml = '';
                 if (f.end_date) {
                     const end = new Date(f.end_date);
+                    const now = new Date();
                     const dateStr = end.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
-                    deadlineHtml = `
-                        <div class="meta-item">
-                            <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
-                            Hạn nộp: ${dateStr}
-                        </div>
-                    `;
+                    if (end < now && f.status !== 'completed') {
+                        deadlineHtml = `<div class="flex items-center gap-1.5 text-xs font-medium text-red-600"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i>Quá hạn: ${dateStr}</div>`;
+                    } else {
+                        deadlineHtml = `<div class="flex items-center gap-1.5 text-xs font-medium text-slate-500"><i data-lucide="calendar" class="w-3.5 h-3.5"></i>Hạn nộp: ${dateStr}</div>`;
+                    }
                 }
 
-                // Progress Bar Color
-                let pbColor = 'blue';
-                if (f.status === 'completed') pbColor = 'green';
-                else if (f.progress_percent === 0) pbColor = 'gray';
-
-                // Actions
+                let pbColor = 'bg-blue-500';
+                if (f.status === 'completed') pbColor = 'bg-emerald-500';
+                else if (f.progress_percent === 0) pbColor = 'bg-slate-300';
+                
                 let actionHtml = '';
                 const continueUrl = `/accounts/survey-dashboard/continue/${f.id}/`;
                 if (f.status === 'completed') {
-                    actionHtml = `
-                        <button class="btn-action btn-success-action" disabled>
-                            <i data-lucide="check" style="width:16px;height:16px;"></i> Xong
-                        </button>
-                    `;
+                    actionHtml = `<button class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm font-medium rounded-lg ring-1 ring-emerald-600/10 cursor-default"><i data-lucide="check" class="w-4 h-4"></i> Xong</button>`;
                     if (f.response_id) {
-                        actionHtml += `
-                            <a href="/accounts/export/${f.response_id}/pdf/" class="btn-action btn-primary-action" target="_blank" title="Tải PDF">
-                                <i data-lucide="download" style="width:16px;height:16px;"></i>
-                            </a>
-                        `;
+                        actionHtml += `<a href="/accounts/export/${f.response_id}/pdf/" target="_blank" class="flex items-center justify-center w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" title="Tải PDF"><i data-lucide="download" class="w-4 h-4"></i></a>`;
                     }
                 } else if (f.status === 'in_progress') {
-                    actionHtml = `
-                        <a href="${continueUrl}" class="btn-action btn-primary-action">
-                            Tiếp tục <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
-                        </a>
-                    `;
+                    actionHtml = `<a href="${continueUrl}" class="flex items-center gap-1.5 px-4 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg shadow-sm shadow-primary-600/20 transition">Tiếp tục <i data-lucide="arrow-right" class="w-4 h-4"></i></a>`;
                 } else {
-                    actionHtml = `
-                        <a href="${continueUrl}" class="btn-action btn-outline-action" style="border: 1px solid var(--primary); color: var(--primary);">
-                            Bắt đầu <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
-                        </a>
-                    `;
+                    actionHtml = `<a href="${continueUrl}" class="flex items-center gap-1.5 px-4 py-1.5 bg-white hover:bg-slate-50 text-primary-700 text-sm font-medium rounded-lg ring-1 ring-inset ring-primary-600/20 transition">Bắt đầu <i data-lucide="arrow-right" class="w-4 h-4"></i></a>`;
                 }
 
                 return `
-                    <div class="form-list-item">
-                        <div class="form-info">
-                            <div class="form-header">
-                                ${categoryBadge}
-                                <h3 class="form-title">
-                                    ${f.form_name}
-                                    ${f.is_required ? '<span class="badge-req">Bắt buộc</span>' : ''}
-                                </h3>
-                                <span class="badge-status ${badgeClass}">${badgeText}</span>
-                            </div>
-                            <div class="form-meta mt-2">
-                                <div class="meta-item">
-                                    <i data-lucide="tag" style="width: 14px; height: 14px;"></i>
-                                    Mã: ${f.form_code}
+                    <div class="form-card bg-white rounded-2xl border border-slate-200/60 shadow-sm flex flex-col overflow-hidden group">
+                        <div class="h-1 w-full bg-slate-100">
+                            <div class="h-full ${pbColor} transition-all duration-1000" style="width: ${f.progress_percent}%"></div>
+                        </div>
+                        
+                        <div class="p-5 flex flex-col flex-1">
+                            <div class="flex items-start justify-between gap-3 mb-3">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    ${categoryBadge}
+                                    ${f.is_required ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 ring-1 ring-rose-600/10">Bắt buộc</span>` : ''}
                                 </div>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold ${badgeClass}">
+                                    <i data-lucide="${badgeIcon}" class="w-3 h-3"></i> ${badgeText}
+                                </span>
+                            </div>
+
+                            <h3 class="text-base font-bold text-slate-900 mb-2 line-clamp-2 group-hover:text-primary-600 transition">${f.form_name}</h3>
+                            <p class="text-xs font-medium text-slate-400 mb-4">Mã BM: ${f.form_code}</p>
+
+                            <div class="flex-1 flex flex-col gap-2 mb-6">
                                 ${deadlineHtml}
-                            </div>
-                        </div>
-
-                        <div class="progress-section">
-                            <div class="progress-wrapper">
-                                <div class="progress-bar-bg">
-                                    <div class="progress-bar-fill ${pbColor}" style="width: ${f.progress_percent}%"></div>
+                                <div class="flex items-center justify-between text-xs font-medium text-slate-500 mt-auto pt-2">
+                                    <span>Tiến độ</span>
+                                    <span class="${f.status === 'completed' ? 'text-emerald-600' : 'text-slate-900'} font-bold">${f.progress_percent}%</span>
                                 </div>
-                                <div class="progress-text">${f.progress_percent}%</div>
                             </div>
-                        </div>
 
-                        <div class="form-actions">
-                            ${actionHtml}
+                            <div class="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
+                                <div class="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                                    <i data-lucide="user" class="w-3.5 h-3.5"></i> Cá nhân
+                                </div>
+                                <div class="flex items-center gap-2">${actionHtml}</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -694,6 +481,5 @@
             lucide.createIcons();
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

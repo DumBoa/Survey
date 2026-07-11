@@ -889,130 +889,8 @@
 </div>
 
 <!-- ============================================ -->
-<!-- STATS CARDS -->
+<!-- STATS CARDS REMOVED -->
 <!-- ============================================ -->
-<div class="stats-grid" id="statsGrid">
-  <div class="stat-card" onclick="applyFilter('all')" title="Tổng số đơn vị">
-    <div class="stat-icon blue">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
-      </svg>
-    </div>
-    <div class="stat-info">
-      <h3 id="statTotal">—</h3>
-      <p>Tổng đơn vị</p>
-    </div>
-  </div>
-  <div
-    class="stat-card"
-    onclick="applyFilter('completed')"
-    title="Đơn vị đã hoàn thành"
-  >
-    <div class="stat-icon green">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-        <polyline points="22 4 12 14.01 9 11.01" />
-      </svg>
-    </div>
-    <div class="stat-info">
-      <h3 id="statCompleted">—</h3>
-      <p>Hoàn thành</p>
-      <span class="pct" id="statCompletedPct"></span>
-    </div>
-  </div>
-  <div
-    class="stat-card"
-    onclick="applyFilter('in_progress')"
-    title="Đơn vị đang khảo sát"
-  >
-    <div class="stat-icon amber">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </svg>
-    </div>
-    <div class="stat-info">
-      <h3 id="statInProgress">—</h3>
-      <p>Đang khảo sát</p>
-    </div>
-  </div>
-  <div
-    class="stat-card"
-    onclick="applyFilter('pending')"
-    title="Đơn vị chưa thực hiện"
-  >
-    <div class="stat-icon red">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <line x1="15" y1="9" x2="9" y2="15" />
-        <line x1="9" y1="9" x2="15" y2="15" />
-      </svg>
-    </div>
-    <div class="stat-info">
-      <h3 id="statPending">—</h3>
-      <p>Chưa thực hiện</p>
-    </div>
-  </div>
-  <div class="stat-card" title="Tỷ lệ hoàn thành chung">
-    <div class="stat-icon purple">
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg>
-    </div>
-    <div class="stat-info">
-      <h3 id="statRate">—</h3>
-      <p>Tỷ lệ hoàn thành</p>
-      <span class="pct" id="statRateDetail"></span>
-    </div>
-  </div>
-</div>
 
 <!-- ============================================ -->
 <!-- PROGRESS -->
@@ -1365,8 +1243,9 @@
     <div class="pager-left">
       <label>Hiển thị</label>
       <select id="perPage" onchange="changePerPage(this.value)">
+        <option value="5" selected>5</option>
         <option value="10">10</option>
-        <option value="25" selected>25</option>
+        <option value="25">25</option>
         <option value="50">50</option>
         <option value="100">100</option>
         <option value="all">Tất cả</option>
@@ -1571,7 +1450,7 @@
     search: "",
     filter: "all",
     page: 1,
-    perPage: 25,
+    perPage: 5,
   };
 
   const statusLabels = {
@@ -1645,22 +1524,7 @@
     const ward = dashboardData.ward;
     const other = dashboardData.other;
 
-    // Stats cards
-    document.getElementById("statTotal").textContent = s.total_orgs || 0;
-    document.getElementById("statCompleted").textContent =
-      s.completed_orgs || 0;
-    document.getElementById("statInProgress").textContent =
-      s.in_progress_orgs || 0;
-    document.getElementById("statPending").textContent = s.pending_orgs || 0;
-    document.getElementById("statRate").textContent =
-      (s.completion_rate || 0) + "%";
-    document.getElementById("statCompletedPct").textContent =
-      (s.total_orgs > 0
-        ? Math.round((s.completed_orgs / s.total_orgs) * 100)
-        : 0) + "% đơn vị";
-    document.getElementById("statRateDetail").textContent =
-      (s.completed_users || 0) + "/" + (s.total_users || 0) + " đối tượng";
-
+    // Stats cards removed
     // Tab counts
     document.getElementById("tabcnt-dept").textContent = dept.total || 0;
     document.getElementById("tabcnt-ward").textContent = ward.total || 0;
@@ -1747,9 +1611,11 @@
                 <td>${statusBadge}</td>
                 <td class="hide-tablet">
                     <div class="action-btns">
+                        ${window.location.search.includes('iframe=true') ? '' : `
                         <button type="button" class="action-btn" onclick="openDetail(${org.id})" title="Xem chi tiết">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
+                        `}
                     </div>
                 </td>
             </tr>
