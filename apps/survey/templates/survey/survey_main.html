@@ -2721,11 +2721,43 @@
           if (!options || options.length === 0) options = ["Lựa chọn 1", "Lựa chọn 2"];
           const inputType = newType === "multi-choice" ? "checkbox" : "radio";
           const name = `q${Date.now()}`;
+          const btnAdd = optionsContainer.querySelector("button");
           options.forEach((opt) => {
             const label = document.createElement("label");
             label.className = "flex items-center gap-2 option-item group";
-            label.innerHTML = buildOptionRowHtml(opt, inputType, name).replace(/^<label[^>]*>|<\/label>$/g, "");
-            optionsContainer.insertBefore(label, optionsContainer.querySelector("button"));
+            
+            const input = document.createElement("input");
+            input.type = inputType;
+            input.name = name;
+            
+            const span = document.createElement("span");
+            span.className = "flex-1";
+            span.contentEditable = "true";
+            span.textContent = opt;
+            
+            label.appendChild(input);
+            label.appendChild(span);
+            
+            if (isOtherOptionLabel(opt)) {
+               const otherInput = document.createElement("input");
+               otherInput.type = "text";
+               otherInput.className = "survey-input other-input text-xs flex-1 ml-1";
+               otherInput.placeholder = "Nhập nội dung khác...";
+               otherInput.setAttribute("onfocus", "onOtherInputFocus(this)");
+               label.appendChild(otherInput);
+            }
+            
+            const delBtn = document.createElement("button");
+            delBtn.className = "text-red-400 hover:text-red-600 text-xs opacity-0 group-hover:opacity-100 transition";
+            delBtn.textContent = "x";
+            delBtn.onclick = function(e) { e.stopPropagation(); removeOption(this); };
+            label.appendChild(delBtn);
+            
+            if (btnAdd) {
+               optionsContainer.insertBefore(label, btnAdd);
+            } else {
+               optionsContainer.appendChild(label);
+            }
           });
         }
       }
