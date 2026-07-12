@@ -6,14 +6,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ survey.title|default:"Phiếu Khảo Sát" }}</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <style>
+      :root {
+        --color-bg: #fafafa;
+        --color-surface: #ffffff;
+        --color-surface-alt: #fafafa;
+        --color-border: #ececec;
+        --color-border-strong: #e0e0e0;
+        --color-text: #0f172a;
+        --color-text-muted: #64748b;
+        --color-text-subtle: #94a3b8;
+
+        /* Light blue palette */
+        --color-primary: #3b82f6;
+        --color-primary-hover: #2563eb;
+        --color-primary-soft: #eff6ff;
+        --color-primary-softer: #f5f9ff;
+        --color-primary-border: #dbeafe;
+        --color-primary-foreground: #1e40af;
+
+        --color-success: #10b981;
+        --color-success-soft: #ecfdf5;
+        --color-warning: #f59e0b;
+        --color-warning-soft: #fffbeb;
+        --color-error: #ef4444;
+        --color-error-soft: #fef2f2;
+
+        --radius-sm: 2px;
+        --radius-md: 4px;
+        --radius-lg: 6px;
+        --radius-full: 9999px;
+
+        --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+      }
+
+      html {
+        -webkit-text-size-adjust: 100%;
       }
 
       body {
@@ -21,26 +58,31 @@
           "Inter",
           -apple-system,
           BlinkMacSystemFont,
+          "Segoe UI",
           sans-serif;
-        background-color: #f8f9fa;
-        color: #1a1a1a;
+        background-color: var(--color-bg);
+        color: var(--color-text);
         line-height: 1.6;
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
       }
 
+      /* ============================================
+         HEADER
+         ============================================ */
       .header {
-        background: #ffffff;
-        color: #1a1a1a;
-        padding: 16px 40px;
-        border-bottom: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        background: var(--color-surface);
+        color: var(--color-text);
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--color-border);
         position: sticky;
         top: 0;
         z-index: 100;
       }
 
       .header-content {
-        max-width: 1400px;
-        margin: 0 auto;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -50,241 +92,208 @@
       .header-left {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
+        min-width: 0;
       }
 
       .logo {
-        width: 40px;
-        height: 40px;
-        background: #0054a4;
-        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        background: var(--color-primary);
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
+        font-weight: 600;
         color: white;
         font-size: 14px;
+        letter-spacing: -0.02em;
         flex-shrink: 0;
       }
 
+      .header-text {
+        min-width: 0;
+      }
+
       .header-text h1 {
-        font-size: 1.25rem;
+        font-size: 15px;
         font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 2px;
+        color: var(--color-text);
+        margin-bottom: 0;
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .header-text p {
-        font-size: 0.85rem;
-        color: #6b7280;
+        font-size: 12.5px;
+        color: var(--color-text-muted);
+        line-height: 1.4;
+        margin-top: 1px;
       }
 
-      .btn-back {
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        color: #4b5563;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        text-decoration: none;
+      .btn-back,
+      .btn-back-mobile {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        transition: all 0.2s;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text-muted);
+        background: transparent;
+        border: 1px solid var(--color-border-strong);
+        text-decoration: none;
+        transition: all var(--transition);
         cursor: pointer;
+        font-family: inherit;
       }
 
-      .btn-back:hover {
-        background: #e5e7eb;
-        color: #1f2937;
+      .btn-back:hover,
+      .btn-back-mobile:hover {
+        background: var(--color-primary-softer);
+        color: var(--color-primary-foreground);
+        border-color: var(--color-primary-border);
       }
 
       .btn-back-mobile {
         display: none;
         padding: 6px 10px;
-        border-radius: 6px;
-        font-size: 0.7rem;
-        font-weight: 500;
-        color: #4b5563;
-        background: #f3f4f6;
-        border: 1px solid #e5e7eb;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
+        font-size: 12px;
       }
 
-      .btn-back-mobile:hover {
-        background: #e5e7eb;
-        color: #1f2937;
-      }
-
-      .progress-container {
-        background: #ffffff;
-        padding: 12px 40px;
-        border-bottom: 1px solid #e5e7eb;
-        position: sticky;
-        top: 72px;
-        z-index: 99;
-      }
-
-      .progress-wrapper {
-        max-width: 1400px;
-        margin: 0 auto;
-      }
-
-      .progress-info {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 6px;
-        font-size: 0.8rem;
-        color: #6b7280;
-      }
-
-      .progress-bar {
-        width: 100%;
-        height: 6px;
-        background: #e5e7eb;
-        border-radius: 10px;
-        overflow: hidden;
-      }
-
-      .progress-fill {
-        width: 0%;
-        height: 100%;
-        background: #0054a4;
-        border-radius: 10px;
-        transition: width 0.3s ease;
-      }
-
-      .progress-detail {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 6px;
-        font-size: 0.75rem;
-        color: #9ca3af;
-      }
-
-      .progress-detail .completed-text {
-        color: #6b7280;
-      }
-
-      .progress-detail .status-text {
-        font-weight: 500;
-        transition: color 0.3s;
-      }
-
-      .progress-detail .status-text.completed {
-        color: #16a34a;
-      }
-
+      /* ============================================
+         LAYOUT
+         ============================================ */
       .main-content {
-        max-width: 2000px;
+        display: grid;
+        grid-template-columns: 240px 1fr 300px;
+        align-items: start;
+        min-height: calc(100vh - 64px);
+        padding: 24px;
+        gap: 24px;
+        max-width: 1440px;
         margin: 0 auto;
-        padding: 24px 40px 20px;
-        display: flex;
-        gap: 48px;
-        align-items: flex-start;
       }
 
-      .sidebar {
+      .main-content.is-success {
+        display: block;
+        max-width: 800px;
+        margin: 40px auto;
+      }
+
+      /* ============================================
+         SIDEBAR LEFT (question nav)
+         ============================================ */
+      .sidebar-left {
         position: sticky;
-        top: 130px;
-        width: 280px;
-        flex-shrink: 0;
-        max-height: calc(100vh - 160px);
+        top: 88px;
+        align-self: start;
+        max-height: calc(100vh - 88px - 24px);
         overflow-y: auto;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 20px 14px;
       }
 
-      .sidebar-title {
+      .sidebar-left-title {
         font-size: 11px;
         font-weight: 600;
-        color: #6b7280;
-        letter-spacing: 0.5px;
+        color: var(--color-text-muted);
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 10px;
+        padding: 0 8px 10px;
+        border-bottom: 1px solid var(--color-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
 
-      .sidebar-title .badge {
-        background: #e5e7eb;
-        color: #4b5563;
-        font-size: 10px;
+      .sidebar-left-title .badge {
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
+        font-size: 10.5px;
+        font-weight: 600;
         padding: 1px 8px;
-        border-radius: 10px;
+        border-radius: var(--radius-full);
+        letter-spacing: 0;
+        text-transform: none;
       }
 
       .question-nav {
         list-style: none;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 1px;
       }
 
       .question-nav-item {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 9px;
         width: 100%;
-        padding: 8px 12px;
+        padding: 7px 8px;
         text-decoration: none;
-        color: #4b5563;
-        font-size: 12px;
+        color: var(--color-text-muted);
+        font-size: 12.5px;
         font-weight: 400;
-        border-radius: 6px;
-        transition: all 0.15s;
+        border-radius: var(--radius-md);
+        transition: all var(--transition);
         border: none;
         background: transparent;
         text-align: left;
         cursor: pointer;
+        font-family: inherit;
       }
 
       .question-nav-item:hover {
-        background: #f3f4f6;
-        color: #1a1a1a;
+        background: var(--color-primary-softer);
+        color: var(--color-text);
       }
 
       .question-nav-item.is-active {
-        background: #e8f0fe;
-        color: #0054a4;
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
         font-weight: 500;
       }
 
       .question-nav-item.is-complete {
-        color: #16a34a;
+        color: var(--color-text);
       }
 
       .question-nav-item .status-dot {
-        width: 10px;
-        height: 10px;
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
         flex-shrink: 0;
-        border: 2px solid #d1d5db;
+        background: #e2e8f0;
+        transition: all var(--transition);
       }
 
       .question-nav-item.is-complete .status-dot {
-        background: #16a34a;
-        border-color: #16a34a;
+        background: var(--color-primary);
       }
 
       .question-nav-item.is-active .status-dot {
-        background: #0054a4;
-        border-color: #0054a4;
+        background: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
       }
 
       .question-nav-item .q-number {
         font-weight: 500;
-        color: #6b7280;
-        min-width: 24px;
+        color: var(--color-text-subtle);
+        min-width: 20px;
         font-size: 11px;
+        font-variant-numeric: tabular-nums;
       }
 
       .question-nav-item.is-active .q-number {
-        color: #0054a4;
+        color: var(--color-primary-foreground);
       }
 
       .question-nav-item .q-text {
@@ -295,39 +304,45 @@
       }
 
       .question-nav-item .q-status-icon {
-        font-size: 12px;
         flex-shrink: 0;
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
       }
 
       .section-header-nav {
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 600;
-        color: #9ca3af;
-        padding: 8px 12px 4px;
+        color: var(--color-text-subtle);
+        padding: 10px 8px 4px;
         text-transform: uppercase;
-        letter-spacing: 0.3px;
-        border-top: 1px solid #e5e7eb;
-        margin-top: 4px;
+        letter-spacing: 0.05em;
+        margin-top: 6px;
       }
 
       .section-header-nav:first-of-type {
-        border-top: none;
         margin-top: 0;
       }
 
+      /* ============================================
+         CONTENT
+         ============================================ */
       .content {
-        flex: 1;
+        padding: 0 16px 60px;
         min-width: 0;
+        max-width: 100%;
       }
 
+      /* ============================================
+         SECTION CARDS
+         ============================================ */
       .section-card {
-        background: #ffffff;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        margin-bottom: 24px;
+        background: var(--color-surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border);
+        margin-bottom: 18px;
         overflow: hidden;
         display: none;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
 
       .section-card.is-active {
@@ -335,38 +350,45 @@
       }
 
       .section-header {
-        background: #f9fafb;
-        padding: 16px 24px;
+        background: var(--color-surface);
+        padding: 18px 24px;
         display: flex;
         align-items: center;
         gap: 12px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--color-border);
       }
 
       .section-number {
-        background: #0054a4;
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-md);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 0.8rem;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: -0.02em;
         flex-shrink: 0;
+        font-variant-numeric: tabular-nums;
       }
 
       .section-title {
-        font-size: 1rem;
+        font-size: 15px;
         font-weight: 600;
-        color: #1a1a1a;
+        color: var(--color-text);
+        letter-spacing: -0.01em;
+        line-height: 1.4;
       }
 
       .section-body {
         padding: 24px;
       }
 
+      /* ============================================
+         FORM ELEMENTS
+         ============================================ */
       .form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -379,104 +401,114 @@
       }
 
       .form-group label {
-        font-size: 0.85rem;
+        font-size: 13px;
         font-weight: 500;
-        color: #374151;
-        margin-bottom: 4px;
+        color: var(--color-text);
+        margin-bottom: 6px;
       }
 
       .form-group input,
       .form-group select {
-        padding: 10px 14px;
-        border: 1.5px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
+        padding: 9px 12px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
+        transition: all var(--transition);
         font-family: inherit;
-        background: #ffffff;
+        background: var(--color-surface);
+        color: var(--color-text);
+      }
+
+      .form-group input::placeholder {
+        color: var(--color-text-subtle);
+      }
+
+      .form-group input:hover,
+      .form-group select:hover {
+        border-color: #cbd5e1;
       }
 
       .form-group input:focus,
       .form-group select:focus {
         outline: none;
-        border-color: #0054a4;
-        box-shadow: 0 0 0 3px rgba(0, 84, 164, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
       }
 
+      /* ============================================
+         QUESTIONS
+         ============================================ */
       .question-title {
-        font-size: 0.95rem;
+        font-size: 13.5px;
         font-weight: 500;
-        color: #1a1a1a;
+        color: var(--color-text);
         margin-bottom: 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #f3f4f6;
+        line-height: 1.55;
       }
 
       .question-title span {
-        color: #0054a4;
-        font-weight: 600;
+        color: var(--color-text-muted);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
       }
 
       .question-required {
-        color: #dc2626 !important;
+        color: var(--color-error) !important;
+        margin-left: 2px;
+        font-weight: 600;
       }
 
       .question-divider {
-        margin: 28px 0;
+        margin: 24px 0;
         border: none;
-        border-top: 1px dashed #e5e7eb;
+        border-top: 1px solid var(--color-border);
       }
 
+      /* ============================================
+         SCROLLBARS
+         ============================================ */
       ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
+        width: 8px;
+        height: 8px;
       }
 
       ::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 10px;
+        background: transparent;
       }
 
       ::-webkit-scrollbar-thumb {
-        background: #0054a4;
-        border-radius: 10px;
-        transition: background 0.2s ease;
+        background: #cbd5e1;
+        border-radius: var(--radius-full);
+        transition: background var(--transition);
       }
 
       ::-webkit-scrollbar-thumb:hover {
-        background: #003d7a;
+        background: #94a3b8;
       }
 
-      .sidebar::-webkit-scrollbar {
-        width: 4px;
-      }
-
-      .sidebar::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 10px;
-      }
-
-      .sidebar::-webkit-scrollbar-thumb {
-        background: #0054a4;
-        border-radius: 10px;
+      .sidebar-left::-webkit-scrollbar,
+      .sidebar-right::-webkit-scrollbar {
+        width: 5px;
       }
 
       * {
         scrollbar-width: thin;
-        scrollbar-color: #0054a4 #f1f5f9;
+        scrollbar-color: #cbd5e1 transparent;
       }
 
-      .sidebar {
+      .sidebar-left,
+      .sidebar-right {
         scrollbar-width: thin;
-        scrollbar-color: #0054a4 #f1f5f9;
+        scrollbar-color: #cbd5e1 transparent;
       }
 
+      /* ============================================
+         CHECKBOX / RADIO
+         ============================================ */
       .checkbox-group {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 4px;
         margin-top: 8px;
       }
 
@@ -484,62 +516,66 @@
       .custom-radio-label {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         cursor: pointer;
-        padding: 6px 10px;
-        border-radius: 6px;
-        transition: background 0.15s;
+        padding: 7px 10px;
+        border-radius: var(--radius-md);
+        transition: all var(--transition);
       }
 
       .custom-checkbox:hover,
       .custom-radio-label:hover {
-        background: #f9fafb;
+        background: var(--color-primary-softer);
       }
 
       .custom-checkbox input[type="checkbox"],
       .custom-radio-label input[type="radio"] {
         appearance: none;
         -webkit-appearance: none;
-        width: 22px;
-        height: 22px;
-        border: 2px solid #d1d5db;
-        border-radius: 6px;
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: var(--radius-sm);
         cursor: pointer;
-        transition: all 0.15s;
+        transition: all var(--transition);
         position: relative;
         flex-shrink: 0;
+        background: var(--color-surface);
+        margin: 0;
       }
 
       .custom-radio-label input[type="radio"] {
         border-radius: 50%;
       }
 
-      .custom-checkbox input[type="checkbox"]:checked {
-        background: #0054a4;
-        border-color: #0054a4;
+      .custom-checkbox input[type="checkbox"]:hover,
+      .custom-radio-label input[type="radio"]:hover {
+        border-color: var(--color-primary);
+      }
+
+      .custom-checkbox input[type="checkbox"]:checked,
+      .custom-radio-label input[type="radio"]:checked {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
       }
 
       .custom-checkbox input[type="checkbox"]:checked::after {
-        content: "✓";
+        content: "";
         position: absolute;
-        color: white;
-        font-size: 15px;
-        font-weight: 700;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-      }
-
-      .custom-radio-label input[type="radio"]:checked {
-        border-color: #0054a4;
-        background: #0054a4;
+        left: 5px;
+        top: 1.5px;
+        width: 5px;
+        height: 9px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
       }
 
       .custom-radio-label input[type="radio"]:checked::after {
         content: "";
         position: absolute;
-        width: 8px;
-        height: 8px;
+        width: 6px;
+        height: 6px;
         background: white;
         border-radius: 50%;
         top: 50%;
@@ -549,75 +585,90 @@
 
       .custom-checkbox span,
       .custom-radio-label span {
-        font-size: 0.9rem;
-        color: #374151;
+        font-size: 13.5px;
+        color: var(--color-text);
       }
 
+      /* ============================================
+         TABLES
+         ============================================ */
       .data-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         margin-top: 8px;
-        font-size: 0.85rem;
+        font-size: 13px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
       }
 
       .data-table thead th {
-        background: #f9fafb;
-        color: #1a1a1a;
+        background: var(--color-primary-softer);
+        color: var(--color-text);
         padding: 10px 14px;
         font-weight: 600;
         text-align: center;
-        border: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--color-border);
+        font-size: 12.5px;
+        letter-spacing: -0.01em;
       }
 
       .data-table tbody td {
         padding: 0;
-        border: 1px solid #e5e7eb;
+        border-top: 1px solid var(--color-border);
         text-align: center;
         vertical-align: top;
+        background: var(--color-surface);
+      }
+
+      .data-table tbody tr:first-child td {
+        border-top: none;
       }
 
       .data-table tbody td .data-cell {
-        padding: 6px 10px;
-        border-radius: 4px;
-        background: #f9fafb;
-        color: #4b5563;
-        font-size: 0.85rem;
+        padding: 8px 12px;
+        background: var(--color-surface-alt);
+        color: var(--color-text-muted);
+        font-size: 12.5px;
         display: block;
         min-height: 36px;
         text-align: left;
-      }
-
-      .data-table tbody td .data-cell-empty {
-        color: #9ca3af;
-        font-style: italic;
+        border-radius: var(--radius-sm);
       }
 
       .data-table tbody td input[type="text"],
       .data-table tbody td input[type="number"] {
         width: 100%;
-        padding: 6px 10px;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 4px;
-        font-size: 0.85rem;
+        padding: 8px 12px;
+        border: none;
+        font-size: 13px;
         text-align: center;
-        transition: border-color 0.15s;
-        background: #ffffff;
+        transition: background var(--transition);
+        background: transparent;
+        font-family: inherit;
+        color: var(--color-text);
+      }
+
+      .data-table tbody td input[type="text"]::placeholder {
+        color: var(--color-text-subtle);
       }
 
       .data-table tbody td input:focus {
         outline: none;
-        border-color: #0054a4;
-        box-shadow: 0 0 0 2px rgba(0, 84, 164, 0.08);
+        background: var(--color-primary-soft);
       }
 
       .data-table tbody td .input-wrapper {
         position: relative;
-        padding: 8px 12px;
+        padding: 6px 10px;
         display: flex;
         flex-direction: column;
         height: 100%;
+        min-height: 40px;
+        justify-content: center;
       }
-      
+
       .data-table tbody td .input-wrapper.type-checkbox,
       .data-table tbody td .input-wrapper.type-radio {
         padding: 0;
@@ -628,47 +679,53 @@
         display: flex;
         align-items: center;
         width: 100%;
-        padding: 12px 14px;
+        padding: 11px 14px;
         cursor: pointer;
-        transition: background 0.2s;
+        transition: background var(--transition);
         border-radius: 0;
         margin: 0;
       }
-      
+
       .data-table tbody td .custom-checkbox:hover,
       .data-table tbody td .custom-radio:hover {
-        background: #f3f4f6;
+        background: var(--color-primary-softer);
       }
 
       .data-table tbody td .input-wrapper .data-label {
         display: block;
-        padding: 6px 10px;
-        background: #f9fafb;
-        border-radius: 4px;
-        color: #4b5563;
+        padding: 8px 12px;
+        background: var(--color-surface-alt);
+        color: var(--color-text-muted);
         text-align: left;
         min-height: 36px;
-        border: 1.5px solid transparent;
+        font-size: 12.5px;
       }
 
       .data-table tbody td .input-wrapper .data-label.has-data {
-        border-color: #e5e7eb;
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
       }
 
       .scale-table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         margin-top: 8px;
-        font-size: 0.85rem;
+        font-size: 13px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
       }
 
       .scale-table thead th {
-        background: #f9fafb;
+        background: var(--color-primary-softer);
         padding: 10px 8px;
-        font-weight: 500;
-        color: #374151;
-        border: 1px solid #e5e7eb;
+        font-weight: 600;
+        color: var(--color-text);
+        border-bottom: 1px solid var(--color-border);
         text-align: center;
+        font-size: 12.5px;
+        letter-spacing: -0.01em;
       }
 
       .scale-table thead th:first-child {
@@ -678,23 +735,30 @@
 
       .scale-table thead th .scale-label {
         display: block;
-        font-size: 0.65rem;
-        color: #9ca3af;
+        font-size: 10.5px;
+        color: var(--color-text-subtle);
         font-weight: 400;
-        margin-top: 1px;
+        margin-top: 2px;
+        font-variant-numeric: tabular-nums;
       }
 
       .scale-table tbody td {
         padding: 0;
-        border: 1px solid #e5e7eb;
+        border-top: 1px solid var(--color-border);
         text-align: center;
         vertical-align: middle;
+      }
+
+      .scale-table tbody tr:first-child td {
+        border-top: none;
       }
 
       .scale-table tbody td:first-child {
         text-align: left;
         padding: 10px 14px;
-        color: #1a1a1a;
+        color: var(--color-text);
+        font-weight: 400;
+        background: var(--color-surface);
       }
 
       .scale-table tbody td .custom-radio-label,
@@ -710,48 +774,56 @@
         border-radius: 0;
         cursor: pointer;
       }
-      
+
       .scale-table tbody td .custom-radio-label:hover,
       .scale-table tbody td .custom-checkbox:hover {
-        background: #f9fafb;
+        background: var(--color-primary-softer);
       }
 
       .scale-table tbody td .custom-radio-label input[type="radio"],
       .scale-table tbody td .custom-checkbox input[type="checkbox"] {
-        width: 22px;
-        height: 22px;
+        width: 18px;
+        height: 18px;
       }
 
       .scale-table tbody td input[type="text"] {
         width: 100%;
-        padding: 6px 8px;
-        border: 1.5px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 0.85rem;
+        padding: 8px 10px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-md);
+        font-size: 13px;
         font-family: inherit;
-        transition: border-color 0.2s;
-        background: #ffffff;
+        transition: all var(--transition);
+        background: var(--color-surface);
+        color: var(--color-text);
       }
 
       .scale-table tbody td input[type="text"]:focus {
         outline: none;
-        border-color: #0054a4;
-        box-shadow: 0 0 0 3px rgba(0, 84, 164, 0.1);
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
       }
 
-      .scale-table tbody tr:hover {
-        background: #f9fafb;
+      .scale-table tbody tr:hover td {
+        background: var(--color-primary-softer);
       }
 
+      .scale-table tbody tr:hover td:first-child {
+        background: var(--color-surface);
+      }
+
+      /* ============================================
+         NOTE / TEXTAREA
+         ============================================ */
       .question-note {
-        margin-top: 12px;
-        padding: 8px 14px;
-        background: #f9fafb;
-        border-radius: 6px;
-        border-left: 3px solid #0054a4;
-        font-size: 0.8rem;
-        color: #4b5563;
-        line-height: 1.5;
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: var(--color-primary-softer);
+        border-radius: var(--radius-md);
+        border-left: 2px solid var(--color-primary);
+        font-size: 12px;
+        color: var(--color-text-muted);
+        line-height: 1.55;
       }
 
       .question-note:empty {
@@ -763,124 +835,271 @@
       }
 
       .textarea-group label {
-        font-size: 0.85rem;
+        font-size: 13px;
         font-weight: 500;
-        color: #374151;
-        margin-bottom: 4px;
+        color: var(--color-text);
+        margin-bottom: 6px;
         display: block;
       }
 
       .textarea-group textarea {
         width: 100%;
-        min-height: 100px;
-        padding: 12px 14px;
-        border: 1.5px solid #d1d5db;
-        border-radius: 8px;
-        font-size: 0.9rem;
+        min-height: 96px;
+        padding: 10px 12px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
         font-family: inherit;
         resize: vertical;
-        transition: border-color 0.2s;
-        background: #ffffff;
+        transition: all var(--transition);
+        background: var(--color-surface);
+        color: var(--color-text);
+        line-height: 1.6;
+      }
+
+      .textarea-group textarea::placeholder {
+        color: var(--color-text-subtle);
       }
 
       .textarea-group textarea:focus {
         outline: none;
-        border-color: #0054a4;
-        box-shadow: 0 0 0 3px rgba(0, 84, 164, 0.08);
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
       }
 
-      .survey-actions {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-top: 24px;
+      /* ============================================
+         SIDEBAR RIGHT (progress + sections + actions)
+         ============================================ */
+      .sidebar-right {
+        position: sticky;
+        top: 88px;
+        align-self: start;
+        max-height: calc(100vh - 88px - 24px);
+        overflow-y: auto;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 20px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .right-card {
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .right-card:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+
+      .right-card-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
       }
 
-      .survey-actions .btn-group {
+      /* Progress display */
+      .progress-display {
+        text-align: left;
+      }
+
+      .progress-percentage {
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--color-text);
+        letter-spacing: -0.03em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 8px;
+      }
+
+      .progress-percentage .pct-sign {
+        color: var(--color-text-subtle);
+        font-size: 20px;
+        font-weight: 500;
+        margin-left: 1px;
+      }
+
+      .progress-bar-small {
+        width: 100%;
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        margin: 12px 0 10px;
+      }
+
+      .progress-bar-small .progress-fill {
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: var(--radius-full);
+        transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .progress-stats {
         display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .progress-stats .stat-value {
+        color: var(--color-text);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Section breakdown */
+      .section-stat {
+        padding: 10px 8px;
+        border-radius: var(--radius-md);
+        margin-bottom: 4px;
+        transition: background var(--transition);
+        border: 1px solid transparent;
+      }
+
+      .section-stat:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-stat.is-active {
+        background: var(--color-primary-soft);
+        border-color: var(--color-primary-border);
+      }
+
+      .section-stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .section-stat-title {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--color-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 8px;
+      }
+
+      .section-stat.is-active .section-stat-title {
+        color: var(--color-primary-foreground);
+        font-weight: 600;
+      }
+
+      .section-stat-count {
+        font-size: 11px;
+        color: var(--color-text-muted);
+        font-variant-numeric: tabular-nums;
+        flex-shrink: 0;
+      }
+
+      .section-stat-bar {
+        width: 100%;
+        height: 3px;
+        background: #e2e8f0;
+        border-radius: var(--radius-full);
+        overflow: hidden;
+      }
+
+      .section-stat-fill {
+        height: 100%;
+        background: #cbd5e1;
+        border-radius: var(--radius-full);
+        transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .section-stat.is-complete .section-stat-fill {
+        background: var(--color-primary);
+      }
+
+      .section-stat.is-active .section-stat-fill {
+        background: var(--color-primary);
+      }
+
+      /* Action buttons in right sidebar */
+      .sidebar-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
       .btn {
-        padding: 10px 24px;
-        border-radius: 8px;
-        font-size: 0.9rem;
+        padding: 9px 16px;
+        border-radius: var(--radius-md);
+        font-size: 13px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.15s;
-        border: none;
+        transition: all var(--transition);
+        border: 1px solid transparent;
         font-family: inherit;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
       }
 
       .btn-secondary {
-        background: #f3f4f6;
-        color: #4b5563;
-        border: 1px solid #e5e7eb;
+        background: var(--color-surface);
+        color: var(--color-text);
+        border: 1px solid var(--color-border-strong);
       }
 
-      .btn-secondary:hover {
-        background: #e5e7eb;
-      }
-
-      .btn-secondary:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-outline {
-        background: transparent;
-        color: #4b5563;
-        border: 1px solid #d1d5db;
-      }
-
-      .btn-outline:hover {
-        background: #f9fafb;
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--color-primary-softer);
+        border-color: var(--color-primary-border);
+        color: var(--color-primary-foreground);
       }
 
       .btn-primary {
-        background: #0054a4;
+        background: var(--color-primary);
         color: white;
+        border: 1px solid var(--color-primary);
       }
 
       .btn-primary:hover:not(:disabled) {
-        background: #004a8a;
-        box-shadow: 0 2px 8px rgba(0, 84, 164, 0.25);
-      }
-
-      .btn-primary:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
+        background: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
       }
 
       .btn-success {
-        background: #16a34a;
+        background: var(--color-success);
         color: white;
+        border: 1px solid var(--color-success);
       }
 
-      .btn-success:hover {
-        background: #15803d;
-        box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+      .btn-success:hover:not(:disabled) {
+        background: #059669;
+        border-color: #059669;
       }
 
       .btn-dashboard {
-        padding: 12px 32px;
-        border-radius: 10px;
-        font-size: 1rem;
-        font-weight: 600;
+        padding: 10px 22px;
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
+        font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s;
-        border: none;
-        background: #0054a4;
+        transition: all var(--transition);
+        border: 1px solid var(--color-text);
+        background: var(--color-text);
         color: white;
         text-decoration: none;
         display: inline-flex;
@@ -890,43 +1109,80 @@
       }
 
       .btn-dashboard:hover {
-        background: #004a8a;
-        box-shadow: 0 4px 16px rgba(0, 84, 164, 0.3);
-        transform: translateY(-1px);
+        background: #000;
+        border-color: #000;
       }
 
+      .pagination-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      /* ============================================
+         TOAST (top-right, soft)
+         ============================================ */
       .toast {
         position: fixed;
-        bottom: 24px;
-        right: 24px;
-        padding: 12px 20px;
-        border-radius: 10px;
-        color: white;
+        top: 76px;
+        right: 20px;
+        background: var(--color-surface);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-left: 3px solid var(--color-primary);
+        padding: 11px 16px 11px 14px;
+        border-radius: var(--radius-md);
         font-size: 13px;
         font-weight: 500;
         z-index: 9999;
-        animation: slideUp 0.3s ease;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-        max-width: 360px;
+        animation: slideInTop 220ms cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow:
+          0 1px 2px rgba(15, 23, 42, 0.04),
+          0 8px 24px rgba(15, 23, 42, 0.08);
+        max-width: 320px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toast::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        flex-shrink: 0;
       }
 
       .toast.success {
-        background: #16a34a;
+        border-left-color: var(--color-success);
       }
-      .toast.error {
-        background: #dc2626;
-      }
-      .toast.warning {
-        background: #d97706;
-      }
-      .toast.info {
-        background: #374151;
+      .toast.success::before {
+        background: var(--color-success);
       }
 
-      @keyframes slideUp {
+      .toast.error {
+        border-left-color: var(--color-error);
+      }
+      .toast.error::before {
+        background: var(--color-error);
+      }
+
+      .toast.warning {
+        border-left-color: var(--color-warning);
+      }
+      .toast.warning::before {
+        background: var(--color-warning);
+      }
+
+      .toast.info {
+        border-left-color: var(--color-primary);
+      }
+
+      @keyframes slideInTop {
         from {
           opacity: 0;
-          transform: translateY(16px);
+          transform: translateY(-8px);
         }
         to {
           opacity: 1;
@@ -935,65 +1191,70 @@
       }
 
       .toast.hiding {
-        animation: fadeOut 0.25s ease forwards;
+        animation: fadeOutTop 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
       }
 
-      @keyframes fadeOut {
+      @keyframes fadeOutTop {
         from {
           opacity: 1;
+          transform: translateY(0);
         }
         to {
           opacity: 0;
-          transform: translateY(-8px);
+          transform: translateY(-4px);
         }
       }
 
+      /* ============================================
+         SUCCESS SCREEN
+         ============================================ */
       .success-card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 14px;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
         padding: 56px 24px;
         text-align: center;
         display: none;
       }
 
       .success-card .icon-check {
-        width: 72px;
-        height: 72px;
+        width: 56px;
+        height: 56px;
         border-radius: 50%;
-        background: #dcfce7;
+        background: var(--color-success-soft);
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 20px;
-        color: #16a34a;
+        color: var(--color-success);
       }
 
       .success-card .icon-check svg {
-        width: 36px;
-        height: 36px;
+        width: 26px;
+        height: 26px;
       }
 
       .success-card h2 {
-        font-size: 28px;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 8px;
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 6px;
+        letter-spacing: -0.02em;
       }
 
       .success-card p {
-        font-size: 15px;
-        color: #6b7280;
+        font-size: 13.5px;
+        color: var(--color-text-muted);
         max-width: 420px;
         margin: 0 auto 8px;
         line-height: 1.6;
       }
 
       .success-card .divider {
-        width: 60px;
-        height: 3px;
-        background: #0054a4;
-        border-radius: 4px;
+        width: 32px;
+        height: 2px;
+        background: var(--color-primary);
+        border-radius: var(--radius-full);
         margin: 16px auto 20px;
       }
 
@@ -1009,36 +1270,39 @@
       }
 
       .success-card .summary-stats .stat-item .stat-number {
-        font-size: 28px;
-        font-weight: 700;
-        color: #0054a4;
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--color-text);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
       }
 
       .success-card .summary-stats .stat-item .stat-label {
-        font-size: 12px;
-        color: #9ca3af;
-        margin-top: 2px;
+        font-size: 11.5px;
+        color: var(--color-text-muted);
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
 
-      .success-card .btn-dashboard {
-        margin-top: 8px;
-      }
-
+      /* ============================================
+         LOADING
+         ============================================ */
       .loading-state {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 14px;
-        padding: 90px 0;
-        color: #9ca3af;
-        font-size: 13.5px;
+        gap: 12px;
+        padding: 80px 0;
+        color: var(--color-text-muted);
+        font-size: 13px;
       }
 
       .spinner {
-        width: 30px;
-        height: 30px;
-        border: 3px solid #e5e7eb;
-        border-top-color: #0054a4;
+        width: 24px;
+        height: 24px;
+        border: 2px solid var(--color-border);
+        border-top-color: var(--color-primary);
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
@@ -1050,42 +1314,89 @@
       }
 
       .footer-spacer {
-        height: 40px;
+        height: 32px;
       }
 
       .other-input {
         border: none !important;
         background: transparent !important;
         padding: 2px 4px;
-        border-bottom: 1px dashed #d1d5db !important;
+        border-bottom: 1px solid var(--color-border-strong) !important;
         outline: none;
-        font-size: 0.9rem;
+        font-size: 13px;
         width: 140px;
-        transition: border-color 0.2s;
+        transition: border-color var(--transition);
         font-family: inherit;
         margin-left: 4px;
+        color: var(--color-text);
       }
 
       .other-input:focus {
-        border-bottom-color: #0054a4 !important;
+        border-bottom-color: var(--color-primary) !important;
       }
 
       .other-input::placeholder {
-        color: #bbb;
+        color: var(--color-text-subtle);
         font-style: italic;
-        font-size: 0.8rem;
+        font-size: 12px;
+      }
+
+      /* ============================================
+         ERROR STATE
+         ============================================ */
+      .error-highlight {
+        border-left: 2px solid var(--color-error) !important;
+        background-color: var(--color-error-soft) !important;
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        margin-left: -14px;
+        margin-right: -14px;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* ============================================
+         RESPONSIVE
+         ============================================ */
+      @media (max-width: 1280px) {
+        .main-content {
+          grid-template-columns: 240px 1fr;
+        }
+        .sidebar-right {
+          grid-column: 1 / -1;
+          position: static;
+          flex-direction: row;
+          align-items: stretch;
+          max-height: none;
+        }
+        .right-card {
+          flex: 1;
+          border-bottom: none;
+          border-right: 1px solid var(--color-border);
+          padding-right: 18px;
+          padding-bottom: 0;
+        }
+        .right-card:last-child {
+          border-right: none;
+          padding-right: 0;
+        }
       }
 
       @media (max-width: 1024px) {
-        .sidebar {
+        .sidebar-left {
           display: none;
         }
         .main-content {
-          padding: 16px 20px 100px;
+          grid-template-columns: 1fr;
+        }
+        .content {
+          padding: 0 0 60px;
         }
       }
 
       @media (max-width: 768px) {
+        .main-content {
+          padding: 16px;
+        }
         .header {
           padding: 12px 16px;
         }
@@ -1094,10 +1405,10 @@
           gap: 8px;
         }
         .header-text h1 {
-          font-size: 1rem;
+          font-size: 14px;
         }
         .header-text p {
-          font-size: 0.75rem;
+          font-size: 12px;
         }
         .btn-back {
           display: none !important;
@@ -1105,32 +1416,14 @@
         .btn-back-mobile {
           display: inline-flex !important;
         }
-        .progress-container {
-          padding: 8px 16px;
-          top: 64px;
-        }
-        .main-content {
-          padding: 12px 12px 80px;
-          gap: 16px;
+        .content {
+          padding: 0 0 60px;
         }
         .form-grid {
           grid-template-columns: 1fr;
         }
         .section-body {
-          padding: 16px;
-        }
-        .survey-actions {
-          flex-direction: column;
-          align-items: stretch;
-          padding: 16px;
-        }
-        .survey-actions .btn-group {
-          justify-content: center;
-        }
-        .btn {
-          padding: 8px 16px;
-          font-size: 0.85rem;
-          justify-content: center;
+          padding: 18px;
         }
         .data-table,
         .scale-table {
@@ -1139,33 +1432,38 @@
           white-space: nowrap;
         }
         .success-card {
-          padding: 32px 16px;
+          padding: 36px 16px;
         }
         .success-card .summary-stats {
-          gap: 24px;
+          gap: 20px;
           flex-wrap: wrap;
         }
         .success-card .summary-stats .stat-item .stat-number {
-          font-size: 22px;
+          font-size: 20px;
         }
         .btn-dashboard {
-          padding: 10px 24px;
-          font-size: 0.9rem;
+          padding: 9px 18px;
+          font-size: 13px;
         }
-        .progress-detail {
-          font-size: 0.65rem;
-          flex-wrap: wrap;
-          gap: 4px;
+        .toast {
+          right: 12px;
+          left: 12px;
+          max-width: none;
+          top: 70px;
         }
-      }
-      .error-highlight {
-        border-left: 4px solid #dc2626 !important;
-        background-color: #fef2f2 !important;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-left: -16px;
-        margin-right: -16px;
-        transition: all 0.3s ease;
+        .sidebar-right {
+          flex-direction: column;
+        }
+        .right-card {
+          border-right: none;
+          padding-right: 0;
+          border-bottom: 1px solid var(--color-border);
+          padding-bottom: 18px;
+        }
+        .right-card:last-child {
+          border-bottom: none;
+          padding-bottom: 0;
+        }
       }
     </style>
   </head>
@@ -1182,7 +1480,7 @@
             <p id="survey-description">{{ survey.description|default:"" }}</p>
           </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
           <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-back">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
@@ -1190,34 +1488,19 @@
             Quay lại
           </a>
           <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-back-mobile">
-            ← Quay lại
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
           </a>
         </div>
       </div>
     </header>
 
-    <!-- PROGRESS BAR -->
-    <div class="progress-container">
-      <div class="progress-wrapper">
-        <div class="progress-info">
-          <span id="progress-text">Đang tải...</span>
-          <span id="progress-percent">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-        </div>
-        <div class="progress-detail">
-          <span class="completed-text" id="question-completed-text">0/0 câu hỏi</span>
-          <span class="status-text" id="question-status-text">Chưa bắt đầu</span>
-        </div>
-      </div>
-    </div>
-
     <!-- MAIN CONTENT -->
     <div class="main-content">
-      <!-- SIDEBAR -->
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-title">
+      <!-- SIDEBAR LEFT (question nav) -->
+      <aside class="sidebar-left" id="sidebar">
+        <div class="sidebar-left-title">
           Câu hỏi
           <span class="badge" id="question-count">0</span>
         </div>
@@ -1235,24 +1518,6 @@
         <!-- Survey Sections -->
         <div id="survey-content" style="display: none"></div>
 
-        <!-- Action Buttons -->
-        <div id="survey-actions" class="survey-actions" style="display: none">
-          <div class="btn-group">
-            <button class="btn btn-secondary" id="prev-btn" disabled>
-              ← Quay lại
-            </button>
-            <button class="btn btn-primary" id="next-btn">Tiếp tục →</button>
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-outline" onclick="saveDraft()">
-              Lưu nháp
-            </button>
-            <button class="btn btn-success" id="submit-btn">
-              Nộp khảo sát
-            </button>
-          </div>
-        </div>
-
         <!-- Success Screen -->
         <div id="success-screen" class="success-card">
           <div class="icon-check">
@@ -1269,16 +1534,16 @@
               <div class="stat-label">Tổng số câu hỏi</div>
             </div>
             <div class="stat-item">
-              <div class="stat-number" style="color: #16a34a;" id="completed-questions-display">0</div>
+              <div class="stat-number" style="color: var(--color-success);" id="completed-questions-display">0</div>
               <div class="stat-label">Đã hoàn thành</div>
             </div>
             <div class="stat-item">
-              <div class="stat-number" style="color: #f59e0b;">100%</div>
+              <div class="stat-number" style="color: var(--color-primary);">100%</div>
               <div class="stat-label">Tiến độ</div>
             </div>
           </div>
           <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-dashboard">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
@@ -1286,6 +1551,56 @@
           </a>
         </div>
       </main>
+
+      <!-- SIDEBAR RIGHT (progress + sections + actions) -->
+      <aside class="sidebar-right">
+        <div class="right-card">
+          <div class="right-card-title">
+            <span>Tiến độ</span>
+            <span id="progress-status-badge" style="font-size: 11px; color: var(--color-text-muted); text-transform: none; letter-spacing: 0;">Chưa bắt đầu</span>
+          </div>
+          <div class="progress-display">
+            <div class="progress-percentage">
+              <span id="progress-percent-large">0</span><span class="pct-sign">%</span>
+            </div>
+            <div class="progress-bar-small">
+              <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-stats">
+              <span><span class="stat-value" id="question-completed-text">0/0</span> câu hỏi</span>
+              <span id="progress-time">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-card">
+          <div class="right-card-title">Theo phần</div>
+          <div id="section-breakdown"></div>
+        </div>
+
+        <div class="right-card sidebar-actions">
+          <div class="pagination-row">
+            <button class="btn btn-secondary" id="prev-btn" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              Trước
+            </button>
+            <button class="btn btn-secondary" id="next-btn">
+              Sau
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <button class="btn btn-success" id="submit-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Nộp khảo sát
+          </button>
+        </div>
+      </aside>
     </div>
 
     <div class="footer-spacer"></div>
@@ -1353,7 +1668,7 @@
             setTimeout(() => {
                 toast.classList.add('hiding');
                 setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            }, 3500);
         }
 
         function escapeHtml(str) {
@@ -1369,6 +1684,15 @@
             div.textContent = String(str);
             return div.innerHTML.replace(/\n/g, '<br>');
         }
+
+        function formatTime(seconds) {
+            if (!seconds || seconds < 0) return '—';
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        const CHECK_ICON_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
         // ============================================
         // AUTO FILL USER INFO
@@ -1414,8 +1738,8 @@
                         if (input.type === 'text' || input.tagName === 'TEXTAREA') {
                             if (!input.value.trim()) {
                                 input.value = mapping.value;
-                                input.style.borderColor = '#10b981';
-                                input.style.backgroundColor = '#f0fdf4';
+                                input.style.borderColor = 'var(--color-primary)';
+                                input.style.backgroundColor = 'var(--color-primary-soft)';
                                 input.title = 'Đã tự động điền từ thông tin tài khoản';
                             }
                         }
@@ -1437,8 +1761,8 @@
             if (sections.length === 0) {
                 document.getElementById('loading-state').style.display = 'none';
                 document.getElementById('survey-content').innerHTML = `
-                    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:24px;text-align:center;">
-                        <p style="color:#dc2626;font-weight:600">Không có câu hỏi nào trong khảo sát này.</p>
+                    <div style="background:var(--color-error-soft);border:1px solid #fecaca;border-radius:6px;padding:24px;text-align:center;">
+                        <p style="color:var(--color-error);font-weight:600">Không có câu hỏi nào trong khảo sát này.</p>
                     </div>
                 `;
                 document.getElementById('survey-content').style.display = 'block';
@@ -1495,9 +1819,9 @@
             document.getElementById('survey-content').innerHTML = html;
             document.getElementById('survey-content').style.display = 'block';
             document.getElementById('loading-state').style.display = 'none';
-            document.getElementById('survey-actions').style.display = 'flex';
 
             renderQuestionNav(allQuestions);
+            renderSectionBreakdown();
             updatePagination();
             updateProgress();
 
@@ -1520,7 +1844,7 @@
         // ============================================
         function renderQuestions(questions, sectionIdx) {
             if (!questions || questions.length === 0) {
-                return '<p style="color:#9ca3af;font-size:14px;">Không có câu hỏi nào trong phần này.</p>';
+                return '<p style="color:var(--color-text-subtle);font-size:13px;">Không có câu hỏi nào trong phần này.</p>';
             }
 
             let html = '';
@@ -1535,13 +1859,12 @@
                 const name = `q_${q.id}`;
                 const description = q.description || '';
 
-                // BẢN NÂNG CẤP: Gắn cờ data-required lên wrapper của câu hỏi
                 html += `<div class="question-item" data-question-id="${q.id}" data-section="${sectionIdx}" data-question-index="${qIdx}" data-required="${q.is_required ? 'true' : 'false'}">`;
 
                 switch(q.question_type_code) {
                     case 'title':
                         html += `
-                            <div style="margin: 12px 0 8px; font-weight: 600; font-size: 20px; color: #1a1a1a;">
+                            <div style="margin: 8px 0 12px; font-weight: 600; font-size: 18px; color: var(--color-text); letter-spacing: -0.01em;">
                                 ${formatMultiLine(q.title)}
                             </div>
                         `;
@@ -1549,7 +1872,7 @@
 
                     case 'paragraph':
                         html += `
-                            <div style="margin-bottom: 12px;">
+                            <div style="margin-bottom: 12px; color: var(--color-text-muted); font-size: 13.5px; line-height: 1.7;">
                                 ${formatMultiLine(q.title)}
                             </div>
                         `;
@@ -1683,7 +2006,7 @@
                                             <input type="text"
                                                    name="${inputName}_${si}"
                                                    placeholder="Nhập..."
-                                                   style="width:100%;padding:6px 8px;border:1.5px solid #d1d5db;border-radius:6px;font-size:0.85rem;font-family:inherit;background:#fff;">
+                                                   style="width:100%;padding:6px 8px;border:1px solid var(--color-border-strong);border-radius:4px;font-size:13px;font-family:inherit;background:#fff;">
                                         </td>
                                     `;
                                 }
@@ -1761,7 +2084,7 @@
                                         html += `
                                           <label class="custom-checkbox">
                                               <input type="checkbox" name="${inputName}[]" value="${escapeHtml(opt)}">
-                                              <span style="font-size: 0.85rem;">${escapeHtml(opt)}</span>
+                                              <span style="font-size: 12.5px;">${escapeHtml(opt)}</span>
                                           </label>
                                         `;
                                     });
@@ -1772,7 +2095,7 @@
                                         html += `
                                           <label class="custom-radio">
                                               <input type="radio" name="${inputName}" value="${escapeHtml(opt)}">
-                                              <span style="font-size: 0.85rem;">${escapeHtml(opt)}</span>
+                                              <span style="font-size: 12.5px;">${escapeHtml(opt)}</span>
                                           </label>
                                         `;
                                     });
@@ -1825,7 +2148,7 @@
         }
 
         // ============================================
-        // RENDER QUESTION NAV
+        // RENDER QUESTION NAV (left sidebar)
         // ============================================
         function renderQuestionNav(questions) {
             const nav = document.getElementById('question-nav');
@@ -1857,11 +2180,49 @@
                     <span class="status-dot"></span>
                     <span class="q-number">${q.questionNumber}.</span>
                     <span class="q-text">${escapeHtml(q.title)}</span>
-                    <span class="q-status-icon">${isAnswered ? '✓' : ''}</span>
+                    <span class="q-status-icon">${isAnswered ? CHECK_ICON_SVG : ''}</span>
                 `;
 
                 btn.addEventListener('click', () => goToQuestion(idx));
                 nav.appendChild(btn);
+            });
+        }
+
+        // ============================================
+        // RENDER SECTION BREAKDOWN (right sidebar)
+        // ============================================
+        function renderSectionBreakdown() {
+            const container = document.getElementById('section-breakdown');
+            if (!container || !surveyData) return;
+            const sections = surveyData.sections || [];
+            const stats = computeSectionStats();
+
+            container.innerHTML = sections.map((section, i) => {
+                const s = stats[i] || { total: 0, answered: 0, pct: 0 };
+                const isComplete = s.total > 0 && s.answered === s.total;
+                const isActive = i === currentPage;
+                let title = section.title || `Phần ${i + 1}`;
+                if (title.includes('sec_')) title = `Phần ${i + 1}`;
+                return `
+                    <div class="section-stat ${isActive ? 'is-active' : ''} ${isComplete ? 'is-complete' : ''}" data-section-index="${i}">
+                        <div class="section-stat-header">
+                            <span class="section-stat-title">${escapeHtml(title)}</span>
+                            <span class="section-stat-count">${s.answered}/${s.total}</span>
+                        </div>
+                        <div class="section-stat-bar">
+                            <div class="section-stat-fill" style="width: ${s.pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Click to navigate
+            container.querySelectorAll('.section-stat').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', () => {
+                    const idx = parseInt(el.dataset.sectionIndex);
+                    if (!isNaN(idx)) goToPage(idx);
+                });
             });
         }
 
@@ -1939,13 +2300,14 @@
             if (questionEl) {
                 setTimeout(() => {
                     questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    questionEl.style.transition = 'background 0.3s';
-                    questionEl.style.background = '#e8f0fe';
-                    setTimeout(() => { questionEl.style.background = 'transparent'; }, 1500);
+                    questionEl.style.transition = 'background 200ms';
+                    questionEl.style.background = 'var(--color-primary-soft)';
+                    setTimeout(() => { questionEl.style.background = 'transparent'; }, 1200);
                 }, 200);
             }
 
             renderQuestionNav(allQuestions);
+            renderSectionBreakdown();
             updatePagination();
             updateProgress();
         }
@@ -2224,30 +2586,39 @@
             stats.forEach(s => { totalQuestions += s.total; totalAnswered += s.answered; });
             const pct = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
 
-            document.getElementById('progress-fill').style.width = `${pct}%`;
-            document.getElementById('progress-percent').textContent = `${pct}%`;
-            document.getElementById('progress-text').textContent =
-                `Đã hoàn thành: ${totalAnswered}/${totalQuestions} câu hỏi`;
+            // Update right sidebar progress display
+            const pctEl = document.getElementById('progress-percent-large');
+            if (pctEl) pctEl.textContent = pct;
 
-            const completedText = document.getElementById('question-completed-text');
-            if (completedText) {
-                completedText.textContent = `${totalAnswered}/${totalQuestions} câu hỏi`;
-            }
+            const fillEl = document.getElementById('progress-fill');
+            if (fillEl) fillEl.style.width = `${pct}%`;
 
-            const statusText = document.getElementById('question-status-text');
-            if (statusText) {
+            const completedEl = document.getElementById('question-completed-text');
+            if (completedEl) completedEl.textContent = `${totalAnswered}/${totalQuestions}`;
+
+            const statusBadge = document.getElementById('progress-status-badge');
+            if (statusBadge) {
                 if (pct === 100 && totalQuestions > 0) {
-                    statusText.textContent = 'Hoàn thành!';
-                    statusText.className = 'status-text completed';
+                    statusBadge.textContent = 'Hoàn thành';
+                    statusBadge.style.color = 'var(--color-success)';
                 } else if (pct === 0) {
-                    statusText.textContent = 'Chưa bắt đầu';
-                    statusText.className = 'status-text';
+                    statusBadge.textContent = 'Chưa bắt đầu';
+                    statusBadge.style.color = 'var(--color-text-muted)';
                 } else {
-                    statusText.textContent = `Đang làm (${pct}%)`;
-                    statusText.className = 'status-text';
+                    statusBadge.textContent = 'Đang làm';
+                    statusBadge.style.color = 'var(--color-primary)';
                 }
             }
 
+            // Time elapsed
+            const timeEl = document.getElementById('progress-time');
+            if (timeEl && !isSubmitted) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeEl.textContent = formatTime(elapsed);
+            }
+
+            // Re-render section breakdown (to update active state and counts)
+            renderSectionBreakdown();
             renderQuestionNav(allQuestions);
         }
 
@@ -2256,8 +2627,10 @@
         // ============================================
         function updatePagination() {
             const totalPages = surveyData?.sections?.length || 0;
-            document.getElementById('prev-btn').disabled = currentPage === 0;
-            document.getElementById('next-btn').disabled = currentPage === totalPages - 1;
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (prevBtn) prevBtn.disabled = currentPage === 0;
+            if (nextBtn) nextBtn.disabled = currentPage === totalPages - 1;
         }
 
         function goToPage(pageIndex) {
@@ -2270,26 +2643,41 @@
                 card.classList.toggle('is-active', idx === pageIndex);
             });
 
+            // Update current question index to first question of this section
+            const firstQInSection = allQuestions.findIndex(q => q.sectionIndex === pageIndex);
+            if (firstQInSection >= 0) currentQuestionIndex = firstQInSection;
+
             updatePagination();
             updateProgress();
+            renderQuestionNav(allQuestions);
             document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         window.goToPage = goToPage;
 
         // ============================================
-        // BẢN NÂNG CẤP: LẮNG NGHE SỰ KIỆN XÓA HIGHLIGHT LỖI
+        // EVENT LISTENERS
         // ============================================
         function attachEventListeners() {
-            document.getElementById('prev-btn').addEventListener('click', () => {
-                if (currentPage > 0) goToPage(currentPage - 1);
-            });
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
 
-            document.getElementById('next-btn').addEventListener('click', () => {
-                if (currentPage < (surveyData?.sections?.length || 0) - 1) goToPage(currentPage + 1);
-            });
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (currentPage > 0) goToPage(currentPage - 1);
+                });
+            }
 
-            document.getElementById('submit-btn').addEventListener('click', submitSurvey);
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (currentPage < (surveyData?.sections?.length || 0) - 1) goToPage(currentPage + 1);
+                });
+            }
+
+            if (submitBtn) {
+                submitBtn.addEventListener('click', submitSurvey);
+            }
 
             document.addEventListener('change', (e) => {
                 const item = e.target.closest('.question-item');
@@ -2311,9 +2699,9 @@
         }
 
         // ============================================
-        // SAVE DRAFT
+        // SAVE DRAFT (auto)
         // ============================================
-        async function saveDraft() {
+        async function saveDraft(showFeedback = true) {
             if (isSubmitted) return;
             const answersData = collectAnswers();
             const stats = computeSectionStats();
@@ -2332,20 +2720,20 @@
                 });
                 if (res.success) {
                     responseData = res;
-                    showToast('Đã lưu bản nháp', 'success');
+                    if (showFeedback) showToast('Đã lưu khảo sát', 'success');
                 }
             } catch (e) {
-                showToast('Lỗi khi lưu: ' + e.message, 'error');
+                if (showFeedback) showToast('Lỗi khi lưu: ' + e.message, 'error');
             }
         }
 
         function scheduleSave() {
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => saveDraft(), 3000);
+            saveTimeout = setTimeout(() => saveDraft(true), 3000);
         }
 
         // ============================================
-        // BẢN NÂNG CẤP: VALIDATE CHÍNH XÁC CÂU HỎI BẮT BUỘC
+        // VALIDATE & SUBMIT
         // ============================================
         async function submitSurvey() {
             let isValid = true;
@@ -2353,7 +2741,6 @@
 
             const allQuestionsEl = document.querySelectorAll('.question-item');
             
-            // Xóa highlight lỗi cũ trước khi check lại
             document.querySelectorAll('.error-highlight').forEach(el => el.classList.remove('error-highlight'));
 
             allQuestionsEl.forEach(item => {
@@ -2371,7 +2758,6 @@
                         answered = false;
                     } else {
                         let allRowsAnswered = true;
-                        
                         rows.forEach(row => {
                             let rowAnswered = false;
                             const inputs = row.querySelectorAll('input');
@@ -2389,7 +2775,6 @@
                         answered = false;
                     } else {
                         let allRowsAnswered = true;
-                        
                         rows.forEach(row => {
                             let rowAnswered = false;
                             const inputs = row.querySelectorAll('input');
@@ -2415,13 +2800,12 @@
                 if (!answered) {
                     isValid = false;
                     if (!firstInvalid) firstInvalid = item;
-                    // Thêm viền đỏ báo lỗi
                     item.classList.add('error-highlight');
                 }
             });
 
             if (!isValid) {
-                showToast('Vui lòng trả lời tất cả câu hỏi bắt buộc!', 'warning');
+                showToast('Vui lòng trả lời tất cả câu hỏi bắt buộc', 'warning');
                 if (firstInvalid) {
                     const sectionIdx = parseInt(firstInvalid.dataset.section);
                     if (currentPage !== sectionIdx && typeof goToPage === 'function') {
@@ -2461,17 +2845,12 @@
                     document.getElementById('completed-questions-display').textContent = totalAnswered;
 
                     document.getElementById('survey-content').style.display = 'none';
-                    document.getElementById('survey-actions').style.display = 'none';
                     document.getElementById('sidebar').style.display = 'none';
+                    document.querySelector('.sidebar-right').style.display = 'none';
+                    document.querySelector('.main-content').classList.add('is-success');
                     document.getElementById('success-screen').style.display = 'block';
-                    document.getElementById('progress-fill').style.width = '100%';
-                    document.getElementById('progress-percent').textContent = '100%';
-                    document.getElementById('progress-text').textContent = 'Đã hoàn thành!';
-                    document.getElementById('question-completed-text').textContent = `${totalQuestions}/${totalQuestions} câu hỏi`;
-                    document.getElementById('question-status-text').textContent = 'Hoàn thành!';
-                    document.getElementById('question-status-text').className = 'status-text completed';
 
-                    showToast('Khảo sát đã được gửi thành công!', 'success');
+                    showToast('Đã nộp khảo sát thành công', 'success');
                 }
             } catch (e) {
                 showToast('Lỗi khi gửi: ' + e.message, 'error');
@@ -2497,9 +2876,18 @@
 
                 setInterval(() => {
                     if (!isSubmitted && Object.keys(collectAnswers()).length > 0) {
-                        saveDraft();
+                        saveDraft(false);
                     }
                 }, 30000);
+
+                // Tick timer every second
+                setInterval(() => {
+                    if (!isSubmitted) {
+                        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                        const timeEl = document.getElementById('progress-time');
+                        if (timeEl) timeEl.textContent = formatTime(elapsed);
+                    }
+                }, 1000);
 
                 if (Object.keys(answers).length > 0) {
                     showToast('Đã khôi phục dữ liệu đã lưu', 'info');
@@ -2509,9 +2897,9 @@
                 console.error('Init error:', error);
                 showToast('Lỗi: ' + error.message, 'error');
                 document.getElementById('loading-state').innerHTML = `
-                    <p style="color:#dc2626;font-weight:600">Không thể tải khảo sát</p>
-                    <p style="font-size:13px;color:#dc2626;margin-top:6px">${escapeHtml(error.message)}</p>
-                    <button onclick="location.reload()" style="margin-top:18px;padding:10px 22px;background:#0054a4;color:white;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer">
+                    <p style="color:var(--color-error);font-weight:600">Không thể tải khảo sát</p>
+                    <p style="font-size:12.5px;color:var(--color-error);margin-top:6px">${escapeHtml(error.message)}</p>
+                    <button onclick="location.reload()" style="margin-top:18px;padding:9px 18px;background:var(--color-primary);color:white;border-radius:4px;font-size:12.5px;font-weight:500;border:none;cursor:pointer;font-family:inherit">
                         Thử lại
                     </button>
                 `;
