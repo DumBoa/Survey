@@ -892,7 +892,7 @@ class SurveyPublicDetailView(APIView):
 # apps/survey/views.py - Sửa hàm PublicResponseView (GET)
 
 class PublicResponseView(APIView):
-    authentication_classes = []
+    authentication_classes = [SessionAuthentication]
     permission_classes = []
 
     def get(self, request, survey_id):
