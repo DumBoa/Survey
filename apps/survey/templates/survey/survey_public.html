@@ -2313,8 +2313,14 @@
                 }
 
                 if (isRequired) {
-                    isValid = allRowsAnswered;
-                    isAnswered = allRowsAnswered; // Nếu bắt buộc, progress bar chỉ tăng khi trả lời đủ
+                    const isChecklist = gridTable && gridTable.dataset.gridType === 'checklist';
+                    if (isChecklist || dataTable) {
+                        isValid = answeredRowCount > 0;
+                        isAnswered = answeredRowCount > 0;
+                    } else {
+                        isValid = allRowsAnswered;
+                        isAnswered = allRowsAnswered; // Nếu grid bình thường, progress bar chỉ tăng khi trả lời đủ
+                    }
                 } else {
                     isValid = true;
                     isAnswered = answeredRowCount > 0; // Nếu không bắt buộc, chỉ cần trả lời 1 phần là coi như đã làm
@@ -2495,25 +2501,29 @@
                             }
                         }
                     });
-                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox') {
-                    if (elements.length === 1 && firstEl.type !== 'checkbox') {
+                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox' || firstEl.type === 'radio' || firstEl.type === 'select-one') {
+                    if (elements.length === 1 && firstEl.type !== 'checkbox' && firstEl.type !== 'radio') {
                         firstEl.value = value || '';
                     } else {
                         if (Array.isArray(value)) {
                             elements.forEach(el => {
-                                const nameParts = el.name.split('_');
+                                const nameParts = el.name.replace('[]', '').split('_');
                                 if (nameParts.length >= 3) {
-                                    const rowIdx = parseInt(nameParts[1]);
-                                    const colIdx = parseInt(nameParts[2]);
-                                    const cellVal = value[rowIdx] && value[rowIdx][colIdx];
-
-                                    if (el.type === 'checkbox') {
-                                        if (Array.isArray(cellVal) && cellVal.includes(el.value)) {
-                                            el.checked = true;
-                                        }
-                                    } else {
-                                        if (cellVal !== undefined && cellVal !== null) {
-                                            el.value = cellVal;
+                                    const r = parseInt(nameParts[1]);
+                                    const c = parseInt(nameParts[2]);
+                                    if (value[r] && value[r][c] !== undefined && value[r][c] !== null) {
+                                        if (el.type === 'checkbox') {
+                                            if (Array.isArray(value[r][c])) {
+                                                el.checked = value[r][c].includes(el.value);
+                                            } else {
+                                                el.checked = (el.value === String(value[r][c]));
+                                            }
+                                        } else if (el.type === 'radio') {
+                                            if (el.value === String(value[r][c])) {
+                                                el.checked = true;
+                                            }
+                                        } else {
+                                            el.value = value[r][c];
                                         }
                                     }
                                 }
@@ -2614,24 +2624,41 @@
                         });
                         allAnswers[qId] = values;
                     }
-                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox') {
-                    if (elements.length === 1 && firstEl.type !== 'checkbox') {
+                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox' || firstEl.type === 'radio' || firstEl.type === 'select-one') {
+                    if (elements.length === 1 && firstEl.type !== 'checkbox' && firstEl.type !== 'radio') {
                         const val = firstEl.value.trim();
                         if (val) allAnswers[qId] = val;
                     } else {
                         const matrixData = [];
                         const rowMap = {};
                         elements.forEach(el => {
-                            const nameParts = el.name.split('_');
+                            const nameParts = el.name.replace('[]', '').split('_');
                             if (nameParts.length >= 3) {
                                 const rowIdx = parseInt(nameParts[1]);
                                 const colIdx = parseInt(nameParts[2]);
                                 if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
-
+                                
                                 if (el.type === 'checkbox') {
-                                    if (!rowMap[rowIdx][colIdx]) rowMap[rowIdx][colIdx] = [];
                                     if (el.checked) {
-                                        rowMap[rowIdx][colIdx].push(el.value);
+                                        if (rowMap[rowIdx][colIdx] === undefined || rowMap[rowIdx][colIdx] === null) {
+                                            rowMap[rowIdx][colIdx] = [el.value];
+                                        } else if (Array.isArray(rowMap[rowIdx][colIdx])) {
+                                            rowMap[rowIdx][colIdx].push(el.value);
+                                        } else {
+                                            rowMap[rowIdx][colIdx] = [rowMap[rowIdx][colIdx], el.value];
+                                        }
+                                    } else {
+                                        if (rowMap[rowIdx][colIdx] === undefined) {
+                                            rowMap[rowIdx][colIdx] = null;
+                                        }
+                                    }
+                                } else if (el.type === 'radio') {
+                                    if (el.checked) {
+                                        rowMap[rowIdx][colIdx] = el.value.trim();
+                                    } else {
+                                        if (rowMap[rowIdx][colIdx] === undefined) {
+                                            rowMap[rowIdx][colIdx] = null;
+                                        }
                                     }
                                 } else {
                                     rowMap[rowIdx][colIdx] = el.value.trim();
@@ -2757,12 +2784,18 @@
                 submitBtn.addEventListener('click', submitSurvey);
             }
 
+            let progressTimeout;
+            const scheduleUpdateProgress = () => {
+                clearTimeout(progressTimeout);
+                progressTimeout = setTimeout(() => updateProgress(), 250);
+            };
+
             document.addEventListener('change', (e) => {
                 const item = e.target.closest('.question-item');
                 if (item) {
                     item.classList.remove('error-highlight');
                     scheduleSave();
-                    updateProgress();
+                    scheduleUpdateProgress();
                 }
             });
 
@@ -2771,7 +2804,7 @@
                 if (item) {
                     item.classList.remove('error-highlight');
                     scheduleSave();
-                    updateProgress();
+                    scheduleUpdateProgress();
                 }
             });
         }
