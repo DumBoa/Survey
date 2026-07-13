@@ -244,14 +244,16 @@ class SectionListCreateView(APIView):
             survey = SurveyModel.objects.get(id=survey_id)
             data = request.data
             
-            max_order = survey.sections.aggregate(max_order=models.Max('order'))['max_order'] or -1
+            max_order_dict = survey.sections.aggregate(max_order=models.Max('order'))
+            max_order = max_order_dict['max_order'] if max_order_dict['max_order'] is not None else -1
+            
             section = SectionModel.objects.create(
                 survey=survey,
                 code=data.get('code', chr(65 + max_order + 1)),
                 title=data.get('title', 'Phần mới'),
                 description=data.get('description', ''),
                 icon=data.get('icon', ''),
-                order=max_order + 1
+                order=data.get('order', max_order + 1)
             )
             
             return Response(SectionSerializer(section).data, status=status.HTTP_201_CREATED)
@@ -317,7 +319,8 @@ class QuestionListCreateView(APIView):
             data = request.data
             
             question_type = QuestionTypeModel.objects.get(id=data.get('question_type'))
-            max_order = section.questions.aggregate(max_order=models.Max('order'))['max_order'] or -1
+            max_order_dict = section.questions.aggregate(max_order=models.Max('order'))
+            max_order = max_order_dict['max_order'] if max_order_dict['max_order'] is not None else -1
             
             question = QuestionModel.objects.create(
                 section=section,
@@ -325,7 +328,7 @@ class QuestionListCreateView(APIView):
                 description=data.get('description', ''),
                 question_type=question_type,
                 is_required=data.get('is_required', True),
-                order=max_order + 1,
+                order=data.get('order', max_order + 1),
                 options=data.get('options', []),
                 condition_logic=data.get('condition_logic', {}),
                 config=data.get('config', {})
