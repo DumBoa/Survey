@@ -680,8 +680,6 @@
               <div class="alert-info-custom">
                 <i class="bi bi-people fs-5 mt-1"></i>
                 <div>
-                  <strong>Xin chào <span id="greetingName"></span>!</strong
-                  ><br />
                   Vui lòng chọn nhóm đối tượng phù hợp với chức danh và nhiệm vụ
                   của bạn.
                 </div>
@@ -997,8 +995,8 @@
               document.getElementById("userDisplayName").textContent =
                 userData.full_name || userData.username;
               document.getElementById("userInfoHeader").style.display = "block";
-              document.getElementById("greetingName").textContent =
-                userData.full_name || userData.username;
+              const greeting = document.getElementById("greetingName");
+              if (greeting) greeting.textContent = userData.full_name || userData.username;
               showToast("Đăng nhập thành công!", "success");
               loadTargetGroups();
               goToStep(2);
@@ -1280,8 +1278,8 @@
               document.getElementById("userDisplayName").textContent =
                 userData.full_name || userData.username;
               document.getElementById("userInfoHeader").style.display = "block";
-              document.getElementById("greetingName").textContent =
-                userData.full_name || userData.username;
+              const greeting = document.getElementById("greetingName");
+              if (greeting) greeting.textContent = userData.full_name || userData.username;
 
               // ⚠️ KHÔNG TỰ ĐỘNG REDIRECT NỮA
               // Chỉ load target groups và chuyển đến bước 2

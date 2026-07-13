@@ -17,10 +17,8 @@ def root_redirect(request):
             return redirect('/analytics/')
         # User thường -> vào dashboard
         return redirect('/accounts/survey-dashboard/')
-    # Chưa đăng nhập -> vào cổng khảo sát
-    if settings.PROJECT_TYPE == 'SIPAS':
-        return redirect('/accounts/sipas/')
-    return redirect('/accounts/cchc/')
+    # Chưa đăng nhập -> vào tổng quan khảo sát thay vì cổng đăng nhập
+    return redirect('/analytics/public-dashboard/')
 
 
 urlpatterns = [

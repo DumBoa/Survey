@@ -91,6 +91,16 @@ def tongquankhaosat_view(request):
         'base_template': base_template
     })
 
+@xframe_options_sameorigin
+def public_survey_dashboard_view(request):
+    """Trang tổng hợp tiến độ khảo sát Public (không cần đăng nhập)"""
+    from django.conf import settings
+    portal_login_url = '/accounts/sipas/' if getattr(settings, 'PROJECT_TYPE', '') == 'SIPAS' else '/accounts/cchc/'
+    
+    return render(request, 'analytics/public_survey_dashboard.html', {
+        'portal_login_url': portal_login_url
+    })
+
 
 # ============================================
 # API TARGET GROUPS
@@ -2079,7 +2089,6 @@ def organization_toggle_status_api(request, org_id):
 # API TỔNG HỢP KHẢO SÁT (SURVEY SUMMARY)
 # ============================================
 
-@login_required(login_url='/accounts/login/')
 def organization_survey_summary_api(request):
     """
     API lấy tổng hợp tiến độ khảo sát theo đơn vị
@@ -2186,7 +2195,7 @@ def organization_survey_summary_api(request):
                     'completed_users': completed_objects_count,
                     'progress_percent': pct,
                     'status': status,
-                    'users': user_list
+                    'users': user_list if request.user.is_authenticated else []
                 })
             
             return org_list, total_completed, total_in_progress, total_pending, total_objects, total_completed_objects

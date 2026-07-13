@@ -16,6 +16,7 @@ urlpatterns = [
     
     # === BÁO CÁO TỔNG HỢP ĐƠN VỊ ===
     path('survey-dashboard/', views.tongquankhaosat_view, name='survey_dashboard'),
+    path('public-dashboard/', views.public_survey_dashboard_view, name='public_dashboard'),
     path('api/survey-dashboard/<int:survey_id>/', views.survey_unit_dashboard_api, name='api_survey_unit_dashboard'),
     
     path('api/organizations/with-status/', views.organization_with_status_api, name='api_organizations_with_status'),
