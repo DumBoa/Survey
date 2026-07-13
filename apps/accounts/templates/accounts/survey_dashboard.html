@@ -181,7 +181,6 @@
                     <select id="sortOrder" onchange="applyFilters()" class="appearance-none w-full sm:w-auto pl-3 pr-10 py-2 text-sm font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition cursor-pointer">
                         <option value="name">Tên biểu mẫu</option>
                         <option value="status">Trạng thái</option>
-                        <option value="deadline_asc">Hạn nộp (Gần nhất)</option>
                     </select>
                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
                         <i data-lucide="chevron-down" class="w-4 h-4"></i>
@@ -411,6 +410,8 @@
                 }
 
                 let deadlineHtml = '';
+                // Bỏ hiển thị hạn nộp
+                /*
                 if (f.end_date) {
                     const end = new Date(f.end_date);
                     const now = new Date();
@@ -421,6 +422,7 @@
                         deadlineHtml = `<div class="flex items-center gap-1.5 text-xs font-medium text-slate-500"><i data-lucide="calendar" class="w-3.5 h-3.5"></i>Hạn nộp: ${dateStr}</div>`;
                     }
                 }
+                */
 
                 let pbColor = 'bg-blue-500';
                 if (f.status === 'completed') pbColor = 'bg-emerald-500';
