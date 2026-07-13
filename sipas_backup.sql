@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 1iTaJvqfKNdecQ4blQs5CPLcXXFHfLjPaGASzlXvSHOg8SnU3CemxaDbxuMFL2Y
+\restrict cyVZaDB6t4YZ6577OIWfcSpSGzvWJfDak2jG72aViVQj0XzNpCAzhiNjM69Q1p4
 
 -- Dumped from database version 14.23 (Ubuntu 14.23-0ubuntu0.22.04.1)
 -- Dumped by pg_dump version 14.23 (Ubuntu 14.23-0ubuntu0.22.04.1)
@@ -1214,8 +1214,8 @@ COPY public.accounts_user (id, password, last_login, is_superuser, username, fir
 561	pbkdf2_sha256$1200000$mZEllZFhUQvAlWseEBFpWa$uaPDbvkTUTU4v5oPbOszwTC31nQ8Dx4nOvFrG/gogc4=	2026-07-13 10:43:41.28519+00	f	ks2_thuongphuc				f	t	2026-07-13 06:04:25.239488+00	\N	\N	f	2026-07-13 06:04:26.118791+00	557
 566	pbkdf2_sha256$1200000$fqPBECXABzN3iETrY3ArsY$AftM9EXqaZYFHFQZMB8B2bwhNiZd0syW6fx9XZ3E2R8=	2026-07-13 10:52:33.658298+00	f	ks2_ngochoi				f	t	2026-07-13 06:04:29.940949+00	\N	\N	f	2026-07-13 06:04:30.917685+00	562
 560	pbkdf2_sha256$1200000$Rx39GNsju56Fbcm2H2uhmH$JMCBMt0IBKdXMejBFiNsSbE9YR+5P7pDpK+Ua5ZIFZ0=	2026-07-13 11:10:55.692218+00	f	ks2_thuongtin				f	t	2026-07-13 06:04:24.358025+00	\N	\N	f	2026-07-13 06:04:25.237211+00	556
-582	pbkdf2_sha256$1200000$yMUXlw5SAPN9oS6yqKVYKZ$VMXayEAIR3diHPNMnlRxWl3PpWEjc2V6de84vqAZSwg=	2026-07-13 18:57:43.665773+00	f	test	test		test@hmail.com	f	t	2026-07-13 11:51:45.220778+00			f	2026-07-13 11:51:45.221147+00	\N
 144	pbkdf2_sha256$1200000$zmmZtKdMOs4tmGudE8UMND$Ey8xcnmz1IdVcXXZ6Fklzb5sCqO/0N6RR0dfVWqY+hs=	2026-07-13 15:53:58.475109+00	t	admin1	Admin	One	admin1@example.com	t	t	2026-07-09 05:16:39.546+00	\N	\N	f	2026-07-09 05:16:39.546+00	\N
+582	pbkdf2_sha256$1200000$yMUXlw5SAPN9oS6yqKVYKZ$VMXayEAIR3diHPNMnlRxWl3PpWEjc2V6de84vqAZSwg=	2026-07-13 19:07:03.692013+00	f	test	test		test@hmail.com	f	t	2026-07-13 11:51:45.220778+00			f	2026-07-13 11:51:45.221147+00	\N
 \.
 
 
@@ -1762,8 +1762,8 @@ eoiwexg1cl6r4npl8p950ymoakbs2k4u	.eJxVjkEOgyAQRe_CulFQxNhl9z0DGWBQWgOG0aSm6d2rxo
 se359m13o7tf33xn33b3q21uhcx1pbq5	.eJxVjMsOgyAUBf-FdaOiCOqy-34D4XFRWgPGK0lN038vNm7czsw5HzLH0Qe57QuQgaBfFJLbCdM6Z1YqY2IKG5Z_W2YtVdommRBW6W1OWlpfqVbmBeFQ9qnCGAsTw7Z6XRxJcVosHtHCfD_by8GkcMprxjjtFesp0xxaIxhzXICguqmAggFrO-FcL4xuBK1s3ZkOeNdoxTm1jrnjFAHRxyDhvfh1J0P1_QFjRFHM:1wjF5K:aatvWJye3zMngFGsBxE74xJSqrfYwwL1vOYLkoGntpQ	2026-07-27 11:44:30.346988+00
 waznfrgp1qm6zlha2c56j0038hb8i9d4	.eJxljktPhDAUhf9L1yNQKIWy05joLGYwGV3fXEp5KGlJH0Zi_O8WM5uJ2-8759z7TRYzzhr8tirSEDev6MjhCoNdIktRShO0d-mfTaMGDH6C4JSFuY-RMhe3tEP5ofSu-nfUo0mk0d7OXbJHkqt1ycn0anm4Zm8GJnRTbHPBBl5SwTLGsZBYl7RktBM07xjyTgxVXXORoygq1ZcZLfICWT8gr3OKrKv3Uaecm40G9bXOdiNNdiAyWKu0B492VB5Ga8IKMj4TT16OL_eXu_Nze4LH9givb-35CYo45IL9VBtY5VajnQLKSVNU_3lOSVOyn1_d53MO:1wjFBX:kfMrRKJhX225NV7Jl5uMwzM6f05GiiGDH0TOuHITwz4	2026-07-27 11:50:55.592215+00
 06p70qjngh64aaypatceatnifbit5ub1	.eJxljslOwzAURf_F65LBdiKnOxASdNEGqbB-8pTEENmRB0SE-HcclE3F9px773vfaHajsRDXRaMjCmbhAR12mPycWcmldMnGUP7ZMmvgKU6QgvZgVI40rLqlgssPbTel3rkdXSGdjd6IYosUuw3F2Sk9P-zZm4GJhym3JVECM8UIUYOQHRt4x2irKsGGRipKm4q2osKC10wRLHArO8lJTTkfaE06sY0GHYJxFvTXYvyKjtUByeS9thEi96OOMHqXFpD5mXzyenq5v95dnvszPPYneH3rL09Q56GQ_KdeweuwOBs01C06YvKf4zrz5ucX6xt0ng:1wjCE1:y9L58ny23ILzaPL7BLI-e3t9jKRVZCvJxTGjPyt7EHc	2026-07-27 08:41:17.914476+00
-nhv27m1flbgg1ut3fmnra4to28pvcbsp	.eJxVjstugzAQRf_F6xTsGMxjl6pSm0VCpbTrkTEDuEU28qMqqvrvhYpNtufce2d-yGQHbSAsM5KaeD1LTw47jG5aWSqVstEEn_7bdNUgYxghenSguzWSl8d72kr1iWZT3Yc0g02UNcHpNtkiyW59crEdTo979m5glH7c2qxjvUJRMp71oqh4ziUVpciKnveZqChrMZcosiqnWNFj1-ZScqbaohCUYr-NevReWwP4PWu3kJoeiIrOoQkQpBswwOBsnEGtz6wnb-fX0-3h-tJc4Kk5w9t7c30Gvg756L5wAYd-tsYjsJLUpfj9A9dta34:1wjLrl:LtD3w8LX_knyn2Zvpv0IpQ_F4nC1myiHX-gz1xGZrGY	2026-07-27 18:58:57.690876+00
 sd1uav79s3i6hm1mr7lptu053zg6nyhq	.eJxlj8lOwzAQht_F55LdznIDIUEPbZAK55GXyQKRHXlBRIh3x0G9VFy_759_Zr7JYsZZg99WJB1x88odOVxhsEtkKZfSBO1d-mfTqIEHP0FwaGFWMUKL4pYKLj9Q70q9cz2aRBrt7SySPZJcrUtORuHycM3eFEzcTXG6waJQ2cAolZQylg1t2-Q0522l6FBmbcUHxauhYjXmolRMDEzkqhSUNqKpatxLHTo3Gw34tc52I112IDJYi9qD53ZED6M1YQUZj4krL8eX-8vd-bk_wWN_hNe3_vwE-3su2E_cwKJbjXYIeU06yv7zIo-8-fkFcHd0Cw:1wjFlk:QTzG0FvbEAx7lpQJikxUfzBmy-ePe4QhRwAMq62c9vU	2026-07-27 12:28:20.967784+00
+ajovfpieu106921c8nea54zwsm9ocqqf	.eJxVjstugzAQRf_F6xTsGMxjl6pSm0VCpbTrkTEDuEU28qMqqvrvhYpNtufce2d-yGQHbSAsM5KaeD1LTw47jG5aWSqVstEEn_7bdNUgYxghenSguzWSl8d72kr1iWZT3Yc0g02UNcHpNtkiyW59crEdTo979m5glH7c2qxjvUJRMp71oqh4ziUVpciKnveZqChrMZcosiqnWNFj1-ZScqbaohCUYr-NevReWwP4PWu3kJoeiIrOoQkQpBswwOBsnEGtz6wnb-fX0-3h-tJc4Kk5w9t7c30Gvg756L5wAYd-tsYjsJLUFf39A9dka3k:1wjM14:UdeO5zDeYXiQ_qAQiJU-ZrGgjG4BTuQItVyhMx-deWw	2026-07-27 19:08:34.828509+00
 qtt2rogstzjf8acfmoldhxcugebvu3hq	.eJyrVsrJT8_Miy-pLEhVslIqzixILFbSgQqWFuUAxfQTk5PzS_NKivXBsvpKtQD_wxLb:1wjCdC:5W89D22fDhBKR_Vuih6_mmVuZh5mv086mhioACXmzzg	2026-07-27 09:07:18.654718+00
 n6qmqdr3dtwvqkxxgxkvs04or19cu8uk	.eJyrVsrJT8_Miy-pLEhVslIqzixILFbSgQqWFuUAxfQTk5PzS_NKivXBsvpKtQD_wxLb:1wjCwf:C5U4Qo9kUpNsj6_f4sQc364r7phn8T42F_gQnbXqq5o	2026-07-27 09:27:25.433718+00
 blu6fgmuw0x985e7zcouym4z7bzuvclp	.eJyrVsrJT8_Miy-pLEhVslIqzixILFbSgQqWFuUAxfQTk5PzS_NKivXBsvpKtQD_wxLb:1wjD6t:9lkK5T764GXv91Wle0VI4raV2Ru6hmFGhNPQ-q6n3zg	2026-07-27 09:37:59.107235+00
@@ -1960,6 +1960,7 @@ COPY public.survey_response (id, respondent_ip, respondent_device_id, respondent
 57	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 12:26:22.637156+00	\N	0	{}	f	\N	f	f	2026-07-13 12:26:22.637261+00	522	21	{}	draft
 64	\N	\N	test@hmail.com	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 15:45:45.360993+00	\N	151	{"5379": [["", "", "", "", "", "", ""]], "5381": {"data": [[null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "5382": {"data": [[null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "5383": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "5384": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "5385": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "email": "test@hmail.com", "phone": "", "agency": "", "position": "", "full_name": "test", "department": "", "organization": ""}	f	\N	f	f	2026-07-13 15:45:45.36109+00	582	16	{"sec_mrd3lxb1_4sre5": 0, "sec_mrd3mk79_mf9ln": 0, "sec_mrd3y4v6_12wu0": 0, "sec_mrd3y4v6_1oowr": 0, "sec_mrd4dtgl_a57uj": 0, "sec_mrd4dtgl_kpp08": 0, "sec_mrd4dtgl_qprnt": 0}	draft
 80	\N	\N	test@hmail.com	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 18:35:06.356264+00	2026-07-13 18:40:12.279629+00	72	{"6651": {"data": [[null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null]], "type": "grid"}, "6652": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null], [null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null], [null, "1", null, null, null]], "type": "grid"}, "6653": {"data": [[null, null, "2"], [null, "1", null], [null, null, null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6654": {"data": [[null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "6655": {"data": [[null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "6656": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6657": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6658": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6659": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6660": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6661": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "6662": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6663": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "6667": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "6670": {"data": [[null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"]], "type": "grid"}, "6671": {"data": [[null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"]], "type": "grid"}, "6672": {"data": [[null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"]], "type": "grid"}, "6673": {"data": [[null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"]], "type": "grid"}, "6674": {"data": [[null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, null, "4"]], "type": "grid"}, "6675": {"data": [[null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"]], "type": "grid"}, "6676": {"data": [[null, null, "2"], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6677": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6678": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6679": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6680": {"data": [[null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null]], "type": "grid"}, "6681": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6682": {"data": [[null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null]], "type": "grid"}, "6683": "Đáp ứng tốt", "6684": "Hoàng đây", "6686": {"data": [[null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null]], "type": "grid"}, "email": "test@hmail.com", "phone": "", "agency": "", "position": "", "full_name": "test", "department": "", "organization": ""}	f	\N	f	f	2026-07-13 18:35:06.356339+00	582	18	{"sec_mrd51u8k_s7xvx": 0, "sec_mrd52i20_bxs8q": 100, "sec_mrd589py_n4ccb": 100, "sec_mrd58wv7_h9r0m": 100, "sec_mrd5h8uk_83ljt": 100, "sec_mrd5h8uk_lb1ld": 100, "sec_mrd5h8uk_q8t9f": 100, "sec_mrd5h8uk_zlvj1": 100, "sec_mrd5h8uk_znbx8": 100, "sec_mrd5hvzu_sb784": 100, "sec_mrd5hvzv_7jcz3": 100, "sec_mrd5hvzv_a4wue": 100, "sec_mrd5hvzv_ae5ra": 100, "sec_mrd5hvzv_vsvm8": 100, "sec_mrd5hvzv_ztdcy": 100, "sec_mrd5ij53_k401z": 100, "sec_mrd5ij53_lxnd3": 0}	submitted
+88	\N	\N	test@hmail.com	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 19:04:03.899332+00	2026-07-13 19:04:53.931081+00	50	{"6808": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6809": {"data": [[null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "6810": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6811": {"data": [[null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "6812": {"data": [[null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "6813": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6814": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6815": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6816": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6817": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6818": {"data": [[null, "1", null, null], [null, null, "2", null], [null, null, null, "3"], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "6819": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6820": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "6821": "Đáp ứng tốt", "6822": "HoangG", "6824": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "email": "test@hmail.com", "phone": "", "agency": "", "position": "", "full_name": "test", "department": "", "organization": ""}	f	\N	f	f	2026-07-13 19:04:03.899451+00	582	18	{"sec_mrd51u8k_s7xvx": 0, "sec_mrd52i20_bxs8q": 0, "sec_mrd589py_n4ccb": 0, "sec_mrd58wv7_h9r0m": 0, "sec_mrd5h8uk_83ljt": 0, "sec_mrd5h8uk_lb1ld": 0, "sec_mrd5h8uk_q8t9f": 0, "sec_mrd5h8uk_zlvj1": 0, "sec_mrd5h8uk_znbx8": 0, "sec_mrd5hvzu_sb784": 0, "sec_mrd5hvzv_7jcz3": 100, "sec_mrd5hvzv_a4wue": 0, "sec_mrd5hvzv_ae5ra": 0, "sec_mrd5hvzv_vsvm8": 100, "sec_mrd5hvzv_ztdcy": 100, "sec_mrd5ij53_k401z": 0, "sec_mrd5ij53_lxnd3": 0}	draft
 15	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-11 14:05:45.866672+00	\N	0	{}	f	\N	f	f	2026-07-11 14:05:45.866759+00	\N	19	{}	draft
 49	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 11:44:22.831269+00	\N	0	{}	f	\N	f	f	2026-07-13 11:44:22.83152+00	\N	21	{}	draft
 17	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-12 09:57:23.625877+00	\N	0	{}	f	\N	f	f	2026-07-12 09:57:23.62596+00	\N	19	{}	draft
@@ -1972,12 +1973,14 @@ COPY public.survey_response (id, respondent_ip, respondent_device_id, respondent
 2	127.0.0.1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-09 08:39:08.099+00	\N	30	{"2435": [["", "", "", "", "", "", ""]], "2436": [["", "", "", "", "", "", "", "", ""]], "2437": [["", "", "", "", "", "", "", ""]], "2438": [["", "", "", "", ""]], "2439": [["", "", "", ""]], "2440": [["", "", "", ""]], "2441": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}}	f	\N	f	f	2026-07-09 08:39:08.099+00	\N	19	{"sec_mrd5p4ay_3aj1d": 100, "sec_mrd5prgj_7sqyz": 100, "sec_mrd5qell_6cxnd": 100, "sec_mrd5qell_ejhot": 100, "sec_mrd5qell_wwlyz": 100, "sec_mrd5sc1j_9kkon": 0, "sec_mrd5sc1j_bdrd5": 0, "sec_mrd5sc1j_upqkj": 50}	draft
 9	127.0.0.1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-10 13:49:11.872+00	\N	11	{"3944": [["Điều tra xã hội học và khảo sát sự hài lòng của người dân, tổ chức đối với sự phục vụ của các cơ quan nhà nước thuộc thành phố Hà Nội", "", "", "", ""]], "3945": [["", "", "", "", "", "", "", "", "", "", "", "", ""]], "3946": [["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]], "3947": [["", "", "", "", "", "", "", "", ""]], "3948": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "3949": [["", "", "", "", "", "", "", "", "", "", "", "", "", ""]], "3950": [["", "", "", "", "", "", "", "", "", ""]], "3951": {"data": [[null, null, null, null, null, null], [null, null, null, null, null, null], [null, null, null, null, null, null], [null, null, null, null, null, null], [null, null, null, null, null, null], [null, null, null, null, null, null], [null, null, null, null, null, null], [null, null, null, null, null, null]], "type": "grid"}, "3956": [["", "", ""]]}	f	\N	f	f	2026-07-10 13:49:11.872+00	\N	22	{"sec_mrd8qe3f_0tgy1": 0, "sec_mrd8qe3g_huq15": 0, "sec_mrd8qe3g_pid68": 0, "sec_mrd8qe3g_vssku": 0, "sec_mrd8qe3g_y1frv": 0, "sec_mrd8qz0l_3yt2h": 0, "sec_mrd8qz0l_bdsjb": 0, "sec_mrd8qz0l_foazz": 0, "sec_mrd8qz0l_glqw3": 0, "sec_mrd8qz0l_jwj32": 0, "sec_mrd8qz0l_yh07a": 0}	draft
 18	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-12 09:57:35.256176+00	\N	0	{}	f	\N	f	f	2026-07-12 09:57:35.256285+00	\N	13	{}	draft
+89	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 19:07:08.197319+00	\N	0	{}	f	\N	f	f	2026-07-13 19:07:08.197456+00	582	18	{}	draft
 10	127.0.0.1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-10 14:05:37.918+00	\N	51	{"4199": [["Điều tra xã hội học và khảo sát sự hài lòng của người dân, tổ chức đối với sự phục vụ của các cơ quan nhà nước thuộc thành phố Hà Nội", "12", "12", "12", "12"]], "4200": {"data": [[null, "1", null]], "type": "grid"}, "4201": [["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]], "4202": [["", "", "", "", "", "", "", "", ""]], "4203": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "4204": [["", "", "", "", "", "", "", "", "", "", "", "", "", ""]], "4205": [["", "", "", "", "", "", "", "", "", ""]], "4206": {"data": [[null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null]], "type": "grid"}, "4211": [["", "", ""]]}	f	\N	f	f	2026-07-10 14:05:37.918+00	\N	22	{"sec_mrd8qe3f_0tgy1": 100, "sec_mrd8qe3g_huq15": 0, "sec_mrd8qe3g_pid68": 100, "sec_mrd8qe3g_vssku": 0, "sec_mrd8qe3g_y1frv": 100, "sec_mrd8qz0l_3yt2h": 0, "sec_mrd8qz0l_bdsjb": 0, "sec_mrd8qz0l_foazz": 0, "sec_mrd8qz0l_glqw3": 0, "sec_mrd8qz0l_jwj32": 0, "sec_mrd8qz0l_yh07a": 0}	draft
 11	127.0.0.1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-10 14:08:23.392+00	\N	6	{"4199": [["Điều tra xã hội học và khảo sát sự hài lòng của người dân, tổ chức đối với sự phục vụ của các cơ quan nhà nước thuộc thành phố Hà Nội", "", "", "", ""]], "4200": {"data": [[null, "1", null]], "type": "grid"}, "4201": [["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]], "4202": [["", "", "", "", "", "", "", "", ""]], "4203": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "4204": [["", "", "", "", "", "", "", "", "", "", "", "", "", ""]], "4205": [["", "", "", "", "", "", "", "", "", ""]], "4206": {"data": [[null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null], [null, null, null, null, null, null, null]], "type": "grid"}, "4211": [["", "", ""]]}	f	\N	f	f	2026-07-10 14:08:23.392+00	\N	22	{"sec_mrd8qe3f_0tgy1": 0, "sec_mrd8qe3g_huq15": 0, "sec_mrd8qe3g_pid68": 0, "sec_mrd8qe3g_vssku": 0, "sec_mrd8qe3g_y1frv": 100, "sec_mrd8qz0l_3yt2h": 0, "sec_mrd8qz0l_bdsjb": 0, "sec_mrd8qz0l_foazz": 0, "sec_mrd8qz0l_glqw3": 0, "sec_mrd8qz0l_jwj32": 0, "sec_mrd8qz0l_yh07a": 0}	draft
 12	127.0.0.1	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-10 14:29:43.28+00	2026-07-10 14:31:53.671+00	132	{"4332": [["Điều tra xã hội học và khảo sát sự hài lòng của người dân, tổ chức đối với sự phục vụ của các cơ quan nhà nước thuộc thành phố Hà Nội", "Chưa biết", "Chưa biết", "Chịu", "Chịu"]], "4334": [["Không biết", "Không biết", "Không biết", "Không biết", "", "Không biết", "Không biết", "", "", "", "", "", "Không biết"]], "4336": [["Không biết", "", "", "Không biết", "", "", "", "", "Không biết", "", "", "", "", "Không biết", "", "", "", "", "", "Không biết", ""]], "4338": [["", "Không biết", "", "Không biết", "", "", "Không biết ??", "", ""]], "4340": {"data": [[null, "1", "Không biết"], [null, "1", "Không biết"], [null, "1", "Không biết"], [null, "1", "Không biết"], [null, "1", null], [null, "1", "Không biết"], [null, "1", "Không biết"], [null, "1", "Không biết"]], "type": "grid"}, "4342": [["", "", "Không biết", "", "", "", "", "", "", "Không biết", "", "", "", ""]], "4344": [["", "", "Không biết", "", "", "", "", "", "Không biết", ""]], "4346": {"data": [[null, "1", null, null, null, null], [null, null, "2", null, null, null], [null, null, null, "3", null, null], [null, null, null, null, "4", null], [null, null, null, "3", null, null], [null, null, "2", null, null, null], [null, "1", null, null, null, null], [null, null, "2", null, null, null]], "type": "grid"}, "4353": [["s", "", ""]], "4357": [["sv", "sv"]]}	f	\N	f	f	2026-07-10 14:29:43.28+00	\N	22	{"main": 100}	draft
 13	127.0.0.1	\N	\N	Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36	2026-07-10 14:35:51.485+00	\N	30	{"2435": [["", "", "", "", "", "", ""]], "2436": [["", "", "", "", "", "", "", "", ""]], "2437": [["", "", "", "", "", "", "", ""]], "2438": [["", "", "", "", ""]], "2439": [["", "", "", ""]], "2440": [["", "", "", ""]], "2441": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}}	f	\N	f	f	2026-07-10 14:35:51.485+00	\N	19	{"sec_mrd5p4ay_3aj1d": 0, "sec_mrd5prgj_7sqyz": 0, "sec_mrd5qell_6cxnd": 0, "sec_mrd5qell_ejhot": 0, "sec_mrd5qell_wwlyz": 0, "sec_mrd5sc1j_9kkon": 0, "sec_mrd5sc1j_bdrd5": 0, "sec_mrd5sc1j_upqkj": 0}	draft
 20	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 06:17:57.576435+00	\N	0	{}	f	\N	f	f	2026-07-13 06:17:57.576536+00	\N	18	{}	draft
 66	\N	\N	tgd	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 15:50:20.334746+00	2026-07-13 15:51:13.582766+00	53	{"5379": [["Tây Phương", "Đào Huy Hoàng", "Test", "Test", "000000000", "test", "test"]], "5381": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"]], "type": "grid"}, "5382": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"]], "type": "grid"}, "5383": {"data": [[null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"]], "type": "grid"}, "5384": {"data": [[null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "5385": {"data": [[null, "1", null, null], [null, null, "2", null], [null, null, null, "3"], [null, null, "2", null], [null, "1", null, null], [null, null, "2", null]], "type": "grid"}, "5386": "Không có khó khăn gì", "5387": "Không có gì", "email": "tgd", "phone": "", "agency": "Tây Phương", "position": "", "full_name": "test", "department": "Tây Phương", "organization": "Tây Phương"}	f	\N	f	f	2026-07-13 15:50:20.334903+00	\N	16	{"sec_mrd3lxb1_4sre5": 100, "sec_mrd3mk79_mf9ln": 100, "sec_mrd3y4v6_12wu0": 100, "sec_mrd3y4v6_1oowr": 100, "sec_mrd4dtgl_a57uj": 100, "sec_mrd4dtgl_kpp08": 100, "sec_mrd4dtgl_qprnt": 100}	submitted
+90	\N	\N	test@hmail.com	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 19:07:08.620125+00	2026-07-13 19:08:33.863683+00	85	{"6808": {"data": [[null, "1", null], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"]], "type": "grid"}, "6809": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null]], "type": "grid"}, "6810": {"data": [[null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null]], "type": "grid"}, "6811": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null], [null, "1", null, null, null], [null, null, "2", null, null]], "type": "grid"}, "6812": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null], [null, null, null, null, null], [null, null, null, null, null]], "type": "grid"}, "6813": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, null, null], [null, null, null]], "type": "grid"}, "6814": {"data": [[null, "1", null], [null, "1", null], [null, null, null], [null, "1", null], [null, null, null], [null, null, null]], "type": "grid"}, "6815": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"]], "type": "grid"}, "6816": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6817": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6818": {"data": [[null, "1", null, null], [null, null, "2", null], [null, null, null, "3"], [null, null, null, "3"], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, null, null]], "type": "grid"}, "6819": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6820": {"data": [[null, "1", null, null], [null, "1", null, null], [null, null, "2", null], [null, null, null, null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, null, null]], "type": "grid"}, "6821": "Đáp ứng tốt", "6822": "LOS", "6824": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "email": "test@hmail.com", "phone": "", "agency": "", "position": "", "full_name": "test", "department": "", "organization": ""}	f	\N	f	f	2026-07-13 19:07:08.620221+00	582	18	{"sec_mrd51u8k_s7xvx": 0, "sec_mrd52i20_bxs8q": 100, "sec_mrd589py_n4ccb": 100, "sec_mrd58wv7_h9r0m": 100, "sec_mrd5h8uk_83ljt": 100, "sec_mrd5h8uk_lb1ld": 100, "sec_mrd5h8uk_q8t9f": 100, "sec_mrd5h8uk_zlvj1": 100, "sec_mrd5h8uk_znbx8": 100, "sec_mrd5hvzu_sb784": 100, "sec_mrd5hvzv_7jcz3": 100, "sec_mrd5hvzv_a4wue": 100, "sec_mrd5hvzv_ae5ra": 100, "sec_mrd5hvzv_vsvm8": 100, "sec_mrd5hvzv_ztdcy": 100, "sec_mrd5ij53_k401z": 0, "sec_mrd5ij53_lxnd3": 0}	draft
 82	\N	\N	test@hmail.com	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 18:42:04.637945+00	2026-07-13 18:43:54.523029+00	110	{"6692": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null], [null, "1", null, null, null], [null, null, "2", null, null]], "type": "grid"}, "6693": {"data": [[null, "1", null, null, null], [null, null, "2", null, null], [null, null, null, "3", null], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, "2", null, null], [null, "1", null, null, null], [null, "1", null, null, null]], "type": "grid"}, "6694": {"data": [[null, "1", null], [null, "1", null], [null, null, "2"], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6695": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6696": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, "1", null], [null, null, "2"], [null, null, "2"], [null, "1", null], [null, "1", null]], "type": "grid"}, "6697": {"data": [[null, "1", null], [null, "1", null], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"]], "type": "grid"}, "6698": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6699": {"data": [[null, ["1"], null, null], [null, null, ["2"], null], [null, null, null, ["3"]], [null, null, ["2"], null], [null, ["1"], null, null], [null, null, ["2"], null], [null, null, null, ["3"]], [null, null, null, ["3"]], [null, null, ["2"], null], [null, null, ["2"], null], [null, ["1"], null, null], [null, ["1"], null, null], [null, ["1"], null, null], [null, ["1"], null, null], [null, ["1"], null, null], [null, ["1"], null, null], [null, null, null, ["3"]], [null, ["1"], null, ["3"]], [null, ["1"], null, null]], "type": "grid"}, "6700": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "6701": {"data": [[null, "1", null, null], [null, null, "2", null], [null, null, "2", null], [null, null, null, "3"], [null, null, null, "3"], [null, null, "2", null], [null, "1", null, null], [null, "1", null, null], [null, null, "2", null], [null, null, null, "3"], [null, null, null, "3"]], "type": "grid"}, "6702": "Cần nâng cấp", "6705": {"data": [[null, null, "2", "Hoàng oo"], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null], [null, null, "2", null]], "type": "grid"}, "6708": {"data": [[null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"], [null, null, "2"]], "type": "grid"}, "6709": {"data": [[null, null, null, null, "4"], [null, null, null, null, "4"], [null, null, null, "3", null], [null, null, null, "3", null], [null, null, "2", null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null]], "type": "grid"}, "6710": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "email": "test@hmail.com", "phone": "", "agency": "", "position": "", "full_name": "test", "department": "", "organization": ""}	f	\N	f	f	2026-07-13 18:42:04.638054+00	582	18	{"sec_mrd51u8k_s7xvx": 0, "sec_mrd52i20_bxs8q": 100, "sec_mrd589py_n4ccb": 100, "sec_mrd58wv7_h9r0m": 100, "sec_mrd5h8uk_83ljt": 100, "sec_mrd5h8uk_lb1ld": 100, "sec_mrd5h8uk_q8t9f": 100, "sec_mrd5h8uk_zlvj1": 100, "sec_mrd5h8uk_znbx8": 100, "sec_mrd5hvzu_sb784": 100, "sec_mrd5hvzv_7jcz3": 100, "sec_mrd5hvzv_a4wue": 100, "sec_mrd5hvzv_ae5ra": 100, "sec_mrd5hvzv_vsvm8": 0, "sec_mrd5hvzv_ztdcy": 100, "sec_mrd5ij53_k401z": 100, "sec_mrd5ij53_lxnd3": 0}	submitted
 41	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 11:30:28.644917+00	2026-07-13 11:32:19.339251+00	111	{"5379": [["Xã Thường Tín", "Nguyễn Văn Tản", "Phó Chủ tịch UBND xã", "Văn hóa - Xã hội", "0912717821", "nguyenvantan_thuongtin@hanoi.gov.vn", "13/07/2026"]], "5381": {"data": [[null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null]], "type": "grid"}, "5382": {"data": [[null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null], [null, "1", null, null, null]], "type": "grid"}, "5383": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "5384": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "5385": {"data": [[null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null]], "type": "grid"}, "5386": "Không", "5387": "Không"}	f	\N	f	f	2026-07-13 11:30:28.645004+00	\N	16	{"sec_mrd3lxb1_4sre5": 100, "sec_mrd3mk79_mf9ln": 100, "sec_mrd3y4v6_12wu0": 100, "sec_mrd3y4v6_1oowr": 100, "sec_mrd4dtgl_a57uj": 100, "sec_mrd4dtgl_kpp08": 100, "sec_mrd4dtgl_qprnt": 100}	submitted
 67	\N	\N	\N	Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Mobile Safari/537.36	2026-07-13 16:21:14.141975+00	\N	0	{}	f	\N	f	f	2026-07-13 16:21:14.142163+00	582	21	{}	draft
@@ -2031,6 +2034,7 @@ COPY public.survey_response (id, respondent_ip, respondent_device_id, respondent
 39	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36	2026-07-13 11:03:20.64296+00	2026-07-13 11:10:24.400752+00	424	{"5483": [["", "", "", "", "", "", "", "", "", "", "", "", ""]], "5484": [["Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp"]], "5485": [["", "", "", "", "", "", "", "", ""]], "5486": {"data": [[null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null], [null, "1", null, null]], "type": "grid"}, "5488": {"data": [[null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null], [null, "1", null]], "type": "grid"}, "5489": [["Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp"]], "5493": [["", "", ""]], "5495": "Cần tổ chức cuộc họp chuyên đề."}	f	\N	f	f	2026-07-13 11:03:20.643066+00	\N	21	{"sec_mrd8b91s_6w42v": 100, "sec_mrd8b91s_lt38n": 0, "sec_mrd8b91s_myjiw": 100, "sec_mrd8b91s_uidqk": 100, "sec_mrd8bulo_210ie": 100, "sec_mrd8bulo_2woxu": 100, "sec_mrd8bulo_djttb": 100, "sec_mrd8bulo_frqyl": 0, "sec_mrd8bulo_rqbbl": 0, "sec_mrd8bulo_w8efh": 0}	submitted
 62	\N	\N		Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 OPR/133.0.0.0 (Edition std-2)	2026-07-13 14:43:17.547989+00	2026-07-13 14:44:42.002719+00	84	{"5580": [["", "", "", "", "", "", "", "", ""]], "5581": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "5583": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "5584": [["Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp"]], "5588": [["", "", ""]], "5590": "Các yêu cầu trên đã được thống nhất.", "5592": [["", "", "", "", "", "", "", "", "", "", "", "", ""]], "email": "", "phone": "", "agency": "Mê Linh", "position": "", "full_name": "ks2_melinh", "department": "Mê Linh", "organization": "Mê Linh"}	f	\N	f	f	2026-07-13 14:43:17.548065+00	512	21	{"sec_mrd8b91s_6w42v": 0, "sec_mrd8b91s_lt38n": 0, "sec_mrd8b91s_myjiw": 0, "sec_mrd8b91s_uidqk": 0, "sec_mrd8bulo_210ie": 0, "sec_mrd8bulo_2woxu": 0, "sec_mrd8bulo_djttb": 100, "sec_mrd8bulo_frqyl": 0, "sec_mrd8bulo_rqbbl": 0, "sec_mrd8bulo_w8efh": 0}	draft
 72	\N	\N	test@hmail.com	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 18:18:10.132539+00	\N	17	{"6257": "test@hmail.com", "6258": [["", "", "", "", "", "", "", "", "", "", "", "", ""]], "6260": [["Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp", "Thấp"]], "6261": [["", "", "", "", "", "", "", "", ""]], "6262": {"data": [[null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null], [null, null, null, null]], "type": "grid"}, "6263": {"data": [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]], "type": "grid"}, "6264": [["Hiệu năng hệ thống", "Khả năng mở rộng", "Tính sẵn sàng", "An toàn thông tin", "Sao lưu và phục hồi dữ liệu", "Khả năng tích hợp", "Khả năng khai thác trên thiết bị di động", "Khả năng sử dụng", "Khả năng bảo trì", "Khả năng nâng cấp", "Khả năng mở rộng tích hợp", "Khả năng truy cập đa nền tảng(Web/Mobile/Tablet)", "Tính thân thiện giao diện"]], "6269": [["", "", ""]], "email": "test@hmail.com", "phone": "", "agency": "", "position": "", "full_name": "test", "department": "", "organization": ""}	f	\N	f	f	2026-07-13 18:18:10.132594+00	582	21	{"sec_mrji32jc_02myx": 100, "sec_mrji3pol_08ygj": 0, "sec_mrji3pol_kjxj5": 0, "sec_mrji3pom_xwahu": 0, "sec_mrji4ctm_06kdb": 0, "sec_mrji4ctm_gtanp": 0, "sec_mrji4ctm_w2j5m": 0, "sec_mrji4zz8_b0vue": 0, "sec_mrji4zz8_eyyqa": 0, "sec_mrji4zz8_qvwvf": 0}	draft
+87	\N	\N	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	2026-07-13 19:04:03.576931+00	\N	0	{}	f	\N	f	f	2026-07-13 19:04:03.577208+00	582	18	{}	draft
 \.
 
 
@@ -2182,6 +2186,8 @@ COPY public.survey_surveyparticipant (id, agency, target_group_code, target_grou
 36		SIPAS-NHOM_DOI_TUONG_3	Nhóm đối tượng 3	test				test@hmail.com	\N	["SIPAS-BM-09", "SIPAS-BM-06"]	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	ytjw314macelpq4xf73mowgrjqk3z1l7	draft	\N	2026-07-13 18:41:44.38846+00	2026-07-13 18:41:44.38848+00	\N	22	582
 37		SIPAS-NHOM_DOI_TUONG_3	Nhóm đối tượng 3	test				test@hmail.com	\N	["SIPAS-BM-09", "SIPAS-BM-06"]	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	ud5hmfd52g8a38nj8e5f1aazek0wi89d	draft	\N	2026-07-13 18:46:15.180016+00	2026-07-13 18:46:15.180035+00	\N	22	582
 38		SIPAS-NHOM_DOI_TUONG_3	Nhóm đối tượng 3	test				test@hmail.com	\N	["SIPAS-BM-09", "SIPAS-BM-06"]	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	nhv27m1flbgg1ut3fmnra4to28pvcbsp	draft	\N	2026-07-13 18:57:47.15489+00	2026-07-13 18:57:47.154908+00	\N	22	582
+39		SIPAS-NHOM_DOI_TUONG_3	Nhóm đối tượng 3	test				test@hmail.com	\N	["SIPAS-BM-09", "SIPAS-BM-06"]	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	90kfh98jr17qs3mubgt6cl19jr6gsixe	draft	\N	2026-07-13 19:04:01.633872+00	2026-07-13 19:04:01.633892+00	\N	22	582
+40		SIPAS-NHOM_DOI_TUONG_3	Nhóm đối tượng 3	test				test@hmail.com	\N	["SIPAS-BM-09", "SIPAS-BM-06"]	\N	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	ajovfpieu106921c8nea54zwsm9ocqqf	draft	\N	2026-07-13 19:07:05.847376+00	2026-07-13 19:07:05.84743+00	\N	22	582
 4	Sở Nội vụ	SIPAS-DOAN_KHAO_SAT	Đoàn khảo sát	Test User	Cán bộ test tại Sở Nội vụ	Sở Nội vụ		test@example.com	\N	["SIPAS-BM-10", "SIPAS-BM-09", "SIPAS-BM-08", "SIPAS-BM-07", "SIPAS-BM-03", "SIPAS-BM-01"]	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	58aj1zfzp9x99m7xw1313c8f5sqbguey	draft	\N	2026-07-09 09:08:14.635+00	2026-07-09 09:08:14.635+00	\N	22	\N
 6	Sở Nội vụ	CCHC-NHOM_DOI_TUONG_1	Nhóm đối tượng 1	Test User	Cán bộ test tại Sở Nội vụ	Sở Nội vụ		test@example.com	\N	["CCHC-BM-09", "CCHC-BM-08", "CCHC-BM-03"]	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	09btfc49qzzzznkoswgfhixwu8ld1bc4	draft	\N	2026-07-10 10:41:46.596+00	2026-07-10 10:41:46.596+00	\N	22	\N
 7	Sở Nội vụ	CCHC-NHOM_DOI_TUONG_1	Nhóm đối tượng 1	Test User	Cán bộ test tại Sở Nội vụ	Sở Nội vụ		test@example.com	\N	["CCHC-BM-09", "CCHC-BM-08", "CCHC-BM-03"]	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0	jsmddejpcrfcsb1jeo66vxco43elb922	draft	\N	2026-07-10 11:59:03.222+00	2026-07-10 11:59:03.222+00	\N	22	\N
@@ -2284,7 +2290,8 @@ COPY public.survey_surveyprogress (id, form_code, status, progress_percent, star
 108	SIPAS-BM-06	completed	0	2026-07-13 18:46:18.471725+00	2026-07-13 18:47:00.292705+00	2026-07-13 18:57:36.535616+00	2026-07-13 18:46:15.194645+00	37	83	18
 109	SIPAS-BM-09	not_started	0	\N	\N	2026-07-13 18:57:47.162135+00	2026-07-13 18:57:47.162154+00	38	\N	21
 97	SIPAS-BM-09	in_progress	0	2026-07-13 16:21:14.150374+00	\N	2026-07-13 16:21:59.940411+00	2026-07-13 16:21:06.493705+00	32	67	21
-110	SIPAS-BM-06	completed	0	2026-07-13 18:57:49.638014+00	2026-07-13 18:58:56.481326+00	2026-07-13 18:58:59.473125+00	2026-07-13 18:57:47.169072+00	38	85	18
+112	SIPAS-BM-06	completed	0	2026-07-13 19:04:03.582532+00	2026-07-13 19:04:54.008163+00	2026-07-13 19:06:56.57327+00	2026-07-13 19:04:01.649175+00	39	87	18
+113	SIPAS-BM-09	not_started	0	\N	\N	2026-07-13 19:07:05.85452+00	2026-07-13 19:07:05.854539+00	40	\N	21
 91	SIPAS-BM-09	completed	0	2026-07-13 14:43:17.259782+00	2026-07-13 14:44:42.04497+00	2026-07-13 14:45:15.949326+00	2026-07-13 14:30:33.989546+00	29	61	21
 92	SIPAS-BM-06	completed	0	2026-07-13 14:30:44.338228+00	2026-07-13 14:43:07.751391+00	2026-07-13 14:45:16.023584+00	2026-07-13 14:30:33.996256+00	29	59	18
 93	SIPAS-BM-09	not_started	0	\N	\N	2026-07-13 15:45:41.838389+00	2026-07-13 15:45:41.838407+00	30	\N	21
@@ -2309,9 +2316,12 @@ COPY public.survey_surveyprogress (id, form_code, status, progress_percent, star
 99	SIPAS-BM-09	in_progress	0	2026-07-13 18:18:09.83414+00	\N	2026-07-13 18:18:39.416483+00	2026-07-13 18:13:18.194431+00	33	71	21
 100	SIPAS-BM-06	completed	0	2026-07-13 18:13:21.830286+00	2026-07-13 18:15:01.011481+00	2026-07-13 18:18:39.485564+00	2026-07-13 18:13:18.20202+00	33	69	18
 107	SIPAS-BM-09	not_started	0	\N	\N	2026-07-13 18:46:15.187584+00	2026-07-13 18:46:15.187604+00	37	\N	21
+110	SIPAS-BM-06	completed	0	2026-07-13 18:57:49.638014+00	2026-07-13 18:58:56.481326+00	2026-07-13 19:03:49.193034+00	2026-07-13 18:57:47.169072+00	38	85	18
 103	SIPAS-BM-09	in_progress	0	2026-07-13 18:24:52.177602+00	\N	2026-07-13 18:41:16.08951+00	2026-07-13 18:24:49.217631+00	35	77	21
 104	SIPAS-BM-06	completed	0	2026-07-13 18:35:06.035314+00	2026-07-13 18:40:12.354313+00	2026-07-13 18:41:16.131878+00	2026-07-13 18:24:49.224627+00	35	79	18
 105	SIPAS-BM-09	not_started	0	\N	\N	2026-07-13 18:41:44.396105+00	2026-07-13 18:41:44.396135+00	36	\N	21
+111	SIPAS-BM-09	not_started	0	\N	\N	2026-07-13 19:04:01.641961+00	2026-07-13 19:04:01.641981+00	39	\N	21
+114	SIPAS-BM-06	completed	0	2026-07-13 19:07:08.201278+00	2026-07-13 19:08:33.930806+00	2026-07-13 19:08:36.339657+00	2026-07-13 19:07:05.861133+00	40	89	18
 \.
 
 
@@ -2717,8 +2727,8 @@ COPY public.survey_surveyunitstatus (id, status, completed_count, total_assignee
 718	pending	0	1	\N	2026-07-13 14:44:42.700915+00	562	21
 699	pending	0	1	2026-07-13 11:35:17.219742+00	2026-07-13 14:44:42.704569+00	556	21
 387	pending	0	1	\N	2026-07-13 15:51:14.589688+00	531	16
-724	pending	0	1	\N	2026-07-13 18:58:56.751444+00	437	18
-725	pending	0	1	\N	2026-07-13 18:58:56.756406+00	438	18
+726	pending	0	1	\N	2026-07-13 19:08:34.08842+00	439	18
+727	pending	0	1	\N	2026-07-13 19:08:34.093304+00	440	18
 521	pending	0	1	\N	2026-07-13 12:26:16.101275+00	521	17
 522	pending	0	1	\N	2026-07-13 12:26:16.108454+00	522	17
 636	pending	0	1	\N	2026-07-13 14:44:42.384245+00	486	21
@@ -2751,151 +2761,151 @@ COPY public.survey_surveyunitstatus (id, status, completed_count, total_assignee
 649	pending	0	1	\N	2026-07-13 14:44:42.432753+00	506	21
 641	pending	0	1	\N	2026-07-13 14:44:42.40133+00	489	21
 678	pending	0	1	\N	2026-07-13 14:44:42.54422+00	534	21
-726	pending	0	1	\N	2026-07-13 18:58:56.761768+00	439	18
-727	pending	0	1	\N	2026-07-13 18:58:56.767845+00	440	18
-728	pending	0	1	\N	2026-07-13 18:58:56.773969+00	441	18
-729	pending	0	1	\N	2026-07-13 18:58:56.780149+00	442	18
-730	pending	0	1	\N	2026-07-13 18:58:56.786693+00	443	18
-719	pending	0	1	\N	2026-07-13 18:58:56.725965+00	432	18
-720	pending	0	1	\N	2026-07-13 18:58:56.731171+00	433	18
-721	pending	0	1	\N	2026-07-13 18:58:56.736099+00	434	18
-722	pending	0	1	\N	2026-07-13 18:58:56.741125+00	435	18
+728	pending	0	1	\N	2026-07-13 19:08:34.097696+00	441	18
+729	pending	0	1	\N	2026-07-13 19:08:34.102024+00	442	18
+730	pending	0	1	\N	2026-07-13 19:08:34.106672+00	443	18
+719	pending	0	1	\N	2026-07-13 19:08:34.061058+00	432	18
+720	pending	0	1	\N	2026-07-13 19:08:34.065031+00	433	18
+721	pending	0	1	\N	2026-07-13 19:08:34.068875+00	434	18
+722	pending	0	1	\N	2026-07-13 19:08:34.072717+00	435	18
+723	pending	0	1	\N	2026-07-13 19:08:34.07658+00	436	18
+724	pending	0	1	\N	2026-07-13 19:08:34.080598+00	437	18
 635	pending	0	1	\N	2026-07-13 14:44:42.380881+00	485	21
 671	pending	0	1	\N	2026-07-13 14:44:42.512541+00	527	21
 388	pending	0	1	\N	2026-07-13 15:51:14.600349+00	532	16
-723	pending	0	1	\N	2026-07-13 18:58:56.746272+00	436	18
-737	pending	0	1	\N	2026-07-13 18:58:56.832443+00	450	18
-738	pending	0	1	\N	2026-07-13 18:58:56.83879+00	451	18
-739	pending	0	1	\N	2026-07-13 18:58:56.845691+00	452	18
-740	pending	0	1	\N	2026-07-13 18:58:56.852157+00	453	18
-742	pending	0	1	\N	2026-07-13 18:58:56.864893+00	455	18
-743	pending	0	1	\N	2026-07-13 18:58:56.871467+00	456	18
-744	pending	0	1	\N	2026-07-13 18:58:56.878119+00	457	18
-745	pending	0	1	\N	2026-07-13 18:58:56.884588+00	458	18
-746	pending	0	1	\N	2026-07-13 18:58:56.891337+00	459	18
-747	pending	0	1	\N	2026-07-13 18:58:56.897991+00	460	18
-748	pending	0	1	\N	2026-07-13 18:58:56.904697+00	461	18
-749	pending	0	1	\N	2026-07-13 18:58:56.912192+00	462	18
-750	pending	0	1	\N	2026-07-13 18:58:56.918683+00	463	18
-751	pending	0	1	\N	2026-07-13 18:58:56.925243+00	464	18
-752	pending	0	1	\N	2026-07-13 18:58:56.931745+00	465	18
-753	pending	0	1	\N	2026-07-13 18:58:56.938278+00	466	18
-754	pending	0	1	\N	2026-07-13 18:58:56.945038+00	467	18
-755	pending	0	1	\N	2026-07-13 18:58:56.95175+00	468	18
-756	pending	0	1	\N	2026-07-13 18:58:56.958733+00	469	18
-757	pending	0	1	\N	2026-07-13 18:58:56.965567+00	470	18
-758	pending	0	1	\N	2026-07-13 18:58:56.972752+00	471	18
-759	pending	0	1	\N	2026-07-13 18:58:56.97945+00	472	18
-761	pending	0	1	\N	2026-07-13 18:58:56.992997+00	473	18
-762	pending	0	1	\N	2026-07-13 18:58:56.999882+00	474	18
-763	pending	0	1	\N	2026-07-13 18:58:57.006822+00	493	18
-764	pending	0	1	\N	2026-07-13 18:58:57.013304+00	475	18
-765	pending	0	1	\N	2026-07-13 18:58:57.019919+00	476	18
-766	pending	0	1	\N	2026-07-13 18:58:57.02661+00	494	18
-767	pending	0	1	\N	2026-07-13 18:58:57.033605+00	477	18
-768	pending	0	1	\N	2026-07-13 18:58:57.042195+00	478	18
-769	pending	0	1	\N	2026-07-13 18:58:57.048751+00	495	18
-770	pending	0	1	\N	2026-07-13 18:58:57.055104+00	479	18
-771	pending	0	1	\N	2026-07-13 18:58:57.061644+00	480	18
-772	pending	0	1	\N	2026-07-13 18:58:57.067986+00	496	18
-773	pending	0	1	\N	2026-07-13 18:58:57.074886+00	481	18
-774	pending	0	1	\N	2026-07-13 18:58:57.081786+00	482	18
-775	pending	0	1	\N	2026-07-13 18:58:57.088704+00	497	18
-776	pending	0	1	\N	2026-07-13 18:58:57.095948+00	483	18
-777	pending	0	1	\N	2026-07-13 18:58:57.102883+00	484	18
-778	pending	0	1	\N	2026-07-13 18:58:57.109987+00	498	18
-780	pending	0	1	\N	2026-07-13 18:58:57.123836+00	486	18
-781	pending	0	1	\N	2026-07-13 18:58:57.130692+00	499	18
-782	pending	0	1	\N	2026-07-13 18:58:57.13717+00	487	18
-783	pending	0	1	\N	2026-07-13 18:58:57.144534+00	488	18
-784	pending	0	1	\N	2026-07-13 18:58:57.151316+00	500	18
-785	pending	0	1	\N	2026-07-13 18:58:57.158012+00	489	18
-786	pending	0	1	\N	2026-07-13 18:58:57.164808+00	490	18
-787	pending	0	1	\N	2026-07-13 18:58:57.171796+00	501	18
-788	pending	0	1	\N	2026-07-13 18:58:57.178697+00	491	18
-789	pending	0	1	\N	2026-07-13 18:58:57.185176+00	502	18
-790	pending	0	1	\N	2026-07-13 18:58:57.191964+00	503	18
-791	pending	0	1	\N	2026-07-13 18:58:57.198689+00	504	18
-792	pending	0	1	\N	2026-07-13 18:58:57.205264+00	505	18
-793	pending	0	1	\N	2026-07-13 18:58:57.212035+00	506	18
-794	pending	0	1	\N	2026-07-13 18:58:57.219139+00	507	18
-795	pending	0	1	\N	2026-07-13 18:58:57.225759+00	509	18
-796	pending	0	1	\N	2026-07-13 18:58:57.232312+00	510	18
-797	pending	0	1	\N	2026-07-13 18:58:57.238995+00	511	18
-799	pending	0	1	\N	2026-07-13 18:58:57.252514+00	513	18
-800	pending	0	1	\N	2026-07-13 18:58:57.259358+00	514	18
-801	pending	0	1	\N	2026-07-13 18:58:57.26614+00	560	18
-802	pending	0	1	\N	2026-07-13 18:58:57.272932+00	515	18
-803	pending	0	1	\N	2026-07-13 18:58:57.279721+00	525	18
-804	pending	0	1	\N	2026-07-13 18:58:57.286462+00	516	18
-805	pending	0	1	\N	2026-07-13 18:58:57.293344+00	518	18
-806	pending	0	1	\N	2026-07-13 18:58:57.300043+00	517	18
-807	pending	0	1	\N	2026-07-13 18:58:57.306735+00	519	18
-808	pending	0	1	\N	2026-07-13 18:58:57.313544+00	520	18
-809	pending	0	1	\N	2026-07-13 18:58:57.320416+00	521	18
-810	pending	0	1	\N	2026-07-13 18:58:57.327236+00	522	18
-811	pending	0	1	\N	2026-07-13 18:58:57.334008+00	523	18
-812	pending	0	1	\N	2026-07-13 18:58:57.340775+00	524	18
-813	pending	0	1	\N	2026-07-13 18:58:57.34798+00	526	18
-814	pending	0	1	\N	2026-07-13 18:58:57.354832+00	527	18
-815	pending	0	1	\N	2026-07-13 18:58:57.361944+00	528	18
-816	pending	0	1	\N	2026-07-13 18:58:57.369321+00	529	18
-818	pending	0	1	\N	2026-07-13 18:58:57.382698+00	531	18
-819	pending	0	1	\N	2026-07-13 18:58:57.389645+00	532	18
-820	pending	0	1	\N	2026-07-13 18:58:57.396775+00	533	18
-821	pending	0	1	\N	2026-07-13 18:58:57.4035+00	534	18
-822	pending	0	1	\N	2026-07-13 18:58:57.410125+00	535	18
-823	pending	0	1	\N	2026-07-13 18:58:57.416948+00	537	18
-824	pending	0	1	\N	2026-07-13 18:58:57.424072+00	538	18
-825	pending	0	1	\N	2026-07-13 18:58:57.430835+00	539	18
-826	pending	0	1	\N	2026-07-13 18:58:57.437476+00	540	18
-827	pending	0	1	\N	2026-07-13 18:58:57.443992+00	541	18
-828	pending	0	1	\N	2026-07-13 18:58:57.450512+00	542	18
-829	pending	0	1	\N	2026-07-13 18:58:57.457227+00	543	18
-830	pending	0	1	\N	2026-07-13 18:58:57.464021+00	544	18
-831	pending	0	1	\N	2026-07-13 18:58:57.470956+00	545	18
-832	pending	0	1	\N	2026-07-13 18:58:57.477638+00	546	18
-833	pending	0	1	\N	2026-07-13 18:58:57.484355+00	547	18
-834	pending	0	1	\N	2026-07-13 18:58:57.491125+00	548	18
-835	pending	0	1	\N	2026-07-13 18:58:57.497791+00	549	18
-837	pending	0	1	\N	2026-07-13 18:58:57.511236+00	551	18
-732	pending	0	1	\N	2026-07-13 18:58:56.799743+00	445	18
-733	pending	0	1	\N	2026-07-13 18:58:56.806414+00	446	18
-734	pending	0	1	\N	2026-07-13 18:58:56.813002+00	447	18
-735	pending	0	1	\N	2026-07-13 18:58:56.819708+00	448	18
-736	pending	0	1	\N	2026-07-13 18:58:56.826103+00	449	18
-731	pending	0	1	\N	2026-07-13 18:58:56.793148+00	444	18
-741	pending	0	1	\N	2026-07-13 18:58:56.858407+00	454	18
-760	pending	0	1	\N	2026-07-13 18:58:56.986163+00	492	18
-779	pending	0	1	\N	2026-07-13 18:58:57.117037+00	485	18
-798	pending	0	1	\N	2026-07-13 18:58:57.245729+00	512	18
-817	pending	0	1	\N	2026-07-13 18:58:57.375964+00	530	18
-836	pending	0	1	\N	2026-07-13 18:58:57.504595+00	550	18
-838	pending	0	1	\N	2026-07-13 18:58:57.517791+00	552	18
-839	pending	0	1	\N	2026-07-13 18:58:57.524434+00	553	18
-840	pending	0	1	\N	2026-07-13 18:58:57.531101+00	554	18
-841	pending	0	1	\N	2026-07-13 18:58:57.53884+00	555	18
-842	pending	0	1	\N	2026-07-13 18:58:57.545765+00	561	18
-843	pending	0	1	\N	2026-07-13 18:58:57.552395+00	558	18
-844	pending	0	1	\N	2026-07-13 18:58:57.559014+00	559	18
-845	pending	0	1	\N	2026-07-13 18:58:57.565749+00	563	18
-846	pending	0	1	\N	2026-07-13 18:58:57.572565+00	564	18
-847	pending	0	1	\N	2026-07-13 18:58:57.579376+00	565	18
-848	pending	0	1	\N	2026-07-13 18:58:57.586809+00	566	18
-849	pending	0	1	\N	2026-07-13 18:58:57.594951+00	567	18
-850	pending	0	1	\N	2026-07-13 18:58:57.601519+00	568	18
-851	pending	0	1	\N	2026-07-13 18:58:57.608587+00	569	18
-852	pending	0	1	\N	2026-07-13 18:58:57.615747+00	570	18
-853	pending	0	1	\N	2026-07-13 18:58:57.622909+00	571	18
-854	pending	0	1	\N	2026-07-13 18:58:57.629896+00	572	18
-855	pending	0	1	\N	2026-07-13 18:58:57.637076+00	573	18
-856	pending	0	1	\N	2026-07-13 18:58:57.643959+00	574	18
-857	pending	0	1	\N	2026-07-13 18:58:57.651034+00	575	18
-858	completed	1	1	2026-07-13 14:43:09.358764+00	2026-07-13 18:58:57.65827+00	508	18
-859	pending	0	1	\N	2026-07-13 18:58:57.665777+00	536	18
-860	pending	0	1	\N	2026-07-13 18:58:57.672768+00	557	18
-861	pending	0	1	\N	2026-07-13 18:58:57.680058+00	562	18
-862	pending	0	1	\N	2026-07-13 18:58:57.686995+00	556	18
+725	pending	0	1	\N	2026-07-13 19:08:34.084497+00	438	18
+739	pending	0	1	\N	2026-07-13 19:08:34.141942+00	452	18
+740	pending	0	1	\N	2026-07-13 19:08:34.145687+00	453	18
+742	pending	0	1	\N	2026-07-13 19:08:34.153965+00	455	18
+743	pending	0	1	\N	2026-07-13 19:08:34.157746+00	456	18
+744	pending	0	1	\N	2026-07-13 19:08:34.161864+00	457	18
+745	pending	0	1	\N	2026-07-13 19:08:34.165738+00	458	18
+746	pending	0	1	\N	2026-07-13 19:08:34.169608+00	459	18
+747	pending	0	1	\N	2026-07-13 19:08:34.1735+00	460	18
+748	pending	0	1	\N	2026-07-13 19:08:34.177226+00	461	18
+749	pending	0	1	\N	2026-07-13 19:08:34.181179+00	462	18
+750	pending	0	1	\N	2026-07-13 19:08:34.185015+00	463	18
+751	pending	0	1	\N	2026-07-13 19:08:34.188732+00	464	18
+752	pending	0	1	\N	2026-07-13 19:08:34.19271+00	465	18
+753	pending	0	1	\N	2026-07-13 19:08:34.196694+00	466	18
+754	pending	0	1	\N	2026-07-13 19:08:34.200755+00	467	18
+755	pending	0	1	\N	2026-07-13 19:08:34.204718+00	468	18
+756	pending	0	1	\N	2026-07-13 19:08:34.208653+00	469	18
+757	pending	0	1	\N	2026-07-13 19:08:34.212688+00	470	18
+758	pending	0	1	\N	2026-07-13 19:08:34.216602+00	471	18
+759	pending	0	1	\N	2026-07-13 19:08:34.220536+00	472	18
+761	pending	0	1	\N	2026-07-13 19:08:34.228556+00	473	18
+762	pending	0	1	\N	2026-07-13 19:08:34.232593+00	474	18
+763	pending	0	1	\N	2026-07-13 19:08:34.236633+00	493	18
+764	pending	0	1	\N	2026-07-13 19:08:34.240752+00	475	18
+765	pending	0	1	\N	2026-07-13 19:08:34.245653+00	476	18
+766	pending	0	1	\N	2026-07-13 19:08:34.250842+00	494	18
+767	pending	0	1	\N	2026-07-13 19:08:34.255725+00	477	18
+768	pending	0	1	\N	2026-07-13 19:08:34.260943+00	478	18
+769	pending	0	1	\N	2026-07-13 19:08:34.265864+00	495	18
+770	pending	0	1	\N	2026-07-13 19:08:34.270921+00	479	18
+771	pending	0	1	\N	2026-07-13 19:08:34.276197+00	480	18
+772	pending	0	1	\N	2026-07-13 19:08:34.281321+00	496	18
+773	pending	0	1	\N	2026-07-13 19:08:34.285169+00	481	18
+774	pending	0	1	\N	2026-07-13 19:08:34.289493+00	482	18
+775	pending	0	1	\N	2026-07-13 19:08:34.29352+00	497	18
+776	pending	0	1	\N	2026-07-13 19:08:34.297333+00	483	18
+777	pending	0	1	\N	2026-07-13 19:08:34.301187+00	484	18
+778	pending	0	1	\N	2026-07-13 19:08:34.305031+00	498	18
+780	pending	0	1	\N	2026-07-13 19:08:34.312772+00	486	18
+781	pending	0	1	\N	2026-07-13 19:08:34.3168+00	499	18
+782	pending	0	1	\N	2026-07-13 19:08:34.320977+00	487	18
+783	pending	0	1	\N	2026-07-13 19:08:34.324683+00	488	18
+784	pending	0	1	\N	2026-07-13 19:08:34.328509+00	500	18
+785	pending	0	1	\N	2026-07-13 19:08:34.33365+00	489	18
+786	pending	0	1	\N	2026-07-13 19:08:34.338659+00	490	18
+787	pending	0	1	\N	2026-07-13 19:08:34.343297+00	501	18
+788	pending	0	1	\N	2026-07-13 19:08:34.347921+00	491	18
+789	pending	0	1	\N	2026-07-13 19:08:34.352026+00	502	18
+790	pending	0	1	\N	2026-07-13 19:08:34.357541+00	503	18
+791	pending	0	1	\N	2026-07-13 19:08:34.361715+00	504	18
+792	pending	0	1	\N	2026-07-13 19:08:34.3659+00	505	18
+793	pending	0	1	\N	2026-07-13 19:08:34.370813+00	506	18
+794	pending	0	1	\N	2026-07-13 19:08:34.374671+00	507	18
+795	pending	0	1	\N	2026-07-13 19:08:34.379867+00	509	18
+796	pending	0	1	\N	2026-07-13 19:08:34.384986+00	510	18
+797	pending	0	1	\N	2026-07-13 19:08:34.388733+00	511	18
+799	pending	0	1	\N	2026-07-13 19:08:34.397265+00	513	18
+800	pending	0	1	\N	2026-07-13 19:08:34.401288+00	514	18
+801	pending	0	1	\N	2026-07-13 19:08:34.4053+00	560	18
+802	pending	0	1	\N	2026-07-13 19:08:34.409382+00	515	18
+803	pending	0	1	\N	2026-07-13 19:08:34.415077+00	525	18
+804	pending	0	1	\N	2026-07-13 19:08:34.421734+00	516	18
+805	pending	0	1	\N	2026-07-13 19:08:34.428235+00	518	18
+806	pending	0	1	\N	2026-07-13 19:08:34.43464+00	517	18
+807	pending	0	1	\N	2026-07-13 19:08:34.442132+00	519	18
+808	pending	0	1	\N	2026-07-13 19:08:34.448769+00	520	18
+809	pending	0	1	\N	2026-07-13 19:08:34.456888+00	521	18
+810	pending	0	1	\N	2026-07-13 19:08:34.463511+00	522	18
+811	pending	0	1	\N	2026-07-13 19:08:34.470949+00	523	18
+812	pending	0	1	\N	2026-07-13 19:08:34.477653+00	524	18
+813	pending	0	1	\N	2026-07-13 19:08:34.484945+00	526	18
+814	pending	0	1	\N	2026-07-13 19:08:34.491939+00	527	18
+815	pending	0	1	\N	2026-07-13 19:08:34.498937+00	528	18
+816	pending	0	1	\N	2026-07-13 19:08:34.506052+00	529	18
+818	pending	0	1	\N	2026-07-13 19:08:34.520789+00	531	18
+819	pending	0	1	\N	2026-07-13 19:08:34.527908+00	532	18
+820	pending	0	1	\N	2026-07-13 19:08:34.536085+00	533	18
+821	pending	0	1	\N	2026-07-13 19:08:34.543081+00	534	18
+822	pending	0	1	\N	2026-07-13 19:08:34.550861+00	535	18
+823	pending	0	1	\N	2026-07-13 19:08:34.557686+00	537	18
+824	pending	0	1	\N	2026-07-13 19:08:34.564706+00	538	18
+825	pending	0	1	\N	2026-07-13 19:08:34.571614+00	539	18
+826	pending	0	1	\N	2026-07-13 19:08:34.578595+00	540	18
+827	pending	0	1	\N	2026-07-13 19:08:34.585633+00	541	18
+828	pending	0	1	\N	2026-07-13 19:08:34.59263+00	542	18
+829	pending	0	1	\N	2026-07-13 19:08:34.599344+00	543	18
+830	pending	0	1	\N	2026-07-13 19:08:34.60679+00	544	18
+831	pending	0	1	\N	2026-07-13 19:08:34.613488+00	545	18
+832	pending	0	1	\N	2026-07-13 19:08:34.620137+00	546	18
+833	pending	0	1	\N	2026-07-13 19:08:34.626819+00	547	18
+834	pending	0	1	\N	2026-07-13 19:08:34.633657+00	548	18
+835	pending	0	1	\N	2026-07-13 19:08:34.640423+00	549	18
+837	pending	0	1	\N	2026-07-13 19:08:34.653655+00	551	18
+732	pending	0	1	\N	2026-07-13 19:08:34.114671+00	445	18
+733	pending	0	1	\N	2026-07-13 19:08:34.118513+00	446	18
+734	pending	0	1	\N	2026-07-13 19:08:34.122336+00	447	18
+735	pending	0	1	\N	2026-07-13 19:08:34.12604+00	448	18
+736	pending	0	1	\N	2026-07-13 19:08:34.130293+00	449	18
+737	pending	0	1	\N	2026-07-13 19:08:34.134355+00	450	18
+738	pending	0	1	\N	2026-07-13 19:08:34.138072+00	451	18
+731	pending	0	1	\N	2026-07-13 19:08:34.110754+00	444	18
+741	pending	0	1	\N	2026-07-13 19:08:34.150112+00	454	18
+760	pending	0	1	\N	2026-07-13 19:08:34.224484+00	492	18
+779	pending	0	1	\N	2026-07-13 19:08:34.309066+00	485	18
+798	pending	0	1	\N	2026-07-13 19:08:34.392731+00	512	18
+817	pending	0	1	\N	2026-07-13 19:08:34.513451+00	530	18
+836	pending	0	1	\N	2026-07-13 19:08:34.646904+00	550	18
+838	pending	0	1	\N	2026-07-13 19:08:34.660315+00	552	18
+839	pending	0	1	\N	2026-07-13 19:08:34.666944+00	553	18
+840	pending	0	1	\N	2026-07-13 19:08:34.67362+00	554	18
+841	pending	0	1	\N	2026-07-13 19:08:34.680939+00	555	18
+842	pending	0	1	\N	2026-07-13 19:08:34.687628+00	561	18
+843	pending	0	1	\N	2026-07-13 19:08:34.694896+00	558	18
+844	pending	0	1	\N	2026-07-13 19:08:34.701753+00	559	18
+845	pending	0	1	\N	2026-07-13 19:08:34.708534+00	563	18
+846	pending	0	1	\N	2026-07-13 19:08:34.715276+00	564	18
+847	pending	0	1	\N	2026-07-13 19:08:34.722331+00	565	18
+848	pending	0	1	\N	2026-07-13 19:08:34.729128+00	566	18
+849	pending	0	1	\N	2026-07-13 19:08:34.736249+00	567	18
+850	pending	0	1	\N	2026-07-13 19:08:34.743077+00	568	18
+851	pending	0	1	\N	2026-07-13 19:08:34.749827+00	569	18
+852	pending	0	1	\N	2026-07-13 19:08:34.756694+00	570	18
+853	pending	0	1	\N	2026-07-13 19:08:34.76334+00	571	18
+854	pending	0	1	\N	2026-07-13 19:08:34.769847+00	572	18
+855	pending	0	1	\N	2026-07-13 19:08:34.776689+00	573	18
+856	pending	0	1	\N	2026-07-13 19:08:34.783466+00	574	18
+857	pending	0	1	\N	2026-07-13 19:08:34.790913+00	575	18
+858	completed	1	1	2026-07-13 14:43:09.358764+00	2026-07-13 19:08:34.797651+00	508	18
+859	pending	0	1	\N	2026-07-13 19:08:34.804766+00	536	18
+860	pending	0	1	\N	2026-07-13 19:08:34.811631+00	557	18
+861	pending	0	1	\N	2026-07-13 19:08:34.818465+00	562	18
+862	pending	0	1	\N	2026-07-13 19:08:34.82522+00	556	18
 \.
 
 
@@ -3036,7 +3046,7 @@ SELECT pg_catalog.setval('public.survey_questiontype_id_seq', 10, true);
 -- Name: survey_response_id_seq; Type: SEQUENCE SET; Schema: public; Owner: survey_user
 --
 
-SELECT pg_catalog.setval('public.survey_response_id_seq', 86, true);
+SELECT pg_catalog.setval('public.survey_response_id_seq', 90, true);
 
 
 --
@@ -3071,14 +3081,14 @@ SELECT pg_catalog.setval('public.survey_surveycategory_id_seq', 2, true);
 -- Name: survey_surveyparticipant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: survey_user
 --
 
-SELECT pg_catalog.setval('public.survey_surveyparticipant_id_seq', 38, true);
+SELECT pg_catalog.setval('public.survey_surveyparticipant_id_seq', 40, true);
 
 
 --
 -- Name: survey_surveyprogress_id_seq; Type: SEQUENCE SET; Schema: public; Owner: survey_user
 --
 
-SELECT pg_catalog.setval('public.survey_surveyprogress_id_seq', 110, true);
+SELECT pg_catalog.setval('public.survey_surveyprogress_id_seq', 114, true);
 
 
 --
@@ -4180,5 +4190,5 @@ ALTER TABLE ONLY public.survey_surveyunitstatus
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 1iTaJvqfKNdecQ4blQs5CPLcXXFHfLjPaGASzlXvSHOg8SnU3CemxaDbxuMFL2Y
+\unrestrict cyVZaDB6t4YZ6577OIWfcSpSGzvWJfDak2jG72aViVQj0XzNpCAzhiNjM69Q1p4
 

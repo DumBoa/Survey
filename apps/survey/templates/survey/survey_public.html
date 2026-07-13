@@ -2030,7 +2030,7 @@
                                             <label class="custom-radio-label" style="justify-content:center;">
                                                 <input type="radio"
                                                        name="${inputName}"
-                                                       value="${s.value}">
+                                                       value="${escapeHtml(s.label)}">
                                             </label>
                                         </td>
                                     `;
@@ -2040,7 +2040,7 @@
                                             <label class="custom-checkbox" style="justify-content:center;">
                                                 <input type="checkbox"
                                                        name="${inputName}[]"
-                                                       value="${s.value}">
+                                                       value="${escapeHtml(s.label)}">
                                             </label>
                                         </td>
                                     `;
