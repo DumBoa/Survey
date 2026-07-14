@@ -11,6 +11,20 @@ django.setup()
 
 from apps.survey.models import Response, Question
 
+def get_fingerprint(q):
+    fp = q.title.strip()
+    if isinstance(q.config, dict):
+        if 'criteria' in q.config:
+            fp += '_' + '_'.join(q.config['criteria'])
+        if 'data' in q.config:
+            try:
+                fp += '_' + '_'.join([str(row[1]) for row in q.config['data'] if len(row)>1])
+            except:
+                pass
+    if isinstance(q.options, list):
+        fp += '_' + '_'.join(q.options)
+    return fp
+
 def fix_all_surveys():
     backup_file = sys.argv[1] if len(sys.argv) > 1 else 'sipas_backup.sql'
     print(f"--- BẮT ĐẦU FIX DỮ LIỆU TỪ FILE BACKUP: {backup_file} ---")
@@ -89,10 +103,10 @@ def fix_all_surveys():
             # 2. Map các trường ID dựa trên Tiêu đề (Title) ưu tiên, nếu không có thì fallback theo thứ tự
             active_q_map = {str(q.id): q for q in active_questions if q.component_type not in ['title', 'section_break', 'paragraph']}
             
-            # Tạo dictionary tìm kiếm theo Title để map chính xác kể cả khi đảo vị trí
+            # Tạo dictionary tìm kiếm theo Fingerprint để map chính xác kể cả khi đảo vị trí
             title_to_active_ids = {}
             for aid, q in active_q_map.items():
-                t = q.title.strip()
+                t = get_fingerprint(q)
                 if t not in title_to_active_ids:
                     title_to_active_ids[t] = []
                 title_to_active_ids[t].append(aid)
@@ -109,11 +123,13 @@ def fix_all_surveys():
                 old_q = next((q for q in old_questions if str(q.id) == old_id), None)
                 new_id = None
                 
-                if old_q and old_q.title.strip() in title_to_active_ids and len(title_to_active_ids[old_q.title.strip()]) > 0:
-                    # Map theo tiêu đề (an toàn 100% nếu đảo vị trí)
-                    # Lấy ID đầu tiên trong list và xóa nó đi để các câu giống tên tiếp theo được dùng ID kế tiếp
-                    new_id = title_to_active_ids[old_q.title.strip()].pop(0)
-                else:
+                if old_q:
+                    fp = get_fingerprint(old_q)
+                    if fp in title_to_active_ids and len(title_to_active_ids[fp]) > 0:
+                        # Map theo fingerprint (an toàn tuyệt đối kể cả trùng tiêu đề)
+                        new_id = title_to_active_ids[fp].pop(0)
+                
+                if not new_id:
                     # Fallback map theo thứ tự nếu không tìm thấy title giống nhau
                     # Lấy ID active đầu tiên chưa được sử dụng
                     for aid in active_ids:
