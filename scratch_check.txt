@@ -1,1 +1,30 @@
 
+                    case 'long-text':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="textarea-group">
+                                <textarea name="${name}"
+                                          id="${name}"
+                                          placeholder="${escapeHtml(q.config?.placeholder || 'Nhập nội dung...')}"
+                                          rows="${q.config?.rows || 4}"
+                                          ${q.is_required ? 'required' : ''}></textarea>
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'single-choice':
+                        html += `<div class="question-title"><span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}</div>
+                                <div class="checkbox-group">`;
+                        const choices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                        choices.forEach((choice, ci) => {
+                            const isOther = /^kh[aá]c\b|^other\b/i.test(choice.trim());
+                            const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
+                            html += `
+                                <label class="custom-radio-label">
+                                    <input type="radio" name="${name}" value="${escapeHtml(choice)}">
+                                    <span>${escapeHtml(choice)}</span>
+                                    ${otherInputHtml}
+                                </label>

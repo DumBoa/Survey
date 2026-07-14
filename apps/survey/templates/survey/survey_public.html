@@ -2509,21 +2509,35 @@
                             elements.forEach(el => {
                                 const nameParts = el.name.replace('[]', '').split('_');
                                 if (nameParts.length >= 3) {
-                                    const r = parseInt(nameParts[1]);
-                                    const c = parseInt(nameParts[2]);
-                                    if (value[r] && value[r][c] !== undefined && value[r][c] !== null) {
+                                    const r = parseInt(nameParts[2]);
+                                    const c = nameParts.length >= 4 ? parseInt(nameParts[3]) : 0;
+                                    
+                                    let cellValue = null;
+                                    if (value.length === 1 && Array.isArray(value[0]) && Array.isArray(value[0][0])) {
+                                        // Legacy corrupted format
+                                        if (value[0][r] && value[0][r][c] !== undefined) {
+                                            cellValue = value[0][r][c];
+                                        }
+                                    } else {
+                                        // Standard format
+                                        if (value[r] && value[r][c] !== undefined) {
+                                            cellValue = value[r][c];
+                                        }
+                                    }
+
+                                    if (cellValue !== undefined && cellValue !== null) {
                                         if (el.type === 'checkbox') {
-                                            if (Array.isArray(value[r][c])) {
-                                                el.checked = value[r][c].includes(el.value);
+                                            if (Array.isArray(cellValue)) {
+                                                el.checked = cellValue.includes(el.value);
                                             } else {
-                                                el.checked = (el.value === String(value[r][c]));
+                                                el.checked = (el.value === String(cellValue));
                                             }
                                         } else if (el.type === 'radio') {
-                                            if (el.value === String(value[r][c])) {
+                                            if (el.value === String(cellValue)) {
                                                 el.checked = true;
                                             }
                                         } else {
-                                            el.value = value[r][c];
+                                            el.value = cellValue;
                                         }
                                     }
                                 }
@@ -2634,8 +2648,8 @@
                         elements.forEach(el => {
                             const nameParts = el.name.replace('[]', '').split('_');
                             if (nameParts.length >= 3) {
-                                const rowIdx = parseInt(nameParts[1]);
-                                const colIdx = parseInt(nameParts[2]);
+                                const rowIdx = parseInt(nameParts[2]);
+                                const colIdx = nameParts.length >= 4 ? parseInt(nameParts[3]) : 0;
                                 if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
                                 
                                 if (el.type === 'checkbox') {
