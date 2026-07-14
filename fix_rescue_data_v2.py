@@ -52,7 +52,7 @@ def fix_all_surveys():
         print(f"\n>>> Đang xử lý Survey {survey_id}...")
         
         # Lấy danh sách ID câu hỏi SỐNG hiện tại, sắp xếp theo ĐÚNG TRẬT TỰ LOGIC
-        active_questions = list(Question.objects.filter(section__survey_id=survey_id).order_by('section__order', 'order', 'id'))
+        active_questions = list(Question.objects.filter(section__survey_id=survey_id, is_active=True).order_by('section__order', 'order', 'id'))
         active_ids = [str(q.id) for q in active_questions if q.component_type not in ['title', 'section_break', 'paragraph']]
         
         if not active_ids:
@@ -85,17 +85,42 @@ def fix_all_surveys():
                 if not str(k).isdigit():
                     new_answers[k] = v
                     
-            # 2. Map các trường ID dựa trên đúng thứ tự logic (trên xuống dưới)
+            # 2. Map các trường ID dựa trên Tiêu đề (Title) ưu tiên, nếu không có thì fallback theo thứ tự
+            active_q_map = {str(q.id): q for q in active_questions if q.component_type not in ['title', 'section_break', 'paragraph']}
+            
+            # Tạo dictionary tìm kiếm theo Title để map chính xác kể cả khi đảo vị trí
+            title_to_active_id = {}
+            for aid, q in active_q_map.items():
+                title_to_active_id[q.title.strip()] = aid
+                
+            used_active_ids = set()
+            
+            # Duyệt các câu hỏi cũ
             for i, old_id in enumerate(old_ids_sorted):
                 val = old_answers.get(old_id)
-                # Bắt và fix luôn lỗi mảng 3D của Bảng Dữ Liệu (data-table)
                 if isinstance(val, list) and len(val) == 1 and isinstance(val[0], list) and len(val[0]) > 0 and isinstance(val[0][0], list):
                     val = val[0]
 
-                if i < len(active_ids):
-                    new_id = active_ids[i]
-                    new_answers[new_id] = val
+                # Tìm câu hỏi cũ trong DB để lấy Title
+                old_q = next((q for q in old_questions if str(q.id) == old_id), None)
+                new_id = None
+                
+                if old_q and old_q.title.strip() in title_to_active_id:
+                    # Map theo tiêu đề (an toàn 100% nếu đảo vị trí)
+                    new_id = title_to_active_id[old_q.title.strip()]
                 else:
+                    # Fallback map theo thứ tự nếu không tìm thấy title giống nhau
+                    # Lấy ID active đầu tiên chưa được sử dụng
+                    for aid in active_ids:
+                        if aid not in used_active_ids:
+                            new_id = aid
+                            break
+                            
+                if new_id:
+                    new_answers[new_id] = val
+                    used_active_ids.add(new_id)
+                else:
+                    # Nếu hết câu hỏi active để map, cứ giữ lại ID cũ
                     new_answers[old_id] = val
                     
             r.answers = new_answers

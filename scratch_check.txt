@@ -1,30 +1,30 @@
-                            if (checkedCheckboxes.length) {
-                                rowData.push(Array.from(checkedCheckboxes).map(el => el.value));
-                                return;
-                            }
-                            const textInput = cell.querySelector('input[type="text"]');
-                            if (textInput) {
-                                rowData.push(textInput.value.trim() || null);
-                                return;
-                            }
-                            rowData.push(null);
-                        });
-                        gridData.push(rowData);
-                    });
-                    allAnswers[qId] = { type: 'grid', data: gridData };
-                    return;
-                }
+                continue
+                
+            # Các key là số trong backup (ID câu hỏi cũ)
+            numeric_keys_in_backup = [k for k in old_answers.keys() if str(k).isdigit()]
+            if not numeric_keys_in_backup:
+                continue
+                
+            # TÌM LẠI thứ tự logic của các câu hỏi cũ (bao gồm cả câu đã bị ẩn is_active=False)
+            old_questions = list(Question.objects.filter(id__in=numeric_keys_in_backup).order_by('section__order', 'order', 'id'))
+            old_ids_sorted = [str(q.id) for q in old_questions]
+            
+            new_answers = {}
+            # 1. Bảo lưu các trường chữ (email, full_name, v.v...)
+            for k, v in old_answers.items():
+                if not str(k).isdigit():
+                    new_answers[k] = v
+                    
+            # 2. Map các trường ID dựa trên đúng thứ tự logic (trên xuống dưới)
+            for i, old_id in enumerate(old_ids_sorted):
+                val = old_answers.get(old_id)
+                # Bắt và fix luôn lỗi mảng 3D của Bảng Dữ Liệu (data-table)
+                if isinstance(val, list) and len(val) == 1 and isinstance(val[0], list) and len(val[0]) > 0 and isinstance(val[0][0], list):
+                    val = val[0]
 
-                const name = `q_${qId}`;
-                const elements = item.querySelectorAll(`[name^="${name}"]`);
-                if (elements.length === 0) return;
-
-                const firstEl = elements[0];
-
-                if (firstEl.type === 'radio') {
-                    const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
-                    if (checkedRadio) {
-                        let value = checkedRadio.value;
-                        if (/^kh[aá]c\b|^other\b/i.test(value)) {
-                            const otherInput = checkedRadio.closest('.custom-radio-label').querySelector('.other-input');
-                            if (otherInput && otherInput.value.trim() !== '') {
+                if i < len(active_ids):
+                    new_id = active_ids[i]
+                    new_answers[new_id] = val
+                else:
+                    new_answers[old_id] = val
+                    
