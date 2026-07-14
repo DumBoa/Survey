@@ -32,7 +32,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']
 
 class SectionSerializer(serializers.ModelSerializer):
-    questions = QuestionSerializer(many=True, read_only=True)
+    questions = serializers.SerializerMethodField()
     total_questions = serializers.SerializerMethodField()
     
     class Meta:
@@ -43,13 +43,17 @@ class SectionSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
     
+    def get_questions(self, obj):
+        questions = obj.questions.filter(is_active=True).order_by('order')
+        return QuestionSerializer(questions, many=True).data
+    
     def get_total_questions(self, obj):
-        return obj.questions.count()
+        return obj.questions.filter(is_active=True).count()
 
 
 class SurveySerializer(serializers.ModelSerializer):
     category_detail = SurveyCategorySerializer(source='category', read_only=True)
-    sections = SectionSerializer(many=True, read_only=True)
+    sections = serializers.SerializerMethodField()
     total_sections = serializers.SerializerMethodField()
     total_questions = serializers.SerializerMethodField()
     original_code = serializers.CharField(read_only=True)
@@ -63,20 +67,24 @@ class SurveySerializer(serializers.ModelSerializer):
             'total_questions', 'created_at', 'updated_at'
         ]
     
+    def get_sections(self, obj):
+        sections = obj.sections.filter(is_active=True).order_by('order')
+        return SectionSerializer(sections, many=True).data
+    
     def get_total_sections(self, obj):
-        return obj.sections.count()
+        return obj.sections.filter(is_active=True).count()
     
     def get_total_questions(self, obj):
         total = 0
-        for section in obj.sections.all():
-            total += section.questions.count()
+        for section in obj.sections.filter(is_active=True):
+            total += section.questions.filter(is_active=True).count()
         return total
 
 
 class SurveyDetailSerializer(serializers.ModelSerializer):
     """Serializer chi tiết bao gồm tất cả sections và questions"""
     category_detail = SurveyCategorySerializer(source='category', read_only=True)
-    sections = SectionSerializer(many=True, read_only=True)
+    sections = serializers.SerializerMethodField()
     original_code = serializers.CharField(read_only=True)
     
     class Meta:
@@ -86,6 +94,10 @@ class SurveyDetailSerializer(serializers.ModelSerializer):
             'start_date', 'end_date', 'allow_after_deadline', 'status',
             'target_groups', 'settings', 'sections', 'created_at', 'updated_at'
         ]
+
+    def get_sections(self, obj):
+        sections = obj.sections.filter(is_active=True).order_by('order')
+        return SectionSerializer(sections, many=True).data
 
 
 class ResponseSerializer(serializers.ModelSerializer):

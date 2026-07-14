@@ -294,6 +294,10 @@ class SectionDetailView(APIView):
     def delete(self, request, pk):
         try:
             section = SectionModel.objects.get(id=pk)
+            if section.survey.responses.exists():
+                section.is_active = False
+                section.save()
+                return Response({'message': 'Phần đã được ẩn (Soft Delete) vì khảo sát đã có dữ liệu'}, status=status.HTTP_200_OK)
             section.delete()
             return Response({'message': 'Đã xóa section'}, status=status.HTTP_200_OK)
         except SectionModel.DoesNotExist:
@@ -360,6 +364,17 @@ class QuestionDetailView(APIView):
             question = QuestionModel.objects.get(id=pk)
             data = request.data
             
+            if question.section.survey.responses.exists():
+                blocked_fields = ['options', 'condition_logic', 'config']
+                for field in blocked_fields:
+                    if field in data and data[field] != getattr(question, field):
+                        return Response({'error': f'Không thể thay đổi {field} vì khảo sát đã có dữ liệu.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                if 'question_type' in data:
+                    new_qt_id = int(data['question_type']) if data['question_type'] else None
+                    if new_qt_id != question.question_type_id:
+                        return Response({'error': 'Không thể thay đổi question_type vì khảo sát đã có dữ liệu.'}, status=status.HTTP_400_BAD_REQUEST)
+            
             for field in ['title', 'description', 'is_required', 'order', 'options', 'condition_logic', 'config']:
                 if field in data:
                     setattr(question, field, data[field])
@@ -378,6 +393,10 @@ class QuestionDetailView(APIView):
     def delete(self, request, pk):
         try:
             question = QuestionModel.objects.get(id=pk)
+            if question.section.survey.responses.exists():
+                question.is_active = False
+                question.save()
+                return Response({'message': 'Câu hỏi đã được ẩn (Soft Delete) vì khảo sát đã có dữ liệu'}, status=status.HTTP_200_OK)
             question.delete()
             return Response({'message': 'Đã xóa câu hỏi'}, status=status.HTTP_200_OK)
         except QuestionModel.DoesNotExist:

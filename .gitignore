@@ -23,4 +23,5 @@ staticfiles/
 .DS_Store
 Thumbs.db
 
-
+cchc_backup.sql
+sipas_backup.sql

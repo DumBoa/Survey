@@ -117,6 +117,7 @@ class Section(models.Model):
     icon = models.CharField(max_length=50, blank=True, null=True, verbose_name="Icon")
 
     order = models.PositiveIntegerField(default=0, verbose_name="Thứ tự hiển thị")
+    is_active = models.BooleanField(default=True, verbose_name="Kích hoạt")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -165,6 +166,7 @@ class Question(models.Model):
 
     is_required = models.BooleanField(default=True, verbose_name="Bắt buộc trả lời")
     order = models.PositiveIntegerField(default=0, verbose_name="Thứ tự hiển thị")
+    is_active = models.BooleanField(default=True, verbose_name="Kích hoạt")
 
     options = models.JSONField(default=list, blank=True, verbose_name="Danh sách lựa chọn (JSON)")
     condition_logic = models.JSONField(default=dict, blank=True, verbose_name="Logic điều kiện")

@@ -22,6 +22,11 @@ class SectionAdmin(admin.ModelAdmin):
     list_display = ('title', 'code', 'survey', 'order')
     list_filter = ('survey',)
 
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.survey.responses.exists():
+            return False
+        return super().has_delete_permission(request, obj)
+
 @admin.register(QuestionType)
 class QuestionTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'has_options', 'has_validation')
@@ -30,6 +35,11 @@ class QuestionTypeAdmin(admin.ModelAdmin):
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('title', 'question_type', 'section', 'order', 'is_required')
     list_filter = ('section__survey', 'question_type')
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.section.survey.responses.exists():
+            return False
+        return super().has_delete_permission(request, obj)
 
 @admin.register(Response)
 class ResponseAdmin(admin.ModelAdmin):

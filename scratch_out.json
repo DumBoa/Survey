@@ -1,0 +1,142 @@
+[
+  {
+    "id": 4809,
+    "title": "BM-09. PHIẾU KHẢO SÁT YÊU CẦU NGHIỆP VỤ VÀ CHỨC NĂNG HỆ THỐNG",
+    "order": 0
+  },
+  {
+    "id": 4810,
+    "title": "I. THÔNG TIN CHUNG",
+    "order": 1
+  },
+  {
+    "id": 4811,
+    "title": "1. Thông tin chung",
+    "order": 2
+  },
+  {
+    "id": 4812,
+    "title": "II. YÊU CẦU NGHIỆP VỤ",
+    "order": 3
+  },
+  {
+    "id": 4813,
+    "title": "2. Yêu cầu nghiệp vụ",
+    "order": 4
+  },
+  {
+    "id": 4814,
+    "title": "III. YÊU CẦU CHỨC NĂNG HỆ THỐNG",
+    "order": 5
+  },
+  {
+    "id": 4815,
+    "title": "3. Yêu cầu chức năng hệ thống",
+    "order": 6
+  },
+  {
+    "id": 4816,
+    "title": "Bảng dữ liệu:",
+    "order": 7
+  },
+  {
+    "id": 4817,
+    "title": "Lựa chọn:",
+    "order": 8
+  },
+  {
+    "id": 4818,
+    "title": "IV. YÊU CẦU VỀ DỮ LIỆU",
+    "order": 9
+  },
+  {
+    "id": 4819,
+    "title": "1. Yêu cầu về dữ liệu",
+    "order": 10
+  },
+  {
+    "id": 4820,
+    "title": "V. YÊU CẦU KẾT NỐI, CHIA SẺ DỮ LIỆU",
+    "order": 11
+  },
+  {
+    "id": 4821,
+    "title": "1. Yêu cầu kết nối, chia sẻ dữ liệu",
+    "order": 12
+  },
+  {
+    "id": 4822,
+    "title": "VI. YÊU CẦU VỀ BÁO CÁO, THỐNG KÊ",
+    "order": 13
+  },
+  {
+    "id": 4823,
+    "title": "1. Yêu cầu về báo cáo, thống kê",
+    "order": 14
+  },
+  {
+    "id": 4824,
+    "title": "VII. YÊU CẦU PHI CHỨC NĂNG",
+    "order": 15
+  },
+  {
+    "id": 4825,
+    "title": "1. Yêu cầu phi chức năng",
+    "order": 16
+  },
+  {
+    "id": 4826,
+    "title": "VIII. ĐÁNH GIÁ VÀ KIẾN NGHỊ",
+    "order": 17
+  },
+  {
+    "id": 4827,
+    "title": "1. Các yêu cầu nghiệp vụ ưu tiên",
+    "order": 18
+  },
+  {
+    "id": 4828,
+    "title": "2. Các chức năng cần triển khai trước",
+    "order": 19
+  },
+  {
+    "id": 4829,
+    "title": "3. Các yêu cầu cần nghiên cứu, làm rõ them",
+    "order": 20
+  },
+  {
+    "id": 4830,
+    "title": "IX. KIẾN NGHỊ ƯU TIÊN TRIỂN KHAI",
+    "order": 21
+  },
+  {
+    "id": 4831,
+    "title": "1. Kiến nghị ưu tiên triển khai",
+    "order": 22
+  },
+  {
+    "id": 4832,
+    "title": "X. KẾT LUẬN",
+    "order": 23
+  },
+  {
+    "id": 4833,
+    "title": "Biểu mẫu này tổng hợp các yêu cầu nghiệp vụ, yêu cầu chức năng, yêu cầu kết nối, chia sẻ dữ liệu, yêu cầu báo cáo và yêu cầu kỹ thuật được ghi nhận trong quá trình khảo sát. Đây là căn cứ để xây dựng mô hình TO-BE, tài liệu yêu cầu nghiệp vụ (BRS), các tài liệu phân tích, thiết kế (nếu có) và xác định phạm vi đầu tư của Dự án trong Báo cáo kinh tế - kỹ thuật.",
+    "order": 24
+  },
+  {
+    "id": 4834,
+    "title": "XI. XÁC NHẬN YÊU CẦU",
+    "order": 25
+  },
+  {
+    "id": 4835,
+    "title": "1. Xác nhận các yêu cầu",
+    "order": 26
+  },
+  {
+    "id": 4836,
+    "title": "Bảng dữ liệu:",
+    "order": 27
+  }
+]
