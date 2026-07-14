@@ -12,13 +12,14 @@ django.setup()
 from apps.survey.models import Response, Question
 
 def fix_all_surveys():
-    print("--- BẮT ĐẦU FIX DỮ LIỆU TỪ FILE BACKUP ---")
+    backup_file = sys.argv[1] if len(sys.argv) > 1 else 'sipas_backup.sql'
+    print(f"--- BẮT ĐẦU FIX DỮ LIỆU TỪ FILE BACKUP: {backup_file} ---")
     
-    if not os.path.exists('sipas_backup.sql'):
-        print("LỖI: Không tìm thấy file sipas_backup.sql. Hãy copy file này vào cùng thư mục.")
+    if not os.path.exists(backup_file):
+        print(f"LỖI: Không tìm thấy file {backup_file}. Hãy copy file backup vào cùng thư mục hoặc truyền tên file làm tham số (vd: python fix_rescue_data_v2.py cchc_backup.sql).")
         return
 
-    with open('sipas_backup.sql', encoding='utf-8') as f:
+    with open(backup_file, encoding='utf-8') as f:
         data = f.read()
     
     block_match = re.search(r'COPY public\.survey_response .*?FROM stdin;\n(.*?)\n\\\.', data, re.DOTALL)
