@@ -5,6 +5,8 @@ from . import views
 app_name = 'analytics'
 
 urlpatterns = [
+    path('test-responses/', views.test_responses_list_view, name='test_responses_list'),
+    path('test-response/<int:response_id>/', views.test_response_detail_view, name='test_response_detail'),
     # === TRANG CHÍNH ===
     path('', views.dashboard_home, name='dashboard'),
     

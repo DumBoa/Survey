@@ -1,0 +1,2992 @@
+{% extends "base.html" %} {% load static %} {% block content %}
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ survey.title|default:"Phiếu Khảo Sát" }}</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-bg: #fafafa;
+        --color-surface: #ffffff;
+        --color-surface-alt: #fafafa;
+        --color-border: #ececec;
+        --color-border-strong: #e0e0e0;
+        --color-text: #0f172a;
+        --color-text-muted: #64748b;
+        --color-text-subtle: #94a3b8;
+
+        /* Light blue palette */
+        --color-primary: #3b82f6;
+        --color-primary-hover: #2563eb;
+        --color-primary-soft: #eff6ff;
+        --color-primary-softer: #f5f9ff;
+        --color-primary-border: #dbeafe;
+        --color-primary-foreground: #1e40af;
+
+        --color-success: #10b981;
+        --color-success-soft: #ecfdf5;
+        --color-warning: #f59e0b;
+        --color-warning-soft: #fffbeb;
+        --color-error: #ef4444;
+        --color-error-soft: #fef2f2;
+
+        --radius-sm: 2px;
+        --radius-md: 4px;
+        --radius-lg: 6px;
+        --radius-full: 9999px;
+
+        --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background-color: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.6;
+        font-size: 14px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      }
+
+      /* ============================================
+         HEADER
+         ============================================ */
+      .header {
+        background: var(--color-surface);
+        color: var(--color-text);
+        padding: 14px 24px;
+        border-bottom: 1px solid var(--color-border);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .logo {
+        width: 34px;
+        height: 34px;
+        background: var(--color-primary);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+        font-size: 14px;
+        letter-spacing: -0.02em;
+        flex-shrink: 0;
+      }
+
+      .header-text {
+        min-width: 0;
+      }
+
+      .header-text h1 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 0;
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .header-text p {
+        font-size: 12.5px;
+        color: var(--color-text-muted);
+        line-height: 1.4;
+        margin-top: 1px;
+      }
+
+      .btn-back,
+      .btn-back-mobile {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text-muted);
+        background: transparent;
+        border: 1px solid var(--color-border-strong);
+        text-decoration: none;
+        transition: all var(--transition);
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .btn-back:hover,
+      .btn-back-mobile:hover {
+        background: var(--color-primary-softer);
+        color: var(--color-primary-foreground);
+        border-color: var(--color-primary-border);
+      }
+
+      .btn-back-mobile {
+        display: none;
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      /* ============================================
+         LAYOUT
+         ============================================ */
+      .main-content {
+        display: grid;
+        grid-template-columns: 240px 1fr 300px;
+        align-items: start;
+        min-height: calc(100vh - 64px);
+        padding: 24px;
+        gap: 24px;
+        max-width: 1440px;
+        margin: 0 auto;
+      }
+
+      .main-content.is-success {
+        display: block;
+        max-width: 800px;
+        margin: 40px auto;
+      }
+
+      /* ============================================
+         SIDEBAR LEFT (question nav)
+         ============================================ */
+      .sidebar-left {
+        position: sticky;
+        top: 88px;
+        align-self: start;
+        max-height: calc(100vh - 88px - 24px);
+        overflow-y: auto;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 20px 14px;
+      }
+
+      .sidebar-left-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        padding: 0 8px 10px;
+        border-bottom: 1px solid var(--color-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .sidebar-left-title .badge {
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
+        font-size: 10.5px;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: var(--radius-full);
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .question-nav {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .question-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        width: 100%;
+        padding: 7px 8px;
+        text-decoration: none;
+        color: var(--color-text-muted);
+        font-size: 12.5px;
+        font-weight: 400;
+        border-radius: var(--radius-md);
+        transition: all var(--transition);
+        border: none;
+        background: transparent;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      .question-nav-item:hover {
+        background: var(--color-primary-softer);
+        color: var(--color-text);
+      }
+
+      .question-nav-item.is-active {
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
+        font-weight: 500;
+      }
+
+      .question-nav-item.is-complete {
+        color: var(--color-text);
+      }
+
+      .question-nav-item .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: #e2e8f0;
+        transition: all var(--transition);
+      }
+
+      .question-nav-item.is-complete .status-dot {
+        background: var(--color-primary);
+      }
+
+      .question-nav-item.is-active .status-dot {
+        background: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+      }
+
+      .question-nav-item .q-number {
+        font-weight: 500;
+        color: var(--color-text-subtle);
+        min-width: 20px;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .question-nav-item.is-active .q-number {
+        color: var(--color-primary-foreground);
+      }
+
+      .question-nav-item .q-text {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .question-nav-item .q-status-icon {
+        flex-shrink: 0;
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+      }
+
+      .section-header-nav {
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--color-text-subtle);
+        padding: 10px 8px 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 6px;
+      }
+
+      .section-header-nav:first-of-type {
+        margin-top: 0;
+      }
+
+      /* ============================================
+         CONTENT
+         ============================================ */
+      .content {
+        padding: 0 16px 60px;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      /* ============================================
+         SECTION CARDS
+         ============================================ */
+      .section-card {
+        background: var(--color-surface);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border);
+        margin-bottom: 18px;
+        overflow: hidden;
+        display: none;
+      }
+
+      .section-card.is-active {
+        display: block;
+      }
+
+      .section-header {
+        background: var(--color-surface);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .section-number {
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: -0.02em;
+        flex-shrink: 0;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .section-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--color-text);
+        letter-spacing: -0.01em;
+        line-height: 1.4;
+      }
+
+      .section-body {
+        padding: 24px;
+      }
+
+      /* ============================================
+         FORM ELEMENTS
+         ============================================ */
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 24px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text);
+        margin-bottom: 6px;
+      }
+
+      .form-group input,
+      .form-group select {
+        padding: 9px 12px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
+        transition: all var(--transition);
+        font-family: inherit;
+        background: var(--color-surface);
+        color: var(--color-text);
+      }
+
+      .form-group input::placeholder {
+        color: var(--color-text-subtle);
+      }
+
+      .form-group input:hover,
+      .form-group select:hover {
+        border-color: #cbd5e1;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      }
+
+      /* ============================================
+         QUESTIONS
+         ============================================ */
+      .question-title {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--color-text);
+        margin-bottom: 12px;
+        line-height: 1.55;
+      }
+
+      .question-title span {
+        color: var(--color-text-muted);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .question-required {
+        color: var(--color-error) !important;
+        margin-left: 2px;
+        font-weight: 600;
+      }
+
+      .question-divider {
+        margin: 24px 0;
+        border: none;
+        border-top: 1px solid var(--color-border);
+      }
+
+      /* ============================================
+         SCROLLBARS
+         ============================================ */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: var(--radius-full);
+        transition: background var(--transition);
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      .sidebar-left::-webkit-scrollbar,
+      .sidebar-right::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+
+      .sidebar-left,
+      .sidebar-right {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+
+      /* ============================================
+         CHECKBOX / RADIO
+         ============================================ */
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-top: 8px;
+      }
+
+      .custom-checkbox,
+      .custom-radio-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        padding: 7px 10px;
+        border-radius: var(--radius-md);
+        transition: all var(--transition);
+      }
+
+      .custom-checkbox:hover,
+      .custom-radio-label:hover {
+        background: var(--color-primary-softer);
+      }
+
+      .custom-checkbox input[type="checkbox"],
+      .custom-radio-label input[type="radio"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all var(--transition);
+        position: relative;
+        flex-shrink: 0;
+        background: var(--color-surface);
+        margin: 0;
+      }
+
+      .custom-radio-label input[type="radio"] {
+        border-radius: 50%;
+      }
+
+      .custom-checkbox input[type="checkbox"]:hover,
+      .custom-radio-label input[type="radio"]:hover {
+        border-color: var(--color-primary);
+      }
+
+      .custom-checkbox input[type="checkbox"]:checked,
+      .custom-radio-label input[type="radio"]:checked {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+      }
+
+      .custom-checkbox input[type="checkbox"]:checked::after {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 1.5px;
+        width: 5px;
+        height: 9px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .custom-radio-label input[type="radio"]:checked::after {
+        content: "";
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .custom-checkbox span,
+      .custom-radio-label span {
+        font-size: 13.5px;
+        color: var(--color-text);
+      }
+
+      /* ============================================
+         TABLES
+         ============================================ */
+      .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 8px;
+        font-size: 13px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      .data-table thead th {
+        background: var(--color-primary-softer);
+        color: var(--color-text);
+        padding: 10px 14px;
+        font-weight: 600;
+        text-align: center;
+        border-bottom: 1px solid var(--color-border);
+        font-size: 12.5px;
+        letter-spacing: -0.01em;
+      }
+
+      .data-table tbody td {
+        padding: 0;
+        border-top: 1px solid var(--color-border);
+        text-align: center;
+        vertical-align: top;
+        background: var(--color-surface);
+      }
+
+      .data-table tbody tr:first-child td {
+        border-top: none;
+      }
+
+      .data-table tbody td .data-cell {
+        padding: 8px 12px;
+        background: var(--color-surface-alt);
+        color: var(--color-text-muted);
+        font-size: 12.5px;
+        display: block;
+        min-height: 36px;
+        text-align: left;
+        border-radius: var(--radius-sm);
+      }
+
+      .data-table tbody td input[type="text"],
+      .data-table tbody td input[type="number"] {
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        font-size: 13px;
+        text-align: center;
+        transition: background var(--transition);
+        background: transparent;
+        font-family: inherit;
+        color: var(--color-text);
+      }
+
+      .data-table tbody td input[type="text"]::placeholder {
+        color: var(--color-text-subtle);
+      }
+
+      .data-table tbody td input:focus {
+        outline: none;
+        background: var(--color-primary-soft);
+      }
+
+      .data-table tbody td .input-wrapper {
+        position: relative;
+        padding: 6px 10px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 40px;
+        justify-content: center;
+      }
+
+      .data-table tbody td .input-wrapper.type-checkbox,
+      .data-table tbody td .input-wrapper.type-radio {
+        padding: 0;
+      }
+
+      .data-table tbody td .custom-checkbox,
+      .data-table tbody td .custom-radio {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 11px 14px;
+        cursor: pointer;
+        transition: background var(--transition);
+        border-radius: 0;
+        margin: 0;
+      }
+
+      .data-table tbody td .custom-checkbox:hover,
+      .data-table tbody td .custom-radio:hover {
+        background: var(--color-primary-softer);
+      }
+
+      .data-table tbody td .input-wrapper .data-label {
+        display: block;
+        padding: 8px 12px;
+        background: var(--color-surface-alt);
+        color: var(--color-text-muted);
+        text-align: left;
+        min-height: 36px;
+        font-size: 12.5px;
+      }
+
+      .data-table tbody td .input-wrapper .data-label.has-data {
+        background: var(--color-primary-soft);
+        color: var(--color-primary-foreground);
+      }
+
+      .scale-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 8px;
+        font-size: 13px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      .scale-table thead th {
+        background: var(--color-primary-softer);
+        padding: 10px 8px;
+        font-weight: 600;
+        color: var(--color-text);
+        border-bottom: 1px solid var(--color-border);
+        text-align: center;
+        font-size: 12.5px;
+        letter-spacing: -0.01em;
+      }
+
+      .scale-table thead th:first-child {
+        text-align: left;
+        padding-left: 14px;
+      }
+
+      .scale-table thead th .scale-label {
+        display: block;
+        font-size: 10.5px;
+        color: var(--color-text-subtle);
+        font-weight: 400;
+        margin-top: 2px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .scale-table tbody td {
+        padding: 0;
+        border-top: 1px solid var(--color-border);
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .scale-table tbody tr:first-child td {
+        border-top: none;
+      }
+
+      .scale-table tbody td:first-child {
+        text-align: left;
+        padding: 10px 14px;
+        color: var(--color-text);
+        font-weight: 400;
+        background: var(--color-surface);
+      }
+
+      .scale-table tbody td .custom-radio-label,
+      .scale-table tbody td .custom-checkbox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        min-height: 44px;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+        cursor: pointer;
+      }
+
+      .scale-table tbody td .custom-radio-label:hover,
+      .scale-table tbody td .custom-checkbox:hover {
+        background: var(--color-primary-softer);
+      }
+
+      .scale-table tbody td .custom-radio-label input[type="radio"],
+      .scale-table tbody td .custom-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+      }
+
+      .scale-table tbody td input[type="text"] {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-family: inherit;
+        transition: all var(--transition);
+        background: var(--color-surface);
+        color: var(--color-text);
+      }
+
+      .scale-table tbody td input[type="text"]:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      }
+
+      .scale-table tbody tr:hover td {
+        background: var(--color-primary-softer);
+      }
+
+      .scale-table tbody tr:hover td:first-child {
+        background: var(--color-surface);
+      }
+
+      /* ============================================
+         NOTE / TEXTAREA
+         ============================================ */
+      .question-note {
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: var(--color-primary-softer);
+        border-radius: var(--radius-md);
+        border-left: 2px solid var(--color-primary);
+        font-size: 12px;
+        color: var(--color-text-muted);
+        line-height: 1.55;
+      }
+
+      .question-note:empty {
+        display: none;
+      }
+
+      .textarea-group {
+        margin-bottom: 16px;
+      }
+
+      .textarea-group label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text);
+        margin-bottom: 6px;
+        display: block;
+      }
+
+      .textarea-group textarea {
+        width: 100%;
+        min-height: 96px;
+        padding: 10px 12px;
+        border: 1px solid var(--color-border-strong);
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
+        font-family: inherit;
+        resize: vertical;
+        transition: all var(--transition);
+        background: var(--color-surface);
+        color: var(--color-text);
+        line-height: 1.6;
+      }
+
+      .textarea-group textarea::placeholder {
+        color: var(--color-text-subtle);
+      }
+
+      .textarea-group textarea:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+      }
+
+      /* ============================================
+         SIDEBAR RIGHT (progress + sections + actions)
+         ============================================ */
+      .sidebar-right {
+        position: sticky;
+        top: 88px;
+        align-self: start;
+        max-height: calc(100vh - 88px - 24px);
+        overflow-y: auto;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 20px 18px 0 18px; /* Giảm padding bottom để phần sticky đẹp hơn */
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .right-card {
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--color-border);
+      }
+
+      .right-card:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+
+      .right-card-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      /* Progress display */
+      .progress-display {
+        text-align: left;
+      }
+
+      .progress-percentage {
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--color-text);
+        letter-spacing: -0.03em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        margin-bottom: 8px;
+      }
+
+      .progress-percentage .pct-sign {
+        color: var(--color-text-subtle);
+        font-size: 20px;
+        font-weight: 500;
+        margin-left: 1px;
+      }
+
+      .progress-bar-small {
+        width: 100%;
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        margin: 12px 0 10px;
+      }
+
+      .progress-bar-small .progress-fill {
+        height: 100%;
+        background: var(--color-primary);
+        border-radius: var(--radius-full);
+        transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .progress-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+
+      .progress-stats .stat-value {
+        color: var(--color-text);
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Section breakdown */
+      .section-stat {
+        padding: 10px 8px;
+        border-radius: var(--radius-md);
+        margin-bottom: 4px;
+        transition: background var(--transition);
+        border: 1px solid transparent;
+      }
+
+      .section-stat:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-stat.is-active {
+        background: var(--color-primary-soft);
+        border-color: var(--color-primary-border);
+      }
+
+      .section-stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .section-stat-title {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--color-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 8px;
+      }
+
+      .section-stat.is-active .section-stat-title {
+        color: var(--color-primary-foreground);
+        font-weight: 600;
+      }
+
+      .section-stat-count {
+        font-size: 11px;
+        color: var(--color-text-muted);
+        font-variant-numeric: tabular-nums;
+        flex-shrink: 0;
+      }
+
+      .section-stat-bar {
+        width: 100%;
+        height: 3px;
+        background: #e2e8f0;
+        border-radius: var(--radius-full);
+        overflow: hidden;
+      }
+
+      .section-stat-fill {
+        height: 100%;
+        background: #cbd5e1;
+        border-radius: var(--radius-full);
+        transition: width 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .section-stat.is-complete .section-stat-fill {
+        background: var(--color-primary);
+      }
+
+      .section-stat.is-active .section-stat-fill {
+        background: var(--color-primary);
+      }
+
+      /* Action buttons in right sidebar */
+      .sidebar-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: sticky;
+        bottom: 0;
+        background: var(--color-surface);
+        padding: 14px 0 20px 0;
+        border-top: 1px solid var(--color-border);
+        z-index: 10;
+        margin-top: auto;
+      }
+
+      .btn {
+        padding: 9px 16px;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+        border: 1px solid transparent;
+        font-family: inherit;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: var(--color-surface);
+        color: var(--color-text);
+        border: 1px solid var(--color-border-strong);
+      }
+
+      .btn-secondary:hover:not(:disabled) {
+        background: var(--color-primary-softer);
+        border-color: var(--color-primary-border);
+        color: var(--color-primary-foreground);
+      }
+
+      .btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border: 1px solid var(--color-primary);
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        background: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
+      }
+
+      .btn-success {
+        background: var(--color-success);
+        color: white;
+        border: 1px solid var(--color-success);
+      }
+
+      .btn-success:hover:not(:disabled) {
+        background: #059669;
+        border-color: #059669;
+      }
+
+      .btn-dashboard {
+        padding: 10px 22px;
+        border-radius: var(--radius-md);
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition);
+        border: 1px solid var(--color-text);
+        background: var(--color-text);
+        color: white;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-family: inherit;
+      }
+
+      .btn-dashboard:hover {
+        background: #000;
+        border-color: #000;
+      }
+
+      .pagination-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      /* ============================================
+         TOAST (top-right, soft)
+         ============================================ */
+      .toast {
+        position: fixed;
+        top: 76px;
+        right: 20px;
+        background: var(--color-surface);
+        color: var(--color-text);
+        border: 1px solid var(--color-border);
+        border-left: 3px solid var(--color-primary);
+        padding: 11px 16px 11px 14px;
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 500;
+        z-index: 9999;
+        animation: slideInTop 220ms cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow:
+          0 1px 2px rgba(15, 23, 42, 0.04),
+          0 8px 24px rgba(15, 23, 42, 0.08);
+        max-width: 320px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .toast::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--color-primary);
+        flex-shrink: 0;
+      }
+
+      .toast.success {
+        border-left-color: var(--color-success);
+      }
+      .toast.success::before {
+        background: var(--color-success);
+      }
+
+      .toast.error {
+        border-left-color: var(--color-error);
+      }
+      .toast.error::before {
+        background: var(--color-error);
+      }
+
+      .toast.warning {
+        border-left-color: var(--color-warning);
+      }
+      .toast.warning::before {
+        background: var(--color-warning);
+      }
+
+      .toast.info {
+        border-left-color: var(--color-primary);
+      }
+
+      @keyframes slideInTop {
+        from {
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .toast.hiding {
+        animation: fadeOutTop 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      @keyframes fadeOutTop {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+      }
+
+      /* ============================================
+         SUCCESS SCREEN
+         ============================================ */
+      .success-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 56px 24px;
+        text-align: center;
+        display: none;
+      }
+
+      .success-card .icon-check {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--color-success-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        color: var(--color-success);
+      }
+
+      .success-card .icon-check svg {
+        width: 26px;
+        height: 26px;
+      }
+
+      .success-card h2 {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 6px;
+        letter-spacing: -0.02em;
+      }
+
+      .success-card p {
+        font-size: 13.5px;
+        color: var(--color-text-muted);
+        max-width: 420px;
+        margin: 0 auto 8px;
+        line-height: 1.6;
+      }
+
+      .success-card .divider {
+        width: 32px;
+        height: 2px;
+        background: var(--color-primary);
+        border-radius: var(--radius-full);
+        margin: 16px auto 20px;
+      }
+
+      .success-card .summary-stats {
+        display: flex;
+        justify-content: center;
+        gap: 48px;
+        margin: 20px 0 28px;
+      }
+
+      .success-card .summary-stats .stat-item {
+        text-align: center;
+      }
+
+      .success-card .summary-stats .stat-item .stat-number {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--color-text);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .success-card .summary-stats .stat-item .stat-label {
+        font-size: 11.5px;
+        color: var(--color-text-muted);
+        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      /* ============================================
+         LOADING
+         ============================================ */
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 80px 0;
+        color: var(--color-text-muted);
+        font-size: 13px;
+      }
+
+      .spinner {
+        width: 24px;
+        height: 24px;
+        border: 2px solid var(--color-border);
+        border-top-color: var(--color-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .footer-spacer {
+        height: 32px;
+      }
+
+      .other-input {
+        border: none !important;
+        background: transparent !important;
+        padding: 2px 4px;
+        border-bottom: 1px solid var(--color-border-strong) !important;
+        outline: none;
+        font-size: 13px;
+        width: 140px;
+        transition: border-color var(--transition);
+        font-family: inherit;
+        margin-left: 4px;
+        color: var(--color-text);
+      }
+
+      .other-input:focus {
+        border-bottom-color: var(--color-primary) !important;
+      }
+
+      .other-input::placeholder {
+        color: var(--color-text-subtle);
+        font-style: italic;
+        font-size: 12px;
+      }
+
+      /* ============================================
+         ERROR STATE
+         ============================================ */
+      .error-highlight {
+        border-left: 2px solid var(--color-error) !important;
+        background-color: var(--color-error-soft) !important;
+        padding: 12px 14px;
+        border-radius: var(--radius-md);
+        margin-left: -14px;
+        margin-right: -14px;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* ============================================
+         RESPONSIVE
+         ============================================ */
+      @media (max-width: 1280px) {
+        .main-content {
+          grid-template-columns: 240px 1fr;
+        }
+        .sidebar-right {
+          grid-column: 1 / -1;
+          position: static;
+          flex-direction: row;
+          align-items: stretch;
+          max-height: none;
+          padding-bottom: 20px;
+        }
+        .sidebar-actions {
+          position: static;
+          border-top: none;
+          padding: 0;
+          margin-top: 0;
+        }
+        .right-card {
+          flex: 1;
+          border-bottom: none;
+          border-right: 1px solid var(--color-border);
+          padding-right: 18px;
+          padding-bottom: 0;
+        }
+        .right-card:last-child {
+          border-right: none;
+          padding-right: 0;
+        }
+      }
+
+      @media (max-width: 1024px) {
+        .sidebar-left {
+          display: none;
+        }
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+        .content {
+          padding: 0 0 60px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          padding: 16px 16px 120px 16px;
+        }
+        .header {
+          padding: 12px 16px;
+        }
+        .header-content {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .header-text h1 {
+          font-size: 14px;
+        }
+        .header-text p {
+          font-size: 12px;
+        }
+        .btn-back {
+          display: none !important;
+        }
+        .btn-back-mobile {
+          display: inline-flex !important;
+        }
+        .content {
+          padding: 0;
+        }
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+        .section-body {
+          padding: 18px;
+        }
+        .data-table,
+        .scale-table {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+        .success-card {
+          padding: 36px 16px;
+        }
+        .success-card .summary-stats {
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+        .success-card .summary-stats .stat-item .stat-number {
+          font-size: 20px;
+        }
+        .btn-dashboard {
+          padding: 9px 18px;
+          font-size: 13px;
+        }
+        .toast {
+          right: 12px;
+          left: 12px;
+          max-width: none;
+          top: 70px;
+        }
+        .sidebar-right {
+          flex-direction: column;
+          padding: 0;
+          border: none;
+          background: transparent;
+        }
+        .right-card {
+          border-right: none;
+          padding-right: 0;
+          border-bottom: 1px solid var(--color-border);
+          padding-bottom: 18px;
+          background: var(--color-surface);
+          border-radius: var(--radius-lg);
+          border: 1px solid var(--color-border);
+          padding: 16px;
+          margin-bottom: 16px;
+        }
+        .right-card:last-child {
+          margin-bottom: 0;
+        }
+        
+        .sidebar-actions {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: var(--color-surface);
+          padding: 12px 16px;
+          border-top: 1px solid var(--color-border-strong);
+          box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+          z-index: 999;
+          margin: 0;
+          border-radius: 0;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .pagination-row {
+          display: flex;
+          gap: 8px;
+        }
+        .pagination-row .btn {
+          flex: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    {{ response_json|json_script:"response-data" }}
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="logo">S</div>
+          <div class="header-text">
+            <h1 id="survey-title">
+              {{ survey.title|default:"Phiếu khảo sát" }}
+            </h1>
+            <p id="survey-description">{{ survey.description|default:"" }}</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Quay lại
+          </a>
+          <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-back-mobile">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <!-- SIDEBAR LEFT (question nav) -->
+      <aside class="sidebar-left" id="sidebar">
+        <div class="sidebar-left-title">
+          Câu hỏi
+          <span class="badge" id="question-count">0</span>
+        </div>
+        <nav id="question-nav" class="question-nav"></nav>
+      </aside>
+
+      <!-- CONTENT -->
+      <main class="content">
+        <!-- Loading -->
+        <div id="loading-state" class="loading-state">
+          <div class="spinner"></div>
+          <span>Đang tải khảo sát…</span>
+        </div>
+
+        <!-- Survey Sections -->
+        <div id="survey-content" style="display: none"></div>
+
+        <!-- Success Screen -->
+        <div id="success-screen" class="success-card">
+          <div class="icon-check">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h2>Cảm ơn bạn đã tham gia</h2>
+          <p>Khảo sát đã được gửi thành công. Câu trả lời của bạn đã được ghi nhận.</p>
+          <div class="divider"></div>
+          <div class="summary-stats">
+            <div class="stat-item">
+              <div class="stat-number" id="total-questions-display">0</div>
+              <div class="stat-label">Tổng số câu hỏi</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" style="color: var(--color-success);" id="completed-questions-display">0</div>
+              <div class="stat-label">Đã hoàn thành</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number" style="color: var(--color-primary);">100%</div>
+              <div class="stat-label">Tiến độ</div>
+            </div>
+          </div>
+          <a href="{{ dashboard_url|default:'/accounts/survey-dashboard/' }}" class="btn-dashboard">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Quay lại bảng điều khiển
+          </a>
+        </div>
+      </main>
+
+      <!-- SIDEBAR RIGHT (progress + sections + actions) -->
+      <aside class="sidebar-right">
+        <div class="right-card">
+          <div class="right-card-title">
+            <span>Tiến độ</span>
+            <span id="progress-status-badge" style="font-size: 11px; color: var(--color-text-muted); text-transform: none; letter-spacing: 0;">Chưa bắt đầu</span>
+          </div>
+          <div class="progress-display">
+            <div class="progress-percentage">
+              <span id="progress-percent-large">0</span><span class="pct-sign">%</span>
+            </div>
+            <div class="progress-bar-small">
+              <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-stats">
+              <span><span class="stat-value" id="question-completed-text">0/0</span> câu hỏi</span>
+              <span id="progress-time">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-card">
+          <div class="right-card-title">Theo phần</div>
+          <div id="section-breakdown"></div>
+        </div>
+
+        <div class="right-card sidebar-actions">
+          <div class="pagination-row">
+            <button class="btn btn-secondary" id="prev-btn" disabled>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+              Trước
+            </button>
+            <button class="btn btn-secondary" id="next-btn">
+              Sau
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <button class="btn btn-success" id="submit-btn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Nộp khảo sát
+          </button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="footer-spacer"></div>
+<script>
+      (function() {
+        'use strict';
+
+        const SURVEY_ID = {{ survey_id }};
+        let surveyData = null;
+        let responseData = null;
+        let answers = {};
+        let sectionProgress = {};
+        let currentPage = 0;
+        let totalPages = 0;
+        let startTime = Date.now();
+        let saveTimeout = null;
+        let isSubmitted = false;
+        let allQuestions = [];
+        let currentQuestionIndex = 0;
+        const urlParams = new URLSearchParams(window.location.search);
+        const progressId = urlParams.get('progress_id');
+
+        // ============================================
+        // API CLIENT
+        // ============================================
+        const API = {
+            async request(endpoint, method = 'GET', data = null) {
+                const url = `/survey/api/public${endpoint}`;
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    credentials: 'same-origin'
+                };
+                if (data) options.body = JSON.stringify(data);
+                const res = await fetch(url, options);
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || `HTTP ${res.status}`);
+                }
+                return res.json();
+            },
+            getSurvey(id) { return this.request(`/surveys/${id}/`); },
+            getResponse(id) { return this.request(`/surveys/${id}/response/`); },
+            submitResponse(data) { return this.request('/responses/submit/', 'POST', data); }
+        };
+
+        function getCsrfToken() {
+            const cookieValue = document.cookie.split('; ').find(row => row.startsWith('csrftoken='));
+            return cookieValue ? cookieValue.split('=')[1] : '';
+        }
+
+        // ============================================
+        // HELPERS
+        // ============================================
+        function showToast(msg, type = 'info') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        function formatMultiLine(str) {
+            if (str === null || str === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        function formatTime(seconds) {
+            if (!seconds || seconds < 0) return '—';
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        const CHECK_ICON_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+        // ============================================
+        // AUTO FILL USER INFO
+        // ============================================
+        function autoFillUserInfo(savedAnswers) {
+            if (!savedAnswers) return;
+
+            const userInfo = {
+                full_name: savedAnswers.full_name || savedAnswers['Họ tên'] || '',
+                email: savedAnswers.email || savedAnswers['Email'] || '',
+                phone: savedAnswers.phone || savedAnswers['Điện thoại'] || '',
+                position: savedAnswers.position || savedAnswers['Chức vụ'] || '',
+                department: savedAnswers.department || savedAnswers['Bộ phận'] || '',
+                agency: savedAnswers.agency || savedAnswers['Đơn vị'] || savedAnswers.organization || '',
+            };
+
+            const hasInfo = Object.values(userInfo).some(v => v);
+            if (!hasInfo) return;
+
+            const allInputs = document.querySelectorAll('.question-item input[type="text"], .question-item textarea');
+
+            allInputs.forEach(input => {
+                const item = input.closest('.question-item');
+                if (!item) return;
+
+                const titleEl = item.querySelector('.question-title');
+                if (!titleEl) return;
+
+                const titleText = titleEl.textContent.trim().toLowerCase();
+
+                const mappings = [
+                    { keywords: ['đơn vị', 'agency', 'organization', 'cơ quan'], value: userInfo.agency || userInfo.department },
+                    { keywords: ['họ tên', 'người cung cấp', 'full name', 'full_name'], value: userInfo.full_name },
+                    { keywords: ['chức vụ', 'position'], value: userInfo.position },
+                    { keywords: ['bộ phận', 'phòng ban', 'department'], value: userInfo.department || userInfo.agency },
+                    { keywords: ['điện thoại', 'phone', 'số điện thoại'], value: userInfo.phone },
+                    { keywords: ['email', 'mail'], value: userInfo.email },
+                ];
+
+                for (const mapping of mappings) {
+                    const matched = mapping.keywords.some(keyword => titleText.includes(keyword));
+                    if (matched && mapping.value) {
+                        if (input.type === 'text' || input.tagName === 'TEXTAREA') {
+                            if (!input.value.trim()) {
+                                input.value = mapping.value;
+                                input.style.borderColor = 'var(--color-primary)';
+                                input.style.backgroundColor = 'var(--color-primary-soft)';
+                                input.title = 'Đã tự động điền từ thông tin tài khoản';
+                            }
+                        }
+                        break;
+                    }
+                }
+            });
+
+            setTimeout(updateProgress, 100);
+        }
+
+        // ============================================
+        // RENDER SURVEY
+        // ============================================
+        function renderSurvey(data) {
+            surveyData = data;
+            const sections = data.sections || [];
+
+            if (sections.length === 0) {
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('survey-content').innerHTML = `
+                    <div style="background:var(--color-error-soft);border:1px solid #fecaca;border-radius:6px;padding:24px;text-align:center;">
+                        <p style="color:var(--color-error);font-weight:600">Không có câu hỏi nào trong khảo sát này.</p>
+                    </div>
+                `;
+                document.getElementById('survey-content').style.display = 'block';
+                return;
+            }
+
+            allQuestions = [];
+            sections.forEach((section, sIdx) => {
+                const questions = section.questions || [];
+                questions.forEach((q, qIdx) => {
+                    if (!['title', 'paragraph'].includes(q.question_type_code)) {
+                        allQuestions.push({
+                            id: q.id,
+                            sectionIndex: sIdx,
+                            questionIndex: qIdx,
+                            sectionCode: section.code || String(sIdx + 1),
+                            sectionDisplayCode: String(sIdx + 1),
+                            sectionTitle: section.title,
+                            title: q.title,
+                            questionNumber: allQuestions.length + 1,
+                            isRealQuestion: true
+                        });
+                    }
+                });
+            });
+
+            document.getElementById('question-count').textContent = allQuestions.length;
+
+            totalPages = sections.length;
+            let html = '';
+
+            sections.forEach((section, idx) => {
+                const isActive = idx === 0;
+                let displayTitle = section.title || `Phần ${idx + 1}`;
+                if (displayTitle.includes('sec_')) displayTitle = `Phần ${idx + 1}`;
+
+                let badgeText = String(idx + 1);
+                const match = displayTitle.match(/(?:Phần|Mục)\s*([A-Z0-9]+)/i);
+                if (match) badgeText = match[1];
+
+                html += `
+                    <div class="section-card ${isActive ? 'is-active' : ''}" data-section="${idx}" id="section-${idx}">
+                        <div class="section-header">
+                            <div class="section-number">${escapeHtml(badgeText)}</div>
+                            <div class="section-title">${escapeHtml(displayTitle)}</div>
+                        </div>
+                        <div class="section-body">
+                            ${renderQuestions(section.questions || [], idx)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('survey-content').innerHTML = html;
+            document.getElementById('survey-content').style.display = 'block';
+            document.getElementById('loading-state').style.display = 'none';
+
+            renderQuestionNav(allQuestions);
+            renderSectionBreakdown();
+            updatePagination();
+            updateProgress();
+
+            setTimeout(() => {
+                if (answers && Object.keys(answers).length > 0) {
+                    autoFillUserInfo(answers);
+                    loadAnswers(answers);
+                } else if (responseData && responseData.answers) {
+                    autoFillUserInfo(responseData.answers);
+                    loadAnswers(responseData.answers);
+                }
+            }, 200);
+
+            attachEventListeners();
+            setTimeout(() => renderQuestionNav(allQuestions), 100);
+        }
+
+        // ============================================
+        // RENDER QUESTIONS
+        // ============================================
+        function renderQuestions(questions, sectionIdx) {
+            if (!questions || questions.length === 0) {
+                return '<p style="color:var(--color-text-subtle);font-size:13px;">Không có câu hỏi nào trong phần này.</p>';
+            }
+
+            let html = '';
+            let questionCounter = 0;
+
+            questions.forEach((q, qIdx) => {
+                const isRealQuestion = !['title', 'paragraph'].includes(q.question_type_code);
+                if (isRealQuestion) questionCounter++;
+
+                const questionNumber = isRealQuestion ? questionCounter : '';
+                const required = q.is_required ? '<span class="question-required">*</span>' : '';
+                const name = `q_${q.id}`;
+                const description = q.description || '';
+
+                html += `<div class="question-item" data-question-id="${q.id}" data-section="${sectionIdx}" data-question-index="${qIdx}" data-required="${q.is_required ? 'true' : 'false'}">`;
+
+                switch(q.question_type_code) {
+                    case 'title':
+                        html += `
+                            <div style="margin: 8px 0 12px; font-weight: 600; font-size: 18px; color: var(--color-text); letter-spacing: -0.01em;">
+                                ${formatMultiLine(q.title)}
+                            </div>
+                        `;
+                        break;
+
+                    case 'paragraph':
+                        html += `
+                            <div style="margin-bottom: 12px; color: var(--color-text-muted); font-size: 13.5px; line-height: 1.7;">
+                                ${formatMultiLine(q.title)}
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'short-text':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="form-group">
+                                <input type="text"
+                                       name="${name}"
+                                       id="${name}"
+                                       placeholder="${escapeHtml(q.config?.placeholder || 'Nhập câu trả lời...')}"
+                                       ${q.is_required ? 'required' : ''}>
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'long-text':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="textarea-group">
+                                <textarea name="${name}"
+                                          id="${name}"
+                                          placeholder="${escapeHtml(q.config?.placeholder || 'Nhập nội dung...')}"
+                                          rows="${q.config?.rows || 4}"
+                                          ${q.is_required ? 'required' : ''}></textarea>
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'single-choice':
+                        html += `<div class="question-title"><span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}</div>
+                                <div class="checkbox-group">`;
+                        const choices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                        choices.forEach((choice, ci) => {
+                            const isOther = /^kh[aá]c\b|^other\b/i.test(choice.trim());
+                            const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
+                            html += `
+                                <label class="custom-radio-label">
+                                    <input type="radio" name="${name}" value="${escapeHtml(choice)}">
+                                    <span>${escapeHtml(choice)}</span>
+                                    ${otherInputHtml}
+                                </label>
+                            `;
+                        });
+                        html += `</div>`;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'multi-choice':
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="checkbox-group">
+                        `;
+                        const multiChoices = q.options || ['Lựa chọn 1', 'Lựa chọn 2'];
+                        multiChoices.forEach((choice) => {
+                            const isOther = /^kh[aá]c\b|^other\b/i.test(choice.trim());
+                            const otherInputHtml = isOther ? `<input type="text" class="other-input" placeholder="Nhập nội dung..." onfocus="onOtherInputFocus(this)">` : '';
+                            html += `
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" name="${name}[]" value="${escapeHtml(choice)}">
+                                    <span>${escapeHtml(choice)}</span>
+                                    ${otherInputHtml}
+                                </label>
+                            `;
+                        });
+                        html += `</div>`;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+
+                    case 'rating-grid': {
+                        const cfg = q.config || {};
+                        const criteria = cfg.criteria || ['Tiêu chí 1'];
+                        const scale = cfg.scale || [{value: 1, label: 'Có', kind: 'radio'}, {value: 2, label: 'Không', kind: 'radio'}];
+
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <table class="scale-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:35%">Tiêu chí</th>
+                        `;
+                        scale.forEach(s => {
+                            html += `<th>${escapeHtml(s.label)}<span class="scale-label">${s.value}</span></th>`;
+                        });
+                        html += `
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                        `;
+                        criteria.forEach((criterion, ci) => {
+                            html += `<tr><td>${escapeHtml(criterion)}</td>`;
+                            scale.forEach((s, si) => {
+                                const kind = s.kind || 'radio';
+                                const inputName = `${name}_${ci}`;
+                                if (kind === 'radio') {
+                                    html += `
+                                        <td>
+                                            <label class="custom-radio-label" style="justify-content:center;">
+                                                <input type="radio"
+                                                       name="${inputName}"
+                                                       value="${escapeHtml(s.label)}">
+                                            </label>
+                                        </td>
+                                    `;
+                                } else if (kind === 'checkbox') {
+                                    html += `
+                                        <td>
+                                            <label class="custom-checkbox" style="justify-content:center;">
+                                                <input type="checkbox"
+                                                       name="${inputName}[]"
+                                                       value="${escapeHtml(s.label)}">
+                                            </label>
+                                        </td>
+                                    `;
+                                } else if (kind === 'text') {
+                                    html += `
+                                        <td>
+                                            <input type="text"
+                                                   name="${inputName}_${si}"
+                                                   placeholder="Nhập..."
+                                                   style="width:100%;padding:6px 8px;border:1px solid var(--color-border-strong);border-radius:4px;font-size:13px;font-family:inherit;background:#fff;">
+                                        </td>
+                                    `;
+                                }
+                            });
+                            html += `</tr>`;
+                        });
+                        html += `
+                                        </tbody>
+                                    </table>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+                    }
+
+                    case 'data-table': {
+                        const dtCfg = q.config || {};
+                        const columns = dtCfg.columns || [{name: 'Cột 1', type: 'text'}, {name: 'Cột 2', type: 'text'}];
+                        let tableData = dtCfg.data || [];
+                        const numRows = dtCfg.rows || 2;
+
+                        if (tableData.length === 0) {
+                            tableData = [];
+                            for (let r = 0; r < numRows; r++) {
+                                const rowData = [];
+                                for (let c = 0; c < columns.length; c++) rowData.push('');
+                                tableData.push(rowData);
+                            }
+                        }
+
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                        `;
+                        columns.forEach(col => {
+                            let colName = typeof col === 'string' ? col : col.name;
+                            html += `<th>${escapeHtml(colName)}</th>`;
+                        });
+                        html += `
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        tableData.forEach((rowData, rowIndex) => {
+                            html += `<tr>`;
+                            columns.forEach((col, colIndex) => {
+                                const inputName = `${name}_${rowIndex}_${colIndex}`;
+                                const cellValue = rowData[colIndex] || '';
+                                const hasData = cellValue.trim() !== '';
+                                const colType = typeof col === 'string' ? 'text' : (col.type || 'text');
+                                const colOptions = typeof col === 'string' ? [] : (col.options || []);
+
+                                html += `<td><div class="input-wrapper type-${colType}">`;
+
+                                if (colType === 'text') {
+                                    if (hasData) {
+                                        html += `
+                                            <div class="data-label has-data">${escapeHtml(cellValue)}</div>
+                                            <input type="hidden" name="${inputName}" value="${escapeHtml(cellValue)}">
+                                        `;
+                                    } else {
+                                        html += `
+                                            <input type="text"
+                                                   name="${inputName}"
+                                                   placeholder="...">
+                                        `;
+                                    }
+                                } else if (colType === 'checkbox') {
+                                    html += `<div class="checkbox-group" style="text-align: left; gap: 0; margin: 0;">`;
+                                    colOptions.forEach(opt => {
+                                        html += `
+                                          <label class="custom-checkbox">
+                                              <input type="checkbox" name="${inputName}[]" value="${escapeHtml(opt)}">
+                                              <span style="font-size: 12.5px;">${escapeHtml(opt)}</span>
+                                          </label>
+                                        `;
+                                    });
+                                    html += `</div>`;
+                                } else if (colType === 'radio') {
+                                    html += `<div class="radio-group" style="text-align: left; gap: 0; margin: 0;">`;
+                                    colOptions.forEach(opt => {
+                                        html += `
+                                          <label class="custom-radio">
+                                              <input type="radio" name="${inputName}" value="${escapeHtml(opt)}">
+                                              <span style="font-size: 12.5px;">${escapeHtml(opt)}</span>
+                                          </label>
+                                        `;
+                                    });
+                                    html += `</div>`;
+                                }
+                                
+                                html += `</div></td>`;
+                            });
+                            html += `</tr>`;
+                        });
+                        html += `
+                                </tbody>
+                            </table>
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                        break;
+                    }
+
+                    default:
+                        html += `
+                            <div class="question-title">
+                                <span>Câu ${questionNumber}.</span> ${formatMultiLine(q.title)} ${required}
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="${name}" placeholder="Câu hỏi chưa được hỗ trợ">
+                            </div>
+                        `;
+                        if (description) html += `<div class="question-note">${formatMultiLine(description)}</div>`;
+                }
+
+                html += `</div>`;
+                if (qIdx < questions.length - 1) html += `<hr class="question-divider">`;
+            });
+
+            return html;
+        }
+
+        // ============================================
+        // ON OTHER INPUT FOCUS
+        // ============================================
+        function onOtherInputFocus(input) {
+            const label = input.closest('.custom-radio-label, .custom-checkbox');
+            if (!label) return;
+            const radio = label.querySelector('input[type="radio"], input[type="checkbox"]');
+            if (radio && !radio.checked) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        // ============================================
+        // RENDER QUESTION NAV (left sidebar)
+        // ============================================
+        function renderQuestionNav(questions) {
+            const nav = document.getElementById('question-nav');
+            if (!nav) return;
+            nav.innerHTML = '';
+            let currentSectionIndex = -1;
+
+            questions.forEach((q, idx) => {
+                if (q.sectionIndex !== currentSectionIndex) {
+                    currentSectionIndex = q.sectionIndex;
+                    const sectionHeader = document.createElement('div');
+                    sectionHeader.className = 'section-header-nav';
+                    let headerText = q.sectionTitle || `Phần ${q.sectionIndex + 1}`;
+                    if (headerText.includes('sec_')) headerText = `Phần ${q.sectionIndex + 1}`;
+                    sectionHeader.textContent = headerText;
+                    nav.appendChild(sectionHeader);
+                }
+
+                const isAnswered = isQuestionAnswered(q.id);
+                const isActive = idx === currentQuestionIndex;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'question-nav-item';
+                if (isActive) btn.classList.add('is-active');
+                if (isAnswered) btn.classList.add('is-complete');
+
+                btn.innerHTML = `
+                    <span class="status-dot"></span>
+                    <span class="q-number">${q.questionNumber}.</span>
+                    <span class="q-text">${escapeHtml(q.title)}</span>
+                    <span class="q-status-icon">${isAnswered ? CHECK_ICON_SVG : ''}</span>
+                `;
+
+                btn.addEventListener('click', () => goToQuestion(idx));
+                nav.appendChild(btn);
+            });
+        }
+
+        // ============================================
+        // RENDER SECTION BREAKDOWN (right sidebar)
+        // ============================================
+        function renderSectionBreakdown() {
+            const container = document.getElementById('section-breakdown');
+            if (!container || !surveyData) return;
+            const sections = surveyData.sections || [];
+            const stats = computeSectionStats();
+
+            container.innerHTML = sections.map((section, i) => {
+                const s = stats[i] || { total: 0, answered: 0, pct: 0 };
+                const isComplete = s.total > 0 && s.answered === s.total;
+                const isActive = i === currentPage;
+                let title = section.title || `Phần ${i + 1}`;
+                if (title.includes('sec_')) title = `Phần ${i + 1}`;
+                return `
+                    <div class="section-stat ${isActive ? 'is-active' : ''} ${isComplete ? 'is-complete' : ''}" data-section-index="${i}">
+                        <div class="section-stat-header">
+                            <span class="section-stat-title">${escapeHtml(title)}</span>
+                            <span class="section-stat-count">${s.answered}/${s.total}</span>
+                        </div>
+                        <div class="section-stat-bar">
+                            <div class="section-stat-fill" style="width: ${s.pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Click to navigate
+            container.querySelectorAll('.section-stat').forEach(el => {
+                el.style.cursor = 'pointer';
+                el.addEventListener('click', () => {
+                    const idx = parseInt(el.dataset.sectionIndex);
+                    if (!isNaN(idx)) goToPage(idx);
+                });
+            });
+        }
+
+        // ============================================
+        // BẢN NÂNG CẤP: KIỂM TRA CÂU HỎI ĐÃ TRẢ LỜI
+        // ============================================
+        function checkQuestionStatus(questionIdOrItem) {
+            const item = typeof questionIdOrItem === 'object' ? questionIdOrItem : document.querySelector(`.question-item[data-question-id="${questionIdOrItem}"]`);
+            if (!item) return { isAnswered: false, isValid: true };
+
+            const isRequired = item.dataset.required === 'true';
+            let isAnswered = false;
+            let isValid = true;
+
+            const gridTable = item.querySelector('.scale-table');
+            const dataTable = item.querySelector('.data-table');
+            const table = gridTable || dataTable;
+
+            if (table) {
+                const rows = table.querySelectorAll('tbody tr');
+                if (rows.length === 0) {
+                    return { isAnswered: false, isValid: !isRequired };
+                }
+
+                let answeredRowCount = 0;
+                let allRowsAnswered = true;
+
+                for (let row of rows) {
+                    let rowAnswered = false;
+                    const inputs = row.querySelectorAll('input, textarea, select');
+                    for (let inp of inputs) {
+                        if (inp.type === 'hidden') continue;
+                        if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) {
+                            rowAnswered = true;
+                        } else if (inp.type !== 'radio' && inp.type !== 'checkbox' && inp.value && inp.value.trim() !== '') {
+                            rowAnswered = true;
+                        }
+                    }
+                    if (rowAnswered) {
+                        answeredRowCount++;
+                    } else {
+                        allRowsAnswered = false;
+                    }
+                }
+
+                if (isRequired) {
+                    const isChecklist = gridTable && gridTable.dataset.gridType === 'checklist';
+                    if (isChecklist || dataTable) {
+                        isValid = answeredRowCount > 0;
+                        isAnswered = answeredRowCount > 0;
+                    } else {
+                        isValid = allRowsAnswered;
+                        isAnswered = allRowsAnswered; // Nếu grid bình thường, progress bar chỉ tăng khi trả lời đủ
+                    }
+                } else {
+                    isValid = true;
+                    isAnswered = answeredRowCount > 0; // Nếu không bắt buộc, chỉ cần trả lời 1 phần là coi như đã làm
+                }
+                return { isAnswered, isValid };
+            }
+
+            // Normal question
+            const inputs = item.querySelectorAll('input, textarea, select');
+            let hasValue = false;
+            let otherValid = true;
+
+            for (let inp of inputs) {
+                if (inp.type === 'hidden') continue;
+
+                if (inp.type === 'radio' || inp.type === 'checkbox') {
+                    if (inp.checked) {
+                        hasValue = true;
+                        // Kiểm tra nếu chọn "Khác" thì ô text đi kèm phải có giá trị
+                        let val = inp.value;
+                        if (/^kh[aá]c\b|^other\b/i.test(val)) {
+                            const wrapper = inp.closest('.custom-radio-label') || inp.closest('.custom-checkbox');
+                            if (wrapper) {
+                                const otherInput = wrapper.querySelector('.other-input');
+                                if (otherInput && otherInput.value.trim() === '') {
+                                    otherValid = false;
+                                }
+                            }
+                        }
+                    }
+                } else if (inp.value && inp.value.trim() !== '') {
+                    hasValue = true;
+                }
+            }
+
+            isAnswered = hasValue;
+            if (isRequired && !hasValue) isValid = false;
+            if (!otherValid) isValid = false; // Bắt buộc hay không, nếu chọn Khác mà không ghi thì đều invalid
+
+            return { isAnswered, isValid };
+        }
+
+        function isQuestionAnswered(questionId) {
+            return checkQuestionStatus(questionId).isAnswered;
+        }
+
+        // ============================================
+        // GO TO SPECIFIC QUESTION
+        // ============================================
+        function goToQuestion(index) {
+            if (index < 0 || index >= allQuestions.length) return;
+            const q = allQuestions[index];
+            currentQuestionIndex = index;
+            currentPage = q.sectionIndex;
+
+            document.querySelectorAll('.section-card').forEach((card, idx) => {
+                card.classList.toggle('is-active', idx === q.sectionIndex);
+            });
+
+            const questionEl = document.querySelector(`.question-item[data-question-id="${q.id}"]`);
+            if (questionEl) {
+                setTimeout(() => {
+                    questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    questionEl.style.transition = 'background 200ms';
+                    questionEl.style.background = 'var(--color-primary-soft)';
+                    setTimeout(() => { questionEl.style.background = 'transparent'; }, 1200);
+                }, 200);
+            }
+
+            renderQuestionNav(allQuestions);
+            renderSectionBreakdown();
+            updatePagination();
+            updateProgress();
+        }
+
+        // ============================================
+        // COMPUTE SECTION STATS
+        // ============================================
+        function computeSectionStats() {
+            const sections = surveyData?.sections || [];
+            const stats = [];
+            sections.forEach((section) => {
+                const questions = section.questions || [];
+                const inputQuestions = questions.filter(q => !['title', 'paragraph'].includes(q.question_type_code));
+                let answered = 0;
+                inputQuestions.forEach(q => { if (isQuestionAnswered(q.id)) answered++; });
+                stats.push({
+                    code: section.code || '',
+                    title: section.title || '',
+                    total: inputQuestions.length,
+                    answered: answered,
+                    pct: inputQuestions.length > 0 ? Math.round((answered / inputQuestions.length) * 100) : 0
+                });
+            });
+            return stats;
+        }
+
+        // ============================================
+        // LOAD ANSWERS
+        // ============================================
+        function loadAnswers(savedAnswers) {
+            Object.keys(savedAnswers).forEach(key => {
+                const value = savedAnswers[key];
+                const questionId = parseInt(key);
+                const item = document.querySelector(`.question-item[data-question-id="${questionId}"]`);
+                if (!item) return;
+
+                const gridTable = item.querySelector('.scale-table');
+                if (gridTable && value && value.type === 'grid' && Array.isArray(value.data)) {
+                    const rows = gridTable.querySelectorAll('tbody tr');
+                    rows.forEach((row, ri) => {
+                        if (ri >= value.data.length) return;
+                        const rowData = value.data[ri];
+                        const cells = row.querySelectorAll('td');
+                        cells.forEach((cell, ci) => {
+                            if (ci >= rowData.length) return;
+                            const val = rowData[ci];
+                            const radio = cell.querySelector('input[type="radio"]');
+                            if (radio && val !== null && val !== undefined) {
+                                if (radio.value === String(val)) radio.checked = true;
+                                return;
+                            }
+                            const checkboxes = cell.querySelectorAll('input[type="checkbox"]');
+                            if (checkboxes.length && Array.isArray(val)) {
+                                checkboxes.forEach(cb => {
+                                    if (val.includes(cb.value)) cb.checked = true;
+                                });
+                                return;
+                            }
+                            const textInput = cell.querySelector('input[type="text"]');
+                            if (textInput) {
+                                textInput.value = val || '';
+                            }
+                        });
+                    });
+                    return;
+                }
+
+                const name = `q_${questionId}`;
+                const elements = item.querySelectorAll(`[name^="${name}"]`);
+                if (elements.length === 0) return;
+
+                const firstEl = elements[0];
+
+                if (firstEl.type === 'radio') {
+                    const options = getOptionsForQuestion(questionId);
+                    if (options && options.length > 0 && !options.includes(value)) {
+                        const otherOption = options.find(opt => /^kh[aá]c\b|^other\b/i.test(opt));
+                        if (otherOption) {
+                            const otherRadio = item.querySelector(`input[value="${escapeHtml(otherOption)}"]`);
+                            if (otherRadio) {
+                                otherRadio.checked = true;
+                                const otherInput = otherRadio.closest('.custom-radio-label').querySelector('.other-input');
+                                if (otherInput) otherInput.value = value;
+                                return;
+                            }
+                        }
+                    }
+                    elements.forEach(el => {
+                        if (el.value === String(value)) el.checked = true;
+                    });
+                } else if (firstEl.type === 'checkbox' && !firstEl.name.includes('_')) {
+                    const values = Array.isArray(value) ? value : [value];
+                    elements.forEach(el => {
+                        if (values.includes(el.value)) {
+                            el.checked = true;
+                        } else {
+                            if (/^kh[aá]c\b|^other\b/i.test(el.value)) {
+                                const options = getOptionsForQuestion(questionId);
+                                const unmatched = values.filter(v => !options.includes(v));
+                                if (unmatched.length > 0) {
+                                    const otherInput = el.closest('.custom-checkbox').querySelector('.other-input');
+                                    if (otherInput) {
+                                        otherInput.value = unmatched[0];
+                                        el.checked = true;
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox' || firstEl.type === 'radio' || firstEl.type === 'select-one') {
+                    if (elements.length === 1 && firstEl.type !== 'checkbox' && firstEl.type !== 'radio') {
+                        firstEl.value = value || '';
+                    } else {
+                        if (Array.isArray(value)) {
+                            elements.forEach(el => {
+                                const nameParts = el.name.replace('[]', '').split('_');
+                                if (nameParts.length >= 3) {
+                                    const r = parseInt(nameParts[1]);
+                                    const c = parseInt(nameParts[2]);
+                                    if (value[r] && value[r][c] !== undefined && value[r][c] !== null) {
+                                        if (el.type === 'checkbox') {
+                                            if (Array.isArray(value[r][c])) {
+                                                el.checked = value[r][c].includes(el.value);
+                                            } else {
+                                                el.checked = (el.value === String(value[r][c]));
+                                            }
+                                        } else if (el.type === 'radio') {
+                                            if (el.value === String(value[r][c])) {
+                                                el.checked = true;
+                                            }
+                                        } else {
+                                            el.value = value[r][c];
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+
+            setTimeout(() => renderQuestionNav(allQuestions), 100);
+        }
+
+        function getOptionsForQuestion(questionId) {
+            if (!surveyData) return [];
+            for (const section of surveyData.sections) {
+                for (const q of section.questions) {
+                    if (q.id === questionId) {
+                        return q.options || [];
+                    }
+                }
+            }
+            return [];
+        }
+
+        // ============================================
+        // COLLECT ANSWERS
+        // ============================================
+        function collectAnswers() {
+            const allAnswers = {};
+            const allQuestionsEl = document.querySelectorAll('.question-item');
+
+            allQuestionsEl.forEach(item => {
+                const questionId = item.dataset.questionId;
+                if (!questionId) return;
+                const qId = parseInt(questionId);
+
+                const gridTable = item.querySelector('.scale-table');
+                if (gridTable) {
+                    const gridData = [];
+                    const rows = gridTable.querySelectorAll('tbody tr');
+                    rows.forEach(row => {
+                        const rowData = [];
+                        const cells = row.querySelectorAll('td');
+                        cells.forEach(cell => {
+                            const radio = cell.querySelector('input[type="radio"]:checked');
+                            if (radio) {
+                                rowData.push(radio.value);
+                                return;
+                            }
+                            const checkedCheckboxes = cell.querySelectorAll('input[type="checkbox"]:checked');
+                            if (checkedCheckboxes.length) {
+                                rowData.push(Array.from(checkedCheckboxes).map(el => el.value));
+                                return;
+                            }
+                            const textInput = cell.querySelector('input[type="text"]');
+                            if (textInput) {
+                                rowData.push(textInput.value.trim() || null);
+                                return;
+                            }
+                            rowData.push(null);
+                        });
+                        gridData.push(rowData);
+                    });
+                    allAnswers[qId] = { type: 'grid', data: gridData };
+                    return;
+                }
+
+                const name = `q_${qId}`;
+                const elements = item.querySelectorAll(`[name^="${name}"]`);
+                if (elements.length === 0) return;
+
+                const firstEl = elements[0];
+
+                if (firstEl.type === 'radio') {
+                    const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
+                    if (checkedRadio) {
+                        let value = checkedRadio.value;
+                        if (/^kh[aá]c\b|^other\b/i.test(value)) {
+                            const otherInput = checkedRadio.closest('.custom-radio-label').querySelector('.other-input');
+                            if (otherInput && otherInput.value.trim() !== '') {
+                                value = otherInput.value.trim();
+                            }
+                        }
+                        allAnswers[qId] = value;
+                    }
+                } else if (firstEl.type === 'checkbox' && !firstEl.name.includes('_')) {
+                    const checkedCheckboxes = item.querySelectorAll(`[name^="${name}[]"]:checked`);
+                    if (checkedCheckboxes.length > 0) {
+                        const values = Array.from(checkedCheckboxes).map(cb => {
+                            let val = cb.value;
+                            if (/^kh[aá]c\b|^other\b/i.test(val)) {
+                                const otherInput = cb.closest('.custom-checkbox').querySelector('.other-input');
+                                if (otherInput && otherInput.value.trim() !== '') {
+                                    return otherInput.value.trim();
+                                }
+                            }
+                            return val;
+                        });
+                        allAnswers[qId] = values;
+                    }
+                } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox' || firstEl.type === 'radio' || firstEl.type === 'select-one') {
+                    if (elements.length === 1 && firstEl.type !== 'checkbox' && firstEl.type !== 'radio') {
+                        const val = firstEl.value.trim();
+                        if (val) allAnswers[qId] = val;
+                    } else {
+                        const matrixData = [];
+                        const rowMap = {};
+                        elements.forEach(el => {
+                            const nameParts = el.name.replace('[]', '').split('_');
+                            if (nameParts.length >= 3) {
+                                const rowIdx = parseInt(nameParts[1]);
+                                const colIdx = parseInt(nameParts[2]);
+                                if (!rowMap[rowIdx]) rowMap[rowIdx] = [];
+                                
+                                if (el.type === 'checkbox') {
+                                    if (el.checked) {
+                                        if (rowMap[rowIdx][colIdx] === undefined || rowMap[rowIdx][colIdx] === null) {
+                                            rowMap[rowIdx][colIdx] = [el.value];
+                                        } else if (Array.isArray(rowMap[rowIdx][colIdx])) {
+                                            rowMap[rowIdx][colIdx].push(el.value);
+                                        } else {
+                                            rowMap[rowIdx][colIdx] = [rowMap[rowIdx][colIdx], el.value];
+                                        }
+                                    } else {
+                                        if (rowMap[rowIdx][colIdx] === undefined) {
+                                            rowMap[rowIdx][colIdx] = null;
+                                        }
+                                    }
+                                } else if (el.type === 'radio') {
+                                    if (el.checked) {
+                                        rowMap[rowIdx][colIdx] = el.value.trim();
+                                    } else {
+                                        if (rowMap[rowIdx][colIdx] === undefined) {
+                                            rowMap[rowIdx][colIdx] = null;
+                                        }
+                                    }
+                                } else {
+                                    rowMap[rowIdx][colIdx] = el.value.trim();
+                                }
+                            }
+                        });
+                        
+                        const rowKeys = Object.keys(rowMap).sort((a, b) => parseInt(a) - parseInt(b));
+                        rowKeys.forEach(rowKey => {
+                            let maxCol = rowMap[rowKey].length || 0;
+                            for(let i=0; i<maxCol; i++) {
+                                if (rowMap[rowKey][i] === undefined) rowMap[rowKey][i] = null;
+                            }
+                            matrixData.push(rowMap[rowKey]);
+                        });
+                        if (matrixData.length > 0) allAnswers[qId] = matrixData;
+                    }
+                }
+            });
+
+            return allAnswers;
+        }
+
+        // ============================================
+        // UPDATE PROGRESS
+        // ============================================
+        function updateProgress() {
+            const stats = computeSectionStats();
+            let totalQuestions = 0, totalAnswered = 0;
+            stats.forEach(s => { totalQuestions += s.total; totalAnswered += s.answered; });
+            const pct = totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0;
+
+            // Update right sidebar progress display
+            const pctEl = document.getElementById('progress-percent-large');
+            if (pctEl) pctEl.textContent = pct;
+
+            const fillEl = document.getElementById('progress-fill');
+            if (fillEl) fillEl.style.width = `${pct}%`;
+
+            const completedEl = document.getElementById('question-completed-text');
+            if (completedEl) completedEl.textContent = `${totalAnswered}/${totalQuestions}`;
+
+            const statusBadge = document.getElementById('progress-status-badge');
+            if (statusBadge) {
+                if (pct === 100 && totalQuestions > 0) {
+                    statusBadge.textContent = 'Hoàn thành';
+                    statusBadge.style.color = 'var(--color-success)';
+                } else if (pct === 0) {
+                    statusBadge.textContent = 'Chưa bắt đầu';
+                    statusBadge.style.color = 'var(--color-text-muted)';
+                } else {
+                    statusBadge.textContent = 'Đang làm';
+                    statusBadge.style.color = 'var(--color-primary)';
+                }
+            }
+
+            // Time elapsed
+            const timeEl = document.getElementById('progress-time');
+            if (timeEl && !isSubmitted) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timeEl.textContent = formatTime(elapsed);
+            }
+
+            // Re-render section breakdown (to update active state and counts)
+            renderSectionBreakdown();
+            renderQuestionNav(allQuestions);
+        }
+
+        // ============================================
+        // PAGINATION
+        // ============================================
+        function updatePagination() {
+            const totalPages = surveyData?.sections?.length || 0;
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            if (prevBtn) prevBtn.disabled = currentPage === 0;
+            if (nextBtn) nextBtn.disabled = currentPage === totalPages - 1;
+        }
+
+        function goToPage(pageIndex) {
+            if (pageIndex < 0 || pageIndex >= (surveyData?.sections?.length || 0)) return;
+            const currentAnswers = collectAnswers();
+            Object.assign(answers, currentAnswers);
+            currentPage = pageIndex;
+
+            document.querySelectorAll('.section-card').forEach((card, idx) => {
+                card.classList.toggle('is-active', idx === pageIndex);
+            });
+
+            // Update current question index to first question of this section
+            const firstQInSection = allQuestions.findIndex(q => q.sectionIndex === pageIndex);
+            if (firstQInSection >= 0) currentQuestionIndex = firstQInSection;
+
+            updatePagination();
+            updateProgress();
+            renderQuestionNav(allQuestions);
+            document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        window.goToPage = goToPage;
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        function attachEventListeners() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (currentPage > 0) goToPage(currentPage - 1);
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (currentPage < (surveyData?.sections?.length || 0) - 1) goToPage(currentPage + 1);
+                });
+            }
+
+            if (submitBtn) {
+                submitBtn.addEventListener('click', submitSurvey);
+            }
+
+            let progressTimeout;
+            const scheduleUpdateProgress = () => {
+                clearTimeout(progressTimeout);
+                progressTimeout = setTimeout(() => updateProgress(), 250);
+            };
+
+            document.addEventListener('change', (e) => {
+                const item = e.target.closest('.question-item');
+                if (item) {
+                    item.classList.remove('error-highlight');
+                    scheduleSave();
+                    scheduleUpdateProgress();
+                }
+            });
+
+            document.addEventListener('input', (e) => {
+                const item = e.target.closest('.question-item');
+                if (item) {
+                    item.classList.remove('error-highlight');
+                    scheduleSave();
+                    scheduleUpdateProgress();
+                }
+            });
+        }
+
+        // ============================================
+        // SAVE DRAFT (auto)
+        // ============================================
+        async function saveDraft(showFeedback = true) {
+            if (isSubmitted) return;
+            const answersData = collectAnswers();
+            const stats = computeSectionStats();
+            const progress = {};
+            stats.forEach(s => { progress[s.code] = s.pct; });
+
+            try {
+                const res = await API.submitResponse({
+                    survey_id: SURVEY_ID,
+                    response_id: responseData?.id,
+                    progress_id: progressId,
+                    answers: answersData,
+                    section_progress: progress,
+                    status: 'draft',
+                    time_taken: Math.round((Date.now() - startTime) / 1000)
+                });
+                if (res.success) {
+                    responseData = res;
+                    if (showFeedback) showToast('Đã lưu khảo sát', 'success');
+                }
+            } catch (e) {
+                if (showFeedback) showToast('Lỗi khi lưu: ' + e.message, 'error');
+            }
+        }
+
+        function scheduleSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => saveDraft(true), 3000);
+        }
+
+        // ============================================
+        // VALIDATE & SUBMIT
+        // ============================================
+        async function submitSurvey() {
+            let isValid = true;
+            let firstInvalid = null;
+
+            const allQuestionsEl = document.querySelectorAll('.question-item');
+            
+            document.querySelectorAll('.error-highlight').forEach(el => el.classList.remove('error-highlight'));
+
+            allQuestionsEl.forEach(item => {
+                const status = checkQuestionStatus(item);
+                
+                if (!status.isValid) {
+                    isValid = false;
+                    if (!firstInvalid) firstInvalid = item;
+                    item.classList.add('error-highlight');
+                }
+            });
+
+            if (!isValid) {
+                showToast('Vui lòng trả lời tất cả câu hỏi bắt buộc', 'warning');
+                if (firstInvalid) {
+                    const sectionIdx = parseInt(firstInvalid.dataset.section);
+                    if (currentPage !== sectionIdx && typeof goToPage === 'function') {
+                        goToPage(sectionIdx);
+                    }
+                    setTimeout(() => {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+                return;
+            }
+
+            if (!confirm('Bạn có chắc chắn muốn nộp khảo sát này?')) return;
+
+            const answersData = collectAnswers();
+            const stats = computeSectionStats();
+            const progress = {};
+            stats.forEach(s => { progress[s.code] = s.pct; });
+
+            let totalQuestions = 0, totalAnswered = 0;
+            stats.forEach(s => { totalQuestions += s.total; totalAnswered += s.answered; });
+
+            try {
+                const res = await API.submitResponse({
+                    survey_id: SURVEY_ID,
+                    response_id: responseData?.id,
+                    progress_id: progressId,
+                    answers: answersData,
+                    section_progress: progress,
+                    status: 'submitted',
+                    time_taken: Math.round((Date.now() - startTime) / 1000)
+                });
+                if (res.success) {
+                    isSubmitted = true;
+
+                    document.getElementById('total-questions-display').textContent = totalQuestions;
+                    document.getElementById('completed-questions-display').textContent = totalAnswered;
+
+                    document.getElementById('survey-content').style.display = 'none';
+                    document.getElementById('sidebar').style.display = 'none';
+                    document.querySelector('.sidebar-right').style.display = 'none';
+                    document.querySelector('.main-content').classList.add('is-success');
+                    document.getElementById('success-screen').style.display = 'block';
+
+                    showToast('Đã nộp khảo sát thành công', 'success');
+                }
+            } catch (e) {
+                showToast('Lỗi khi gửi: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+        async function init() {
+            try {
+                const injectedResponse = JSON.parse(document.getElementById('response-data').textContent);
+                
+                const [survey] = await Promise.all([
+                    API.getSurvey(SURVEY_ID)
+                ]);
+
+                surveyData = survey;
+                responseData = injectedResponse;
+                answers = responseData.answers || {};
+                sectionProgress = responseData.section_progress || {};
+
+                renderSurvey(survey);
+
+                setInterval(() => {
+                    if (!isSubmitted && Object.keys(collectAnswers()).length > 0) {
+                        saveDraft(false);
+                    }
+                }, 30000);
+
+                // Tick timer every second
+                setInterval(() => {
+                    if (!isSubmitted) {
+                        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                        const timeEl = document.getElementById('progress-time');
+                        if (timeEl) timeEl.textContent = formatTime(elapsed);
+                    }
+                }, 1000);
+
+                if (Object.keys(answers).length > 0) {
+                    showToast('Đã khôi phục dữ liệu đã lưu', 'info');
+                }
+
+                // Make all inputs read-only
+                setTimeout(() => {
+                    document.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.disabled = true;
+                    });
+                    const btn = document.querySelector('.submit-btn');
+                    if(btn) btn.style.display = 'none';
+                    const draftBtn = document.querySelector('.draft-btn');
+                    if(draftBtn) draftBtn.style.display = 'none';
+                }, 500);
+
+            } catch (error) {
+                console.error('Init error:', error);
+                showToast('Lỗi: ' + error.message, 'error');
+                document.getElementById('loading-state').innerHTML = `
+                    <p style="color:var(--color-error);font-weight:600">Không thể tải khảo sát</p>
+                    <p style="font-size:12.5px;color:var(--color-error);margin-top:6px">${escapeHtml(error.message)}</p>
+                    <button onclick="location.reload()" style="margin-top:18px;padding:9px 18px;background:var(--color-primary);color:white;border-radius:4px;font-size:12.5px;font-weight:500;border:none;cursor:pointer;font-family:inherit">
+                        Thử lại
+                    </button>
+                `;
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
+    </script>
+  </body>
+</html>
+{% endblock %}

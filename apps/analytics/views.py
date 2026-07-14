@@ -2275,3 +2275,29 @@ def organization_survey_summary_api(request):
 def organization_with_status_api(request):
     """API cũ - giữ tương thích"""
     return organization_survey_summary_api(request)
+
+from apps.survey.models import Response
+import json
+
+@login_required(login_url='/accounts/login/')
+def test_responses_list_view(request):
+    responses = Response.objects.select_related('survey').order_by('-id')[:100]
+    context = {'responses': responses}
+    return render(request, 'analytics/test_responses_list.html', context)
+
+@login_required(login_url='/accounts/login/')
+def test_response_detail_view(request, response_id):
+    resp = get_object_or_404(Response, id=response_id)
+    survey = resp.survey
+    response_data = {
+        'id': resp.id,
+        'answers': resp.answers,
+        'section_progress': resp.section_progress
+    }
+    context = {
+        'survey': survey,
+        'survey_id': survey.id,
+        'is_public': True,
+        'response_json': response_data,
+    }
+    return render(request, 'analytics/test_response.html', context)
