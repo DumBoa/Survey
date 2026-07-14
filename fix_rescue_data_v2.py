@@ -90,9 +90,12 @@ def fix_all_surveys():
             active_q_map = {str(q.id): q for q in active_questions if q.component_type not in ['title', 'section_break', 'paragraph']}
             
             # Tạo dictionary tìm kiếm theo Title để map chính xác kể cả khi đảo vị trí
-            title_to_active_id = {}
+            title_to_active_ids = {}
             for aid, q in active_q_map.items():
-                title_to_active_id[q.title.strip()] = aid
+                t = q.title.strip()
+                if t not in title_to_active_ids:
+                    title_to_active_ids[t] = []
+                title_to_active_ids[t].append(aid)
                 
             used_active_ids = set()
             
@@ -106,9 +109,10 @@ def fix_all_surveys():
                 old_q = next((q for q in old_questions if str(q.id) == old_id), None)
                 new_id = None
                 
-                if old_q and old_q.title.strip() in title_to_active_id:
+                if old_q and old_q.title.strip() in title_to_active_ids and len(title_to_active_ids[old_q.title.strip()]) > 0:
                     # Map theo tiêu đề (an toàn 100% nếu đảo vị trí)
-                    new_id = title_to_active_id[old_q.title.strip()]
+                    # Lấy ID đầu tiên trong list và xóa nó đi để các câu giống tên tiếp theo được dùng ID kế tiếp
+                    new_id = title_to_active_ids[old_q.title.strip()].pop(0)
                 else:
                     # Fallback map theo thứ tự nếu không tìm thấy title giống nhau
                     # Lấy ID active đầu tiên chưa được sử dụng
