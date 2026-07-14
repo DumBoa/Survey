@@ -1598,8 +1598,14 @@
             <tr>
                 <td class="col-stt">${startIdx + i + 1}</td>
                 <td class="unit-name">${org.name || "—"}</td>
-                <td>${org.total_users || 0}</td>
-                <td>${org.completed_users || 0}</td>
+                <td>
+                    <div>${org.total_users || 0}</div>
+                    ${org.users && org.users.length > 0 ? `<div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">${org.users.map(u => u.full_name).join(', ')}</div>` : ''}
+                </td>
+                <td>
+                    <div>${org.completed_users || 0}</div>
+                    ${org.users && org.users.filter(u => u.completed).length > 0 ? `<div style="font-size: 11px; color: var(--success); margin-top: 4px; font-weight: 500;">${org.users.filter(u => u.completed).map(u => u.full_name).join(', ')}</div>` : ''}
+                </td>
                 <td>
                     <div class="progress-wrap">
                         <div class="progress-bar-bg">

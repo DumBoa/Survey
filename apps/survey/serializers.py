@@ -130,7 +130,7 @@ class SurveyPublicSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'status', 'sections', 'settings']
     
     def get_sections(self, obj):
-        sections = obj.sections.all().order_by('order')
+        sections = obj.sections.filter(is_active=True).order_by('order')
         return SectionPublicSerializer(sections, many=True).data
 
 
@@ -143,7 +143,7 @@ class SectionPublicSerializer(serializers.ModelSerializer):
         fields = ['id', 'code', 'title', 'description', 'order', 'questions']
     
     def get_questions(self, obj):
-        questions = obj.questions.all().order_by('order')
+        questions = obj.questions.filter(is_active=True).order_by('order')
         return QuestionPublicSerializer(questions, many=True).data
 
 
