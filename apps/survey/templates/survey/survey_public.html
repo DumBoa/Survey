@@ -2465,7 +2465,7 @@
 
                 const firstEl = elements[0];
 
-                if (firstEl.type === 'radio') {
+                if (firstEl.type === 'radio' && !firstEl.name.includes('_')) {
                     const options = getOptionsForQuestion(questionId);
                     if (options && options.length > 0 && !options.includes(value)) {
                         const otherOption = options.find(opt => /^kh[aá]c\b|^other\b/i.test(opt));
@@ -2533,7 +2533,7 @@
                                                 el.checked = (el.value === String(cellValue));
                                             }
                                         } else if (el.type === 'radio') {
-                                            if (el.value === String(cellValue)) {
+                                            if (el.value.trim() === String(cellValue).trim()) {
                                                 el.checked = true;
                                             }
                                         } else {
@@ -2611,7 +2611,7 @@
 
                 const firstEl = elements[0];
 
-                if (firstEl.type === 'radio') {
+                if (firstEl.type === 'radio' && !firstEl.name.includes('_')) {
                     const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
                     if (checkedRadio) {
                         let value = checkedRadio.value;
