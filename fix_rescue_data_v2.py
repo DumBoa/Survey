@@ -87,11 +87,16 @@ def fix_all_surveys():
                     
             # 2. Map các trường ID dựa trên đúng thứ tự logic (trên xuống dưới)
             for i, old_id in enumerate(old_ids_sorted):
+                val = old_answers.get(old_id)
+                # Bắt và fix luôn lỗi mảng 3D của Bảng Dữ Liệu (data-table)
+                if isinstance(val, list) and len(val) == 1 and isinstance(val[0], list) and len(val[0]) > 0 and isinstance(val[0][0], list):
+                    val = val[0]
+
                 if i < len(active_ids):
                     new_id = active_ids[i]
-                    new_answers[new_id] = old_answers.get(old_id)
+                    new_answers[new_id] = val
                 else:
-                    new_answers[old_id] = old_answers.get(old_id)
+                    new_answers[old_id] = val
                     
             r.answers = new_answers
             r.save(update_fields=['answers'])
