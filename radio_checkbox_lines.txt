@@ -1,0 +1,67 @@
+506: CHECKBOX / RADIO
+516: .custom-radio-label {
+527: .custom-radio-label:hover {
+531: .custom-checkbox input[type="checkbox"],
+532: .custom-radio-label input[type="radio"] {
+547: .custom-radio-label input[type="radio"] {
+551: .custom-checkbox input[type="checkbox"]:hover,
+552: .custom-radio-label input[type="radio"]:hover {
+556: .custom-checkbox input[type="checkbox"]:checked,
+557: .custom-radio-label input[type="radio"]:checked {
+562: .custom-checkbox input[type="checkbox"]:checked::after {
+574: .custom-radio-label input[type="radio"]:checked::after {
+587: .custom-radio-label span {
+673: .data-table tbody td .input-wrapper.type-radio {
+678: .data-table tbody td .custom-radio {
+690: .data-table tbody td .custom-radio:hover {
+764: .scale-table tbody td .custom-radio-label,
+778: .scale-table tbody td .custom-radio-label:hover,
+783: .scale-table tbody td .custom-radio-label input[type="radio"],
+784: .scale-table tbody td .custom-checkbox input[type="checkbox"] {
+1966: <label class="custom-radio-label">
+1967: <input type="radio" name="${name}" value="${escapeHtml(choice)}">
+1990: <input type="checkbox" name="${name}[]" value="${escapeHtml(choice)}">
+2003: const scale = cfg.scale || [{value: 1, label: 'Có', kind: 'radio'}, {value: 2, label: 'Không', kind: 'radio'}];
+2025: const kind = s.kind || 'radio';
+2027: if (kind === 'radio') {
+2030: <label class="custom-radio-label" style="justify-content:center;">
+2031: <input type="radio"
+2041: <input type="checkbox"
+2130: <input type="checkbox" name="${inputName}[]" value="${escapeHtml(opt)}">
+2136: } else if (colType === 'radio') {
+2137: html += `<div class="radio-group" style="text-align: left; gap: 0; margin: 0;">`;
+2140: <label class="custom-radio">
+2141: <input type="radio" name="${inputName}" value="${escapeHtml(opt)}">
+2185: const label = input.closest('.custom-radio-label, .custom-checkbox');
+2187: const radio = label.querySelector('input[type="radio"], input[type="checkbox"]');
+2188: if (radio && !radio.checked) {
+2189: radio.checked = true;
+2190: radio.dispatchEvent(new Event('change', { bubbles: true }));
+2302: if ((inp.type === 'radio' || inp.type === 'checkbox') && inp.checked) {
+2304: } else if (inp.type !== 'radio' && inp.type !== 'checkbox' && inp.value && inp.value.trim() !== '') {
+2339: if (inp.type === 'radio' || inp.type === 'checkbox') {
+2345: const wrapper = inp.closest('.custom-radio-label') || inp.closest('.custom-checkbox');
+2441: const radio = cell.querySelector('input[type="radio"]');
+2442: if (radio && val !== null && val !== undefined) {
+2443: if (radio.value === String(val)) radio.checked = true;
+2446: const checkboxes = cell.querySelectorAll('input[type="checkbox"]');
+2468: if (firstEl.type === 'radio' && firstEl.name === name) {
+2473: const otherRadio = item.querySelector(`input[value="${escapeHtml(otherOption)}"]`);
+2474: if (otherRadio) {
+2475: otherRadio.checked = true;
+2476: const otherInput = otherRadio.closest('.custom-radio-label').querySelector('.other-input');
+2504: } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox' || firstEl.type === 'radio' || firstEl.type === 'select-one') {
+2505: if (elements.length === 1 && firstEl.type !== 'checkbox' && firstEl.type !== 'radio') {
+2535: } else if (el.type === 'radio') {
+2585: const radio = cell.querySelector('input[type="radio"]:checked');
+2586: if (radio) {
+2587: rowData.push(radio.value);
+2590: const checkedCheckboxes = cell.querySelectorAll('input[type="checkbox"]:checked');
+2614: if (firstEl.type === 'radio' && firstEl.name === name) {
+2615: const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
+2616: if (checkedRadio) {
+2617: let value = checkedRadio.value;
+2619: const otherInput = checkedRadio.closest('.custom-radio-label').querySelector('.other-input');
+2641: } else if (firstEl.type === 'text' || firstEl.tagName === 'TEXTAREA' || firstEl.type === 'hidden' || firstEl.type === 'checkbox' || firstEl.type === 'radio' || firstEl.type === 'select-one') {
+2642: if (elements.length === 1 && firstEl.type !== 'checkbox' && firstEl.type !== 'radio') {
+2669: } else if (el.type === 'radio') {

@@ -2465,7 +2465,7 @@
 
                 const firstEl = elements[0];
 
-                if (firstEl.type === 'radio' && !firstEl.name.includes('_')) {
+                if (firstEl.type === 'radio' && firstEl.name === name) {
                     const options = getOptionsForQuestion(questionId);
                     if (options && options.length > 0 && !options.includes(value)) {
                         const otherOption = options.find(opt => /^kh[aá]c\b|^other\b/i.test(opt));
@@ -2482,7 +2482,7 @@
                     elements.forEach(el => {
                         if (el.value === String(value)) el.checked = true;
                     });
-                } else if (firstEl.type === 'checkbox' && !firstEl.name.includes('_')) {
+                } else if (firstEl.type === 'checkbox' && (firstEl.name === name || firstEl.name === name + '[]')) {
                     const values = Array.isArray(value) ? value : [value];
                     elements.forEach(el => {
                         if (values.includes(el.value)) {
@@ -2611,7 +2611,7 @@
 
                 const firstEl = elements[0];
 
-                if (firstEl.type === 'radio' && !firstEl.name.includes('_')) {
+                if (firstEl.type === 'radio' && firstEl.name === name) {
                     const checkedRadio = item.querySelector(`[name^="${name}"]:checked`);
                     if (checkedRadio) {
                         let value = checkedRadio.value;
@@ -2623,7 +2623,7 @@
                         }
                         allAnswers[qId] = value;
                     }
-                } else if (firstEl.type === 'checkbox' && !firstEl.name.includes('_')) {
+                } else if (firstEl.type === 'checkbox' && (firstEl.name === name || firstEl.name === name + '[]')) {
                     const checkedCheckboxes = item.querySelectorAll(`[name^="${name}[]"]:checked`);
                     if (checkedCheckboxes.length > 0) {
                         const values = Array.from(checkedCheckboxes).map(cb => {

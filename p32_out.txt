@@ -1,6 +1,0 @@
-Participant 32: test, Target Group: Nhóm đối tượng 3
-Assigned forms: ['CCHC-BM-09', 'CCHC-BM-07', 'CCHC-BM-06', 'CCHC-BM-05']
-Form: CCHC-BM-09, Status: completed, Percent: 29
-Form: CCHC-BM-07, Status: completed, Percent: 70
-Form: CCHC-BM-06, Status: completed, Percent: 71
-Form: CCHC-BM-05, Status: completed, Percent: 82

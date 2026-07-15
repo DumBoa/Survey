@@ -350,16 +350,14 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th width="60">STT</th>
-                            <th>Tên đơn vị</th>
-                            <th class="d-none d-md-table-cell">Số đối tượng</th>
-                            <th class="d-none d-md-table-cell">Đã hoàn thành</th>
-                            <th width="200">Tiến độ</th>
-                            <th width="150">Trạng thái</th>
+                            <th width="5%">STT</th>
+                            <th width="35%">TÊN ĐƠN VỊ</th>
+                            <th width="20%">TIẾN ĐỘ</th>
+                            <th width="20%">TRẠNG THÁI</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <tr><td colspan="6" class="text-center py-5 text-muted">Đang tải dữ liệu...</td></tr>
+                        <tr><td colspan="4" class="text-center py-5 text-muted">Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -427,7 +425,7 @@
         });
 
         function loadData() {
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Đang tải dữ liệu...</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Đang tải dữ liệu...</td></tr>';
             
             fetch("/analytics/api/organizations/survey-summary/", {
                 headers: { "X-Requested-With": "XMLHttpRequest" }
@@ -496,7 +494,7 @@
             const tbody = document.getElementById('tableBody');
 
             if (pageItems.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Không tìm thấy đơn vị nào</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-5 text-muted">Không tìm thấy đơn vị nào</td></tr>';
             } else {
                 tbody.innerHTML = pageItems.map((org, i) => {
                     const pct = org.progress_percent || 0;
@@ -539,8 +537,6 @@
                         <tr onclick="toggleExpand('${org.id}')" style="cursor: pointer;">
                             <td>${startIdx + i + 1}</td>
                             <td class="fw-semibold text-dark">${org.name || "—"}</td>
-                            <td class="d-none d-md-table-cell">${org.total_users || 0}</td>
-                            <td class="d-none d-md-table-cell">${org.completed_users || 0}</td>
                             <td>
                                 <div class="progress-wrap">
                                     <div class="progress-bg">
@@ -556,7 +552,7 @@
                             </td>
                         </tr>
                         <tr class="expand-row" id="expand-${org.id}">
-                            <td colspan="6">
+                            <td colspan="4">
                                 <div class="expand-content">
                                     <div class="expand-item" style="flex: 1;">
                                         <label>Nhóm đối tượng đã hoàn thành</label>

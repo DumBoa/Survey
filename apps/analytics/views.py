@@ -2142,7 +2142,7 @@ def organization_survey_summary_api(request):
                     continue
                 
                 user_list = []
-                completed_objects_count = 0
+                completed_groups = set()
                 
                 participations = SurveyParticipant.objects.filter(user__in=users)
                 
@@ -2160,8 +2160,8 @@ def organization_survey_summary_api(request):
                     else:
                         is_done = False
                         
-                    if is_done:
-                        completed_objects_count += 1
+                    if is_done and participant.target_group_name:
+                        completed_groups.add(participant.target_group_name)
                     
                     last_progress = SurveyProgress.objects.filter(
                         participant=participant,
@@ -2176,6 +2176,8 @@ def organization_survey_summary_api(request):
                         'completed': is_done,
                         'completed_at': last_progress.completed_at.isoformat() if (last_progress and last_progress.completed_at) else None
                     })
+                
+                completed_objects_count = len(completed_groups)
                 
                 pct = round((completed_objects_count / target_objects_count * 100), 1)
                 if pct > 100:
@@ -2289,7 +2291,7 @@ import json
 
 @login_required(login_url='/accounts/login/')
 def test_responses_list_view(request):
-    responses = Response.objects.select_related('survey').order_by('-id')[:100]
+    responses = Response.objects.filter(status='submitted').select_related('survey').order_by('-id')[:500]
     context = {'responses': responses}
     return render(request, 'analytics/test_responses_list.html', context)
 
