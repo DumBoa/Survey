@@ -2120,6 +2120,11 @@ def organization_survey_summary_api(request):
                 
                 users = User.objects.filter(organization=org, is_active=True)
                 
+                expected_target_groups = []
+                for u in users:
+                    expected_target_groups.extend([tg.name for tg in u.target_groups.all()])
+                expected_target_groups = list(set(expected_target_groups))
+                
                 if not users.exists():
                     org_list.append({
                         'id': org.id,
@@ -2130,7 +2135,8 @@ def organization_survey_summary_api(request):
                         'completed_users': 0,
                         'progress_percent': 0,
                         'status': 'pending',
-                        'users': []
+                        'users': [],
+                        'expected_target_groups': expected_target_groups
                     })
                     total_pending += 1
                     continue
@@ -2164,8 +2170,9 @@ def organization_survey_summary_api(request):
                     
                     user_list.append({
                         'id': participant.id,
-                        'full_name': participant.full_name or participant.email or f"Đối tượng {participant.id}",
-                        'email': participant.email or '',
+                        'full_name': participant.full_name if request.user.is_authenticated else 'Ẩn danh',
+                        'target_group_name': participant.target_group_name or '',
+                        'email': participant.email if request.user.is_authenticated else '',
                         'completed': is_done,
                         'completed_at': last_progress.completed_at.isoformat() if (last_progress and last_progress.completed_at) else None
                     })
@@ -2195,7 +2202,8 @@ def organization_survey_summary_api(request):
                     'completed_users': completed_objects_count,
                     'progress_percent': pct,
                     'status': status,
-                    'users': user_list if request.user.is_authenticated else []
+                    'users': user_list,
+                    'expected_target_groups': expected_target_groups
                 })
             
             return org_list, total_completed, total_in_progress, total_pending, total_objects, total_completed_objects

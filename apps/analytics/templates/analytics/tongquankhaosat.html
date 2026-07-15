@@ -480,6 +480,58 @@
     background: #94a3b8;
   }
 
+  /* Expandable row */
+  .expand-row { display: none; }
+  .expand-row.show { display: table-row; }
+  .expand-row td {
+    padding: 0 !important;
+    background: #FAFBFC;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .expand-content {
+    padding: 16px 20px 16px 76px;
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .expand-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .expand-item label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .expand-item span {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .expand-item .tg-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #F1F5F9;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #475569;
+    margin: 1px 2px;
+    border: 1px solid transparent;
+  }
+  .expand-item .tg-chip.completed {
+    background: #dcfce7;
+    border-color: #22c55e;
+    color: #15803d;
+  }
+  .expand-item .tg-chip.pending {
+    background: #fef3c7;
+    border-color: #eab308;
+    color: #92400e;
+  }
+
   /* Action buttons */
   .action-btns {
     display: flex;
@@ -1193,8 +1245,6 @@
         <tr>
           <th class="col-stt">STT</th>
           <th>Tên đơn vị</th>
-          <th>Số đối tượng</th>
-          <th>Đã hoàn thành</th>
           <th>Tiến độ</th>
           <th>Trạng thái</th>
           <th class="hide-tablet">Thao tác</th>
@@ -1204,8 +1254,6 @@
         <tr class="skeleton-row">
           <td><div class="skeleton skeleton-sm"></div></td>
           <td><div class="skeleton skeleton-lg"></div></td>
-          <td><div class="skeleton skeleton-sm"></div></td>
-          <td><div class="skeleton skeleton-sm"></div></td>
           <td><div class="skeleton skeleton-md"></div></td>
           <td><div class="skeleton skeleton-sm"></div></td>
           <td>
@@ -1215,8 +1263,6 @@
         <tr class="skeleton-row">
           <td><div class="skeleton skeleton-sm"></div></td>
           <td><div class="skeleton skeleton-lg"></div></td>
-          <td><div class="skeleton skeleton-sm"></div></td>
-          <td><div class="skeleton skeleton-sm"></div></td>
           <td><div class="skeleton skeleton-md"></div></td>
           <td><div class="skeleton skeleton-sm"></div></td>
           <td>
@@ -1226,8 +1272,6 @@
         <tr class="skeleton-row">
           <td><div class="skeleton skeleton-sm"></div></td>
           <td><div class="skeleton skeleton-lg"></div></td>
-          <td><div class="skeleton skeleton-sm"></div></td>
-          <td><div class="skeleton skeleton-sm"></div></td>
           <td><div class="skeleton skeleton-md"></div></td>
           <td><div class="skeleton skeleton-sm"></div></td>
           <td>
@@ -1594,18 +1638,43 @@
         const barColor = pct >= 100 ? "green" : pct > 0 ? "amber" : "gray";
         const statusBadge = `<span class="badge badge-${org.status}"><span class="dot"></span>${statusLabels[org.status] || "Chưa thực hiện"}</span>`;
 
+        let completedChips = '';
+        let pendingChips = '';
+        
+        let uniqueCompletedGroups = [];
+        if (org.users && org.users.length > 0) {
+            const completedUsers = org.users.filter(u => u.completed);
+            if (completedUsers.length > 0) {
+                uniqueCompletedGroups = [...new Set(completedUsers.map(u => u.target_group_name).filter(name => name))];
+            }
+        }
+        
+        if (uniqueCompletedGroups.length > 0) {
+            completedChips = uniqueCompletedGroups.map(name => `<span class="tg-chip completed">${name}</span>`).join('');
+        } else {
+            completedChips = '<span style="font-size: 13px; color: var(--text-secondary);">Chưa có nhóm nào hoàn thành</span>';
+        }
+        
+        let expectedGroups = org.expected_target_groups || [];
+        if (expectedGroups.length === 0) {
+            expectedGroups = ["Nhóm đối tượng 1", "Nhóm đối tượng 2", "Nhóm đối tượng 3"];
+        }
+        
+        let pendingGroups = expectedGroups.filter(name => !uniqueCompletedGroups.includes(name));
+        if (pendingGroups.length > 0) {
+            pendingChips = pendingGroups.map(name => `<span class="tg-chip pending">${name}</span>`).join('');
+        } else {
+            if (uniqueCompletedGroups.length > 0) {
+                pendingChips = '<span style="font-size: 13px; color: var(--text-secondary);">Tất cả đã hoàn thành</span>';
+            } else {
+                pendingChips = '<span style="font-size: 13px; color: var(--text-secondary);">Chưa xác định nhóm cần làm</span>';
+            }
+        }
+
         return `
-            <tr>
+            <tr onclick="toggleExpand('${org.id}')" style="cursor: pointer;">
                 <td class="col-stt">${startIdx + i + 1}</td>
                 <td class="unit-name">${org.name || "—"}</td>
-                <td>
-                    <div>${org.total_users || 0}</div>
-                    ${org.users && org.users.length > 0 ? `<div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">${org.users.map(u => u.full_name).join(', ')}</div>` : ''}
-                </td>
-                <td>
-                    <div>${org.completed_users || 0}</div>
-                    ${org.users && org.users.filter(u => u.completed).length > 0 ? `<div style="font-size: 11px; color: var(--success); margin-top: 4px; font-weight: 500;">${org.users.filter(u => u.completed).map(u => u.full_name).join(', ')}</div>` : ''}
-                </td>
                 <td>
                     <div class="progress-wrap">
                         <div class="progress-bar-bg">
@@ -1618,10 +1687,28 @@
                 <td class="hide-tablet">
                     <div class="action-btns">
                         ${window.location.search.includes('iframe=true') ? '' : `
-                        <button type="button" class="action-btn" onclick="openDetail(${org.id})" title="Xem chi tiết">
+                        <button type="button" class="action-btn" onclick="openDetail(${org.id}); event.stopPropagation();" title="Xem chi tiết">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
                         `}
+                    </div>
+                </td>
+            </tr>
+            <tr class="expand-row" id="expand-${org.id}">
+                <td colspan="5">
+                    <div class="expand-content">
+                        <div class="expand-item" style="flex: 1;">
+                            <label>Nhóm đối tượng đã hoàn thành</label>
+                            <div style="margin-top: 4px;">
+                                ${completedChips}
+                            </div>
+                        </div>
+                        <div class="expand-item" style="flex: 1;">
+                            <label>Nhóm đối tượng chưa hoàn thành</label>
+                            <div style="margin-top: 4px;">
+                                ${pendingChips}
+                            </div>
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -1772,6 +1859,16 @@
     autoRefreshTimer = setInterval(() => {
       loadData();
     }, 60000); // 60 seconds
+  }
+
+  // ============================================
+  // TOGGLE EXPAND
+  // ============================================
+  function toggleExpand(id) {
+    const row = document.getElementById('expand-' + id);
+    if (row) {
+        row.classList.toggle('show');
+    }
   }
 
   // ============================================
